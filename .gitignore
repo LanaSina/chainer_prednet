@@ -1,2 +1,5 @@
 PredNet/__pycache__/
 *.pyc
+log.txt
+models/
+runs/

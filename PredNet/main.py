@@ -52,9 +52,9 @@ if (not args.images) and (not args.sequences):
     exit()
 
 if (not args.test):
-    images_path = args.images + "\\train_list.txt"
+    images_path = os.path.join(args.images, "train_list" + ".txt")
 else:
-    images_path = args.images + "\\test_list.txt"
+    images_path = os.path.join(args.images, "test_list" + ".txt")
 
 args.size = args.size.split(',')
 for i in range(len(args.size)):
