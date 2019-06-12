@@ -41,10 +41,7 @@ class ConvLSTM(chainer.Chain):
         height = int(height)
         self.state_size = (batchSize, out_channels, int(height), int(width))
         self.in_channels = in_channels
-        print("---------------- width type ", type(width))
-        print("---------------- state_size[3] type ", type(self.state_size[3]))
-
-        
+       
         super(ConvLSTM, self).__init__(
             h_i=L.Convolution2D(out_channels, out_channels, 3, pad=1),
             c_i=EltFilter(width, height, out_channels, nobias=True),
@@ -153,9 +150,6 @@ class PredNet(chainer.Chain):
                 self.add_link('ConvLSTM' + str(nth), ConvLSTM(self.sizes[nth][3], self.sizes[nth][2],
                                (self.sizes[nth][1] * 2, ), r_channels[nth]))
             else:
-                print("---------------- size type ", type(self.sizes))
-                print("---------------- channels type ", type(r_channels[nth]))
-                print("---------------- size*2 type ", type(self.sizes[nth][1] * 2))
                 self.add_link('ConvLSTM' + str(nth), ConvLSTM(self.sizes[nth][3], self.sizes[nth][2],
                                (self.sizes[nth][1] * 2, r_channels[nth + 1]), r_channels[nth]))
 
@@ -179,11 +173,7 @@ class PredNet(chainer.Chain):
             getattr(self, 'ConvLSTM' + str(nth)).reset_state()
 
     def __call__(self, x):
-        print(":::::::::::::: self.sizes[0][0] type ", type(self.sizes[0][0]))
-        print(x.data.dtype)
         for nth in range(self.layers):
-            print(":::::::::::::: self.sizes[nth][0] type ", type(self.sizes[nth][0]))
-            print(self.sizes[nth])
             if getattr(self, 'P' + str(nth)) is None:
                 with chainer.using_config('enable_backprop', False):
                     setattr(self, 'P' + str(nth), variable.Variable(

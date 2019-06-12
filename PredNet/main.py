@@ -71,7 +71,6 @@ if args.gpu >= 0:
 xp = cuda.cupy if args.gpu >= 0 else np
 
 #Create Model
-print("---------------- args types ", type(args.size[0]), type(args.size[1]))
 prednet = net.PredNet(args.size[0], args.size[1], args.channels)
 model = L.Classifier(prednet, lossfun=mean_squared_error)
 model.compute_accuracy = False
@@ -141,7 +140,7 @@ if args.test == True:
         x_batch = np.ndarray((batchSize, args.channels[0], args.size[1], args.size[0]), dtype=np.float32)
         y_batch = np.ndarray((batchSize, args.channels[0], args.size[1], args.size[0]), dtype=np.float32)
         for i in range(0, len(imagelist)):
-            print('frameNo:' + str(i))
+            print("seq ", seq," frameNo ", i)
             x_batch[0] = read_image(imagelist[i])
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
@@ -197,7 +196,7 @@ else:
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
 
-            print('frameNo:' + str(i))
+            print("count ", count," frameNo ", i)
             if (i + 1) % args.bprop == 0:
                 model.zerograds()
                 loss.backward()
