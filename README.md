@@ -1,1 +1,0 @@
-# chainer_prednet
