@@ -131,6 +131,17 @@ else:
     sequencelist = load_list(args.sequences, args.root)
 
 writer = SummaryWriter('runs/test')#+datetime.now().strftime('%B%d  %H:%M:%S'))
+
+def save_model(count):
+    print('save the model')
+    serializers.save_npz('models/' + str(count) + '.model', model)
+    print('save the optimizer')
+    serializers.save_npz('models/' + str(count) + '.state', optimizer)
+    for name, param in model.predictor.namedparams():
+        writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
+    writer.add_scalar('loss', float(model.loss.data), count)
+
+
 if args.test == True:
     for seq in range(len(sequencelist)):
         imagelist = load_list(sequencelist[seq], args.root)
@@ -212,16 +223,11 @@ else:
                 logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
 
             if (count%args.save) == 0:
-                print('save the model')
-                serializers.save_npz('models/' + str(count) + '.model', model)
-                print('save the optimizer')
-                serializers.save_npz('models/' + str(count) + '.state', optimizer)
-                for name, param in model.predictor.namedparams():
-                    writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
-                writer.add_scalar('loss', float(model.loss.data), count)
+                save_model(count)
             x_batch[0] = y_batch[0]
             count += 1
             if (count>=args.period):
+                save_model(count)
                 break
 
         seq = (seq + 1)%len(sequencelist)
