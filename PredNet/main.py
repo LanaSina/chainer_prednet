@@ -190,7 +190,7 @@ else:
         if len(imagelist) == 0:
             print("Not found images.")
             break
-        x_batch[0] = read_image(imagelist[0]);
+        x_batch[0] = read_image(imagelist[0])
         for i in range(1, len(imagelist)):
             y_batch[0] = read_image(imagelist[i]);
             loss += model(chainer.Variable(xp.asarray(x_batch)),
@@ -221,6 +221,8 @@ else:
                 writer.add_scalar('loss', float(model.loss.data), count)
             x_batch[0] = y_batch[0]
             count += 1
+            if (count>=args.period):
+                break
 
         seq = (seq + 1)%len(sequencelist)
 
