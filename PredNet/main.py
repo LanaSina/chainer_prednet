@@ -207,8 +207,8 @@ else:
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
 
-            print("count ", count," frameNo ", i)
             if (i + 1) % args.bprop == 0:
+                print("count ", count," frameNo ", i)
                 model.zerograds()
                 loss.backward()
                 loss.unchain_backward()
