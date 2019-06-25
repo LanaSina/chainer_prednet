@@ -215,9 +215,9 @@ else:
                 loss = 0
                 optimizer.update()
                 if args.gpu >= 0:model.to_cpu()
-                write_image(x_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'x.png')
-                write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
-                write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
+                # write_image(x_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'x.png')
+                # write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
+                # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
                 if args.gpu >= 0:model.to_gpu()
                 print('loss:' + str(float(model.loss.data)))
                 logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
