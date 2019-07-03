@@ -158,7 +158,7 @@ if args.test == True:
             loss.unchain_backward()
             loss = 0
             if args.gpu >= 0:model.to_cpu()
-            write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
+            #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
             write_image(model.y.data[0].copy(), 'result/test_' + str(i) + 'y_0.png')
             if args.gpu >= 0:model.to_gpu()
 
