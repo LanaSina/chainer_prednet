@@ -151,14 +151,14 @@ if args.test == True:
         x_batch = np.ndarray((batchSize, args.channels[0], args.size[1], args.size[0]), dtype=np.float32)
         y_batch = np.ndarray((batchSize, args.channels[0], args.size[1], args.size[0]), dtype=np.float32)
         for i in range(0, len(imagelist)):
-            #print("seq ", seq," frameNo ", i)
+            print("seq ", seq," frame ", imagelist[i])
             x_batch[0] = read_image(imagelist[i])
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
             loss.unchain_backward()
             loss = 0
             if args.gpu >= 0:model.to_cpu()
-            write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
+            #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
             write_image(model.y.data[0].copy(), 'result/test_' + str(i) + 'y_0.png')
             if args.gpu >= 0:model.to_gpu()
 

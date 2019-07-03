@@ -13,7 +13,7 @@ parser.add_argument('n_images', action='store', nargs='?', default=-1,
                     type=int, help='optional: total number of images to use.')
 args = parser.parse_args()
 
-split_ratio = np.array([0.8,0.2])
+split_ratio = np.array([0,1])
 splits = ["train", "test"]
 
 n_images = args.n_images
