@@ -151,7 +151,7 @@ if args.test == True:
         x_batch = np.ndarray((batchSize, args.channels[0], args.size[1], args.size[0]), dtype=np.float32)
         y_batch = np.ndarray((batchSize, args.channels[0], args.size[1], args.size[0]), dtype=np.float32)
         for i in range(0, len(imagelist)):
-            #print("seq ", seq," frameNo ", i)
+            print("seq ", seq," frame ", imagelist[i])
             x_batch[0] = read_image(imagelist[i])
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
