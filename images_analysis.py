@@ -10,7 +10,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 image_list = sorted(os.listdir(image_dir))
-image_count = 20 # or image_list.length
+image_count = 80 # or image_list.length
 n = 0
 
 # red[top, bottom] blue[top, bottom]
@@ -53,7 +53,7 @@ def red_blue_diff(current_image, next_image):
 				# new_image[i, j, 2] = bdiff
 	return new_image
 
-with open('top_bottom_diff.csv', mode='w') as csv_file:
+with open(output_dir+'top_bottom_diff.csv', mode='w') as csv_file:
 	fieldnames = ['red_top', 'red_bottom', 'blue_top', 'blue_bottom']
 	writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 	writer.writerow(fieldnames)
