@@ -4,13 +4,14 @@ from PIL import Image
 import os
 
 
-image_dir = "datasets/kitti/image_02/data"
-output_dir = "image_analysis/"
+dataset = "drop_down/"
+image_dir = "datasets/" + dataset
+output_dir = "image_analysis/"+ dataset
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 image_list = sorted(os.listdir(image_dir))
-image_count = 80 # or image_list.length
+image_count = 23 # or image_list.length
 n = 0
 
 # red[top, bottom] blue[top, bottom]
@@ -29,71 +30,152 @@ def top_bottom_diff(current_image, middle):
 
 	return(red, blue)
 
+def motion_half(current_image, middle):
+	# sum red and blue on the 2 halves
+	red = [0,0]
+	blue = [0,0]
+	for i in xrange(0, current_image.shape[0]):
+		for j in xrange(0, current_image.shape[1]):
+			if j<middle: # left
+				red[0] = red[0] + current_image[i, j, 0]
+				blue[0] = blue[0] + current_image[i, j, 2]
+			else:
+				red[1] = red[1] + current_image[i, j, 0]
+				blue[1] = blue[1] + current_image[i, j, 2]
+
+
+	red[0] = red[0] / (current_image.shape[0]*current_image.shape[1])
+	red[1] = red[1] / (current_image.shape[0]*current_image.shape[1])
+	blue[0] = blue[0] / (current_image.shape[0]*current_image.shape[1])
+	blue[1] = blue[1] / (current_image.shape[0]*current_image.shape[1])
+
+	return(red, blue)
+
+# [red, blue]
+def red_blue(current_image):
+	# average red and blue vlaues
+	result = [0,0]
+	for i in xrange(0, current_image.shape[0]):
+		for j in xrange(0, current_image.shape[1]):
+			result[0] = result[0] + current_image[i, j, 0]
+			result[1] = result[1] + current_image[i, j, 2]
+	
+	result[0] = result[0] / (current_image.shape[0]*current_image.shape[1])
+	result[1] = result[1] / (current_image.shape[0]*current_image.shape[1])
+
+	return(result)
+
 
 def red_blue_diff(current_image, next_image):
 	# create image with only the increases in blue or red
-	new_image = numpy.ones(current_image.shape)
+	new_image = numpy.zeros(current_image.shape)
 	# white background
-	new_image = new_image*255
+	# new_image = new_image*255
+	#new_image = current_image;
 
 	for i in xrange(0,current_image.shape[0]):
 		for j in xrange(0,current_image.shape[1]):
 
-			rdiff = next_image[i, j, 0] - current_image[i, j, 0]
-			bdiff = next_image[i, j, 2] - current_image[i, j, 2]
+			rdiff = 1.0*next_image[i, j, 0] - current_image[i, j, 0]
+			gdiff = 1.0*next_image[i, j, 1] - current_image[i, j, 1]
+			bdiff = 1.0*next_image[i, j, 2] - current_image[i, j, 2]
 
-			lim = 100
-			if (bdiff<lim and rdiff>lim):
-				# new_image[i, j, 0] = rdiff
-				new_image[i, j, 1] = 0
-				new_image[i, j, 2] = 0
-			if (rdiff<lim and bdiff>lim):
-				new_image[i, j, 0] = 0
-				new_image[i, j, 1] = 0
-				# new_image[i, j, 2] = bdiff
+			lim = 0
+			if (rdiff>bdiff):
+			#if (bdiff<lim and rdiff>lim):
+				new_image[i, j, 0] = rdiff
+				#new_image[i, j, 1] = 0
+				#new_image[i, j, 2] = 0
+			if (bdiff>rdiff):
+			#if (rdiff<lim and bdiff>lim):
+				#new_image[i, j, 0] = 0
+				#new_image[i, j, 1] = 0
+				new_image[i, j, 2] = bdiff
+			if (gdiff>bdiff):
+				new_image[i, j, 1] = gdiff
+
 	return new_image
 
-with open(output_dir+'top_bottom_diff.csv', mode='w') as csv_file:
-	fieldnames = ['red_top', 'red_bottom', 'blue_top', 'blue_bottom']
-	writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-	writer.writerow(fieldnames)
 
-	for image_file in image_list[:image_count]:
-		image_path = os.path.join(image_dir, image_file)
-		print("read ", image_path)
 
-		# Beware: numpy ordering is b, g, r
-		current_image = numpy.array(Image.open(image_path).convert('RGB'))
 
-		middle = current_image.shape[0]/2
-		# print(current_image.shape)
-		# print(middle)
-		red, blue = top_bottom_diff(current_image, middle)
+# with open(output_dir+'motion_half.csv', mode='w') as csv_file:
+#  	fieldnames = ['red_left', 'red_right', 'blue_left', 'blue_right']
+# 	writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+# 	writer.writerow(fieldnames)
 
-		n = n + 1
+# 	for image_file in image_list[:image_count]:
+# 		image_path = os.path.join(image_dir, image_file)
+# 		print("read ", image_path)
 
-		writer.writerow([red[0], red[1], blue[0], blue[1]])
+# 		# Beware: numpy ordering is b, g, r
+# 		current_image = numpy.array(Image.open(image_path).convert('RGB'))
 
-# # read all images but last one
-# for image_file in image_list[:image_count]:
-# 	image_path = os.path.join(image_dir, image_file)
-# 	print("read ", image_path)
+# 		middle = current_image.shape[1]/2
+# 		red, blue = motion_half(current_image, middle)
 
-# 	# Beware: numpy ordering is b, g, r
-# 	current_image = numpy.array(Image.open(image_path).convert('RGB'))
-# 	image_path = os.path.join(image_dir, image_list[n+1])
-# 	next_image = numpy.array(Image.open(image_path).convert('RGB'))
+# 		n = n + 1
 
-# 	new_image = red_blue_diff()
-# 	image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
-# 	name = output_dir + str(n).zfill(3) + ".png"
-# 	image_array.save(name)
-# 	print("saved image ", name)
+# 		writer.writerow([red[0], red[1], blue[0], blue[1]])
 
-# 	middle = current_image.shape[0]/2
-# 	print(current_image.shape)
-# 	print(middle)
-# 	rb = top_bottom_diff(current_image, middle)
 
-# 	n = n + 1
+
+# with open(output_dir+'reds_blues.csv', mode='w') as csv_file:
+# 	fieldnames = ['red', 'blue']
+# 	writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+# 	writer.writerow(fieldnames)
+
+# 	for image_file in image_list[:image_count]:
+# 		image_path = os.path.join(image_dir, image_file)
+# 		print("read ", image_path)
+
+# 		# Beware: numpy ordering is b, g, r
+# 		current_image = numpy.array(Image.open(image_path).convert('RGB'))
+
+# 		middle = current_image.shape[0]/2
+# 		result = red_blue(current_image)
+
+# 		n = n + 1
+
+# 		writer.writerow(result)
+
+
+# with open(output_dir+'top_bottom_diff.csv', mode='w') as csv_file:
+# 	fieldnames = ['red_top', 'red_bottom', 'blue_top', 'blue_bottom']
+# 	writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+# 	writer.writerow(fieldnames)
+
+# 	for image_file in image_list[:image_count]:
+# 		image_path = os.path.join(image_dir, image_file)
+# 		print("read ", image_path)
+
+# 		# Beware: numpy ordering is b, g, r
+# 		current_image = numpy.array(Image.open(image_path).convert('RGB'))
+
+# 		middle = current_image.shape[0]/2
+# 		# print(current_image.shape)
+# 		# print(middle)
+# 		red, blue = top_bottom_diff(current_image, middle)
+
+# 		n = n + 1
+
+# 		writer.writerow([red[0], red[1], blue[0], blue[1]])
+
+# read all images but last one
+for image_file in image_list[:image_count]:
+	image_path = os.path.join(image_dir, image_file)
+	print("read ", image_path)
+
+	# Beware: numpy ordering is b, g, r
+	current_image = numpy.array(Image.open(image_path).convert('RGB'))
+	image_path = os.path.join(image_dir, image_list[n+1])
+	next_image = numpy.array(Image.open(image_path).convert('RGB'))
+
+	new_image = red_blue_diff(current_image, next_image)
+	image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
+	name = output_dir + "_____" + str(n).zfill(3) + ".png"
+	image_array.save(name)
+	print("saved image ", name)
+
+	n = n + 1
 
