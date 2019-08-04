@@ -133,7 +133,7 @@ def black_white_next(image_dir, output_dir):
 
 	# choose some random pixels
 	w = 160
-	h = 90
+	h = 120
 	pixels_count = w*h
 	coordinates = numpy.zeros((pixels_count,2))
 
@@ -163,7 +163,7 @@ def black_white_next(image_dir, output_dir):
 	col_mean = 0.0
 
 	#better to open several files... but how
-	output_file = "bike_15m.csv"
+	output_file = "fpsi.csv"
 	fieldnames = ['bw_r','bw_b','wb_r','wb_b']
 
 	# output_file = "fpsi_transitions.csv"
@@ -179,11 +179,11 @@ def black_white_next(image_dir, output_dir):
 			# Beware: numpy ordering is b, g, r
 			# or is it
 			# h, w, color
-			# current_image = numpy.array(Image.open(image_path).convert('RGB'))
+			current_image = numpy.array(Image.open(image_path).convert('RGB'))
 			# print(current_image.shape)
 
-			current_image = cv2.imread(image_path)
-			current_image = cv2.cvtColor(current_image, cv2.COLOR_BGR2RGB) 
+			# current_image = cv2.imread(image_path)
+			# current_image = cv2.cvtColor(current_image, cv2.COLOR_BGR2RGB) 
 			# print(current_image.shape)
 
 			# w, h ...
@@ -312,10 +312,10 @@ def black_white_next(image_dir, output_dir):
 
 				pixel_index = pixel_index + 1
 
-			image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
-			name = output_dir + "/bike_15m/" + image_file
-			image_array.save(name)
-			print("saved image ", name)
+			# image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
+			# name = output_dir + "/fpsi/" + image_file
+			# image_array.save(name)
+			# print("saved image ", name)
 
 
 			# (black->white , white->black)
