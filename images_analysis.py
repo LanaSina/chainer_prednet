@@ -167,14 +167,14 @@ def black_white_next(image_dir, output_dir):
 		writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 		writer.writerow(fieldnames)
 
-		for image_file in image_list[:image_count]:
+		for image_file in image_list: #[:image_count]:
 			image_path = os.path.join(image_dir, image_file)
 			#print("read ", image_path)
 
 			# Beware: numpy ordering is b, g, r
 			# or is it
 			current_image = numpy.array(Image.open(image_path).convert('RGB'))
-			new_image = numpy.ones(current_image.shape)*255
+			# new_image = numpy.ones(current_image.shape)*255
 
 			pixel_index = 0
 			# (black->white , white->black)
@@ -243,17 +243,17 @@ def black_white_next(image_dir, output_dir):
 					bw_sum = bw_sum + 1
 					red_sum[0] = red_sum[0] + red_plus
 					blue_sum[0] = blue_sum[0] + blue_plus
-					new_image[i,j,0] = r
-					new_image[i,j,1] = 0
-					new_image[i,j,2] = b
+					# new_image[i,j,0] = r
+					# new_image[i,j,1] = 0
+					# new_image[i,j,2] = b
 
 				if (white[pixel_index][0] == 1 and black[pixel_index][1] == 1):
 					wb_sum = wb_sum + 1
 					red_sum[1] = red_sum[1] + red_plus
 					blue_sum[1] = blue_sum[1] + blue_plus
-					new_image[i,j,0] = r
-					new_image[i,j,1] = 0
-					new_image[i,j,2] = b
+					# new_image[i,j,0] = r
+					# new_image[i,j,1] = 0
+					# new_image[i,j,2] = b
 
 				# if (black[pixel_index][0] == 1 
 				# 	and white[pixel_index][1] == 1
@@ -280,10 +280,10 @@ def black_white_next(image_dir, output_dir):
 
 				pixel_index = pixel_index + 1
 
-			image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
-			name = output_dir + image_file
-			image_array.save(name)
-			print("saved image ", name)
+			# image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
+			# name = output_dir + image_file
+			# image_array.save(name)
+			# print("saved image ", name)
 
 
 			# (black->white , white->black)
