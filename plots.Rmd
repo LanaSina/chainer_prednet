@@ -13,24 +13,78 @@ dataFolder = "image_analysis/"
 Comparing the flickers
 
 ```{r}
-filename = "black_white_next/kitti.csv"
+filename = "black_white_next/long_fpsi.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
 
-plot(df$bw_b, col = "blue", type = "l",
-     main = "Colored flickers: black, white, ..."
+ymax = max(c(df$bw_r,df$bw_b))
+plot(df$bw_r, col = "red", type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,ymax)
     )
-points(df$bw_r, col="red", type="l")
+points(df$bw_b, col="blue", type="l")
 
 # legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
 #       col=c("red", "blue"), cex=0.8)
 
-
+ymax = max(c(df$bw_r,df$bw_b))
 plot(df$wb_r, col = "red", type = "l",
-     main = "Colored flickers: white, black, ..."
+     main = "Colored flickers: white, black, ...", ylim = c(0,ymax)
     )
 points(df$wb_b, col="blue", type="l")
 
+print("bw")
+print(mean(df$bw_b))
+print(mean(df$bw_r))
+print("wb")
+print(mean(df$wb_b))
+print(mean(df$wb_r))
+
 ```
+
+Looking at sequences
+
+```{r}
+filename = "black_white_next/fpsi_transitions.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors= FALSE)
+
+combi_w = unique(df$white_tr)
+combi_b = unique(df$black_tr)
+print(combi_w)
+print(combi_b)
+
+print("white")
+for(combi in combi_w){
+  a = subset(df, white_tr == combi)
+  print(combi)
+  print(length(a$white_tr))
+}
+
+print("\n black")
+for(combi in combi_b){
+  a = subset(df, black_tr == combi)
+  print(combi)
+  print(length(a$black_tr))
+}
+
+a = subset(df, black_tr == "0_0_1_1")
+print(unique(a$white_tr))
+
+```
+
+
+Look at the average color of the sky
+
+```{r}
+filename = "black_white_next/bike_4h_sample.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(df$r, col = "red", type = "l",
+     main = "sky rgb", ylim = c(0,255)
+    )
+points(df$b, col="blue", type="l")
+
+points(df$g, col="green", type="l")
+```
+
 
 
 Comparing the amount of blue in the top of the images (==background: sky, trees) vs the bottom (foreground: road).

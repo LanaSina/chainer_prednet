@@ -127,13 +127,57 @@ def red_blue_diff(current_image, next_image):
 	return new_image
 
 # count the ratio of blue and red adter bblack-white alternation in a pixel
+def sample_average_color(image_dir, output_dir):
+	image_list = sorted(os.listdir(image_dir))
+	image_count = len(image_list)
+
+	# sample from this square
+	w = 0
+	h = 90/2
+	size = 20
+
+	#better to open several files... but how
+	output_file = "bike_4h_left_sample.csv"
+	fieldnames = ['r','g','b']
+
+	# output_file = "fpsi_transitions.csv"
+	# fieldnames = ['black_tr', 'white_tr']
+	with open(output_dir+output_file, mode='w') as csv_file:
+		writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+		writer.writerow(fieldnames)
+
+		for image_file in image_list[:image_count]:
+			image_path = os.path.join(image_dir, image_file)
+			
+			# h, w, color
+			current_image = numpy.array(Image.open(image_path).convert('RGB'))
+			r = 0.0
+			g = 0.0
+			b = 0.0
+			for i in range(h,h+size):
+				for j in range(w,w+size):
+					r = r + current_image[i, j, 0]
+					g = g + current_image[i, j, 1]
+					b = b + current_image[i, j, 2]
+
+			r = r/(size*size)
+			g = g/(size*size)
+			b = b/(size*size)
+			row = [r,g,b]
+			writer.writerow(row)
+
+	print("done")
+
+
+
+# count the ratio of blue and red adter bblack-white alternation in a pixel
 def black_white_next(image_dir, output_dir):
 	image_list = sorted(os.listdir(image_dir))
 	image_count = len(image_list)
 
 	# choose some random pixels
 	w = 160
-	h = 120
+	h = 90
 	pixels_count = w*h
 	coordinates = numpy.zeros((pixels_count,2))
 
@@ -163,7 +207,7 @@ def black_white_next(image_dir, output_dir):
 	col_mean = 0.0
 
 	#better to open several files... but how
-	output_file = "fpsi.csv"
+	output_file = "bike_4h.csv"
 	fieldnames = ['bw_r','bw_b','wb_r','wb_b']
 
 	# output_file = "fpsi_transitions.csv"
@@ -174,7 +218,7 @@ def black_white_next(image_dir, output_dir):
 
 		for image_file in image_list[:image_count]:
 			image_path = os.path.join(image_dir, image_file)
-			#print("read ", image_path)
+			print("read ", image_path)
 
 			# Beware: numpy ordering is b, g, r
 			# or is it
@@ -408,11 +452,13 @@ def black_white_next(image_dir, output_dir):
 
 
 # # average red and blues by column
-
 # image_path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/" + dataset + "test_20y_0.jpg"
 # current_image = numpy.array(Image.open(image_path).convert('RGB'))
 # result = red_blue_green(current_image, 'colors_average_20.csv')
 
-# flickers
-#image_dir = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/100_fpsi/"
+# # flickers
 black_white_next(args.image_dir, output_dir)
+
+# average colors on sample square
+#sample_average_color(args.image_dir, output_dir)
+
