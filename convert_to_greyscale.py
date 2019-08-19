@@ -14,7 +14,7 @@ parser.add_argument('n_images', action='store', nargs='?', default=-1,
 args = parser.parse_args()
 
 
-output_directory = "./greyscale_input/"
+output_directory = "./greyscale_input/input_images/"
 if not os.path.exists(output_directory): 
     	os.makedirs(output_directory)
     	print("created ", output_directory)
