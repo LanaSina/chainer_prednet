@@ -28,5 +28,5 @@ if n_images==-1:
 for image_file in image_list[:n_images]:
 			image_path = os.path.join(args.data_dir, image_file)
 			print("read ", image_path)
-			img = Image.open(image_path).convert('LA')
+			img = Image.open(image_path).convert('L')
 			img.save(output_directory + image_file)
