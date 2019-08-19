@@ -8,17 +8,128 @@ output:
 ```{r}
 dataFolder = "image_analysis/"
 
+install.packages("RColorBrewer")
+library(RColorBrewer)
 ```
+
+Plot color and surrounding colors
+
+```{r}
+
+filename = "black_white_next/bike_15m_flicker_surround.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(df$bw_r, col = "red", type = "l",
+     main = "bw, surround", ylim = c(0,255)
+     #,ylab = "Mean value"
+    )
+points(df$bw_b, col = "blue", type = "l")
+
+plot(df$wb_r, col = "red", type = "l",
+     main = "wb, surround", ylim = c(0,255)
+     #,ylab = "Mean value"
+    )
+points(df$wb_b, col = "blue", type = "l")
+
+print(mean(df$bw_r))
+print(mean(df$bw_b))
+print(mean(df$wb_r))
+print(mean(df$wb_b))
+
+```
+
+
+Plot colors during and after flicker
+
+```{r}
+
+filename = "black_white_next/bike_15m_flicker_before.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+colors = brewer.pal(n = 3, name = "YlOrRd")
+plot(df$bw_r0, col = colors[1], type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,255)
+    )
+points(df$bw_r1, col = colors[2], type = "l")
+points(df$bw_r2, col = colors[3], type = "l")
+
+plot(df$wb_r0, col = colors[1], type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_r1, col = colors[2], type = "l")
+points(df$wb_r2, col = colors[3], type = "l")
+
+evo_r = c(mean(df$bw_r0), mean(df$bw_r1), mean(df$bw_r2))
+evo_g = c(mean(df$bw_g0), mean(df$bw_g1), mean(df$bw_g2))
+evo_b = c(mean(df$bw_b0), mean(df$bw_b1), mean(df$bw_b2))
+plot(evo_r, col = "red", type = "l",
+     main = "Mean rgb value of black->white flickering pixels", ylim = c(0,255),
+     ylab = "Mean value", xlab = "t0 = black, t1 = white, t2 = next color"
+    )
+points(evo_g, col = "green", type = "l")
+points(evo_b, col = "blue", type = "l")
+
+evo_r = c(mean(df$wb_r0), mean(df$wb_r1), mean(df$wb_r2))
+evo_g = c(mean(df$wb_g0), mean(df$wb_g1), mean(df$wb_g2))
+evo_b = c(mean(df$wb_b0), mean(df$wb_b1), mean(df$wb_b2))
+plot(evo_r, col = "red", type = "l",
+     main = "Mean rgb value of white->black flickering pixels", ylim = c(0,255),
+     ylab = "Mean value", xlab = "t0 = white, t1 = black, t2 = next color"
+    )
+points(evo_g, col = "green", type = "l")
+points(evo_b, col = "blue", type = "l")
+
+```
+
+```{r}
+plot(df$bw_r0, col = "red", type = "l",
+     main = "bw t0,  ...", ylim = c(0,255)
+    )
+points(df$bw_g0, col = "green", type = "l")
+points(df$bw_b0, col = "blue", type = "l")
+
+plot(df$bw_r1, col = "red", type = "l",
+     main = "bw t1, ...", ylim = c(0,255)
+    )
+points(df$bw_g1, col = "green", type = "l")
+points(df$bw_b1, col = "blue", type = "l")
+
+plot(df$bw_r2, col = "red", type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,255)
+    )
+points(df$bw_g2, col = "green", type = "l")
+points(df$bw_b2, col = "blue", type = "l")
+
+
+plot(df$wb_r0, col = "red", type = "l",
+     main = "wb t0,  ...", ylim = c(0,255)
+    )
+points(df$wb_g0, col = "green", type = "l")
+points(df$wb_b0, col = "blue", type = "l")
+
+plot(df$wb_r1, col = "red", type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_g1, col = "green", type = "l")
+points(df$wb_b1, col = "blue", type = "l")
+
+plot(df$wb_r2, col = "red", type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_g2, col = "green", type = "l")
+points(df$wb_b2, col = "blue", type = "l")
+```
+
 
 Comparing the flickers
 
 ```{r}
-filename = "black_white_next/long_fpsi.csv"
+filename = "black_white_next/bike_15m_shift.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
 
 ymax = max(c(df$bw_r,df$bw_b))
 plot(df$bw_r, col = "red", type = "l",
-     main = "Colored flickers: black, white, ...", ylim = c(0,ymax)
+     main = "Colored flickers: black, white, ..."#, ylim = c(1,4)
     )
 points(df$bw_b, col="blue", type="l")
 
@@ -27,7 +138,7 @@ points(df$bw_b, col="blue", type="l")
 
 ymax = max(c(df$bw_r,df$bw_b))
 plot(df$wb_r, col = "red", type = "l",
-     main = "Colored flickers: white, black, ...", ylim = c(0,ymax)
+     main = "Colored flickers: white, black, ..."#, ylim = c(1,4)
     )
 points(df$wb_b, col="blue", type="l")
 
@@ -74,11 +185,11 @@ print(unique(a$white_tr))
 Look at the average color of the sky
 
 ```{r}
-filename = "black_white_next/bike_4h_sample.csv"
+filename = "black_white_next/bike_15m_left_sample.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
 
 plot(df$r, col = "red", type = "l",
-     main = "sky rgb", ylim = c(0,255)
+     main = "left corner rgb", ylim = c(0,255)
     )
 points(df$b, col="blue", type="l")
 

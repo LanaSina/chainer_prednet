@@ -198,14 +198,14 @@ def rgb_surround(i,j, size, image):
 # count the ratio of blue and red adter bblack-white alternation in a pixel
 def black_white_next(image_dir, output_dir):
 	image_list = sorted(os.listdir(image_dir))
-	image_count =  10#len(image_list)
+	image_count =  len(image_list)
 
 	# choose some random pixels
 	w = 160
 	h = 90
 	pixels_count = w*h
 	coordinates = numpy.zeros((pixels_count,2))
-	previous_images = [numpy.zeros((h,w,3)),numpy.zeros((h,w,3)),numpy.zeros((h,w,3))]
+	
 
 	# for i in xrange(0,pixels_count):
 	# 	# row
@@ -221,12 +221,16 @@ def black_white_next(image_dir, output_dir):
 			# col
 			coordinates[n][1] = j
 
-	t = 3
+	t = 4
+	previous_images = []
+	for i in range(0,t):
+		previous_images.append(numpy.zeros((h,w,3)))
+
 	black = numpy.zeros((pixels_count,t))
 	white = numpy.zeros((pixels_count,t))
 	col_mean = numpy.zeros((pixels_count,t))
-	b_t = 200
-	w_t = 55
+	b_t = 55
+	w_t = 200
 	blue_t = 0
 	red_t = 0
 	variation = 0.0
@@ -309,12 +313,12 @@ def black_white_next(image_dir, output_dir):
 					# if j > 90:
 					# 	print(current_image[i, j])
 					# 	print(col_mean)
-					# is it dark or pale?
-					if (col_mean[pixel_index][t-1] > b_t ):
+					# is it dark
+					if (col_mean[pixel_index][t-1] < b_t ):
 						#pale
 						white[pixel_index][t-1] = 1
 					else:
-						if (col_mean[pixel_index][t-1] < w_t):
+						if (col_mean[pixel_index][t-1] > w_t):
 							black[pixel_index][t-1] = 1
 
 				# blue
@@ -354,12 +358,14 @@ def black_white_next(image_dir, output_dir):
 				# green_plus = col_offset + g
 				# blue_plus = col_offset + b
 
-				global_rgb_s = rgb_surround(i,j,1,current_image)
+				global_rgb_s = rgb_surround(i,j,2,previous_images[t-2])
 				s_mean = sum(global_rgb_s)/3.0
+				middle_mean = sum(previous_images[t-2][i,j])/3.0
+				
 
 				# #check time transitions
 				if (black[pixel_index][0] == 1 and white[pixel_index][1] == 1
-					and  s_mean > b_t ): #surround is kinda white
+					and  s_mean > middle_mean ): #surround is kinda white
 					bw_sum = bw_sum + 1
 					red_sum[0] = red_sum[0] + r
 					blue_sum[0] = blue_sum[0] + b
@@ -373,7 +379,7 @@ def black_white_next(image_dir, output_dir):
 
 
 				if (white[pixel_index][0] == 1 and black[pixel_index][1] == 1
-					and  s_mean > b_t ):
+					and  s_mean > middle_mean ):
 					wb_sum = wb_sum + 1
 					red_sum[1] = red_sum[1] + r
 					blue_sum[1] = blue_sum[1] + b
