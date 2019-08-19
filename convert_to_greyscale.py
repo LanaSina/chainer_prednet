@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import os
 from PIL import Image
 
@@ -28,5 +29,7 @@ if n_images==-1:
 for image_file in image_list[:n_images]:
 			image_path = os.path.join(args.data_dir, image_file)
 			print("read ", image_path)
-			img = Image.open(image_path).convert('L')
-			img.save(output_directory + image_file)
+			img = np.array(Image.open(image_path).convert('L'))
+			stacked_img = np.stack((img,)*3, axis=-1)
+			image_array = Image.fromarray(stacked_img.astype('uint8'), 'RGB')
+			image_array.save(output_directory + image_file)
