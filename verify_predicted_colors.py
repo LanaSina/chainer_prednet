@@ -25,7 +25,7 @@ def color_diff(image_path):
 	# new_image = numpy.zeros(current_image.shape)
 	# white background
 	current_image = np.array(Image.open(image_path).convert('RGB'))
-	new_image = np.ones(current_image.shape)
+	new_image = np.zeros(current_image.shape)
 
 	for i in xrange(0,current_image.shape[0]):
 		for j in xrange(0,current_image.shape[1]):
@@ -37,13 +37,15 @@ def color_diff(image_path):
 	return(new_image)
 
 def match(colors, col_image):
-	new_image = np.ones(colors.shape)
+	new_image = np.zeros(colors.shape)
 
 	for i in xrange(0,colors.shape[0]):
 		for j in xrange(0,colors.shape[1]):
+			# print(col_image[i, j])
+			# print(colors[i, j])
 			strong_color = strong_index(col_image[i, j])
 			if strong_color != -1 and colors[i,j,strong_color] != 0:
-				new_image[i,j,strong_color] = colors[i,j,strong_color]
+				new_image[i,j,strong_color] = col_image[i,j,strong_color]
 
 	return(new_image)
 
@@ -53,7 +55,7 @@ def overlay(matching_colors, gs_image):
 		for j in xrange(0,matching_colors.shape[1]):
 			for color in xrange(0,3):
 				if matching_colors[i,j,color] > 0:
-					gs_image[i,j,color] = matching_colors[i,j,color]
+					gs_image[i,j,color] = 255#matching_colors[i,j,color]
 
 	return(gs_image)
 
@@ -94,7 +96,8 @@ def process_images(image_dir, col_image_dir, gs_image_dir, image_count, output_d
 
 		# check if colors match with original color input
 		col_image_path = os.path.join(col_image_dir, col_image_list[im_index])
-		col_image = np.array(Image.open(image_path).convert('RGB'))
+		# print("col_image_path ", col_image_path)
+		col_image = np.array(Image.open(col_image_path).convert('RGB'))
 		matching_colors = match(colors, col_image) 
 		# save it
 		image_array = Image.fromarray(matching_colors.astype('uint8'), 'RGB')
@@ -104,7 +107,7 @@ def process_images(image_dir, col_image_dir, gs_image_dir, image_count, output_d
 
 		# paste color on black and white input
 		gs_image_path = os.path.join(gs_image_dir, gs_image_list[im_index])
-		gs_image = np.array(Image.open(image_path).convert('RGB'))
+		gs_image = np.array(Image.open(gs_image_path).convert('RGB'))
 		overlay_image = overlay(matching_colors, gs_image) 
 		# save it
 		image_array = Image.fromarray(overlay_image.astype('uint8'), 'RGB')
