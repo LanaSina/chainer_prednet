@@ -1,0 +1,301 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+dataFolder = "image_analysis/"
+
+install.packages("RColorBrewer")
+library(RColorBrewer)
+```
+
+Plot color and surrounding colors
+
+```{r}
+
+filename = "black_white_next/bike_15m_flicker_surround.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(df$bw_r, col = "red", type = "l",
+     main = "bw, surround", ylim = c(0,255)
+     #,ylab = "Mean value"
+    )
+points(df$bw_b, col = "blue", type = "l")
+
+plot(df$wb_r, col = "red", type = "l",
+     main = "wb, surround", ylim = c(0,255)
+     #,ylab = "Mean value"
+    )
+points(df$wb_b, col = "blue", type = "l")
+
+print(mean(df$bw_r))
+print(mean(df$bw_b))
+print(mean(df$wb_r))
+print(mean(df$wb_b))
+
+```
+
+
+Plot colors during and after flicker
+
+```{r}
+
+filename = "black_white_next/bike_15m_flicker_before.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+colors = brewer.pal(n = 3, name = "YlOrRd")
+plot(df$bw_r0, col = colors[1], type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,255)
+    )
+points(df$bw_r1, col = colors[2], type = "l")
+points(df$bw_r2, col = colors[3], type = "l")
+
+plot(df$wb_r0, col = colors[1], type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_r1, col = colors[2], type = "l")
+points(df$wb_r2, col = colors[3], type = "l")
+
+evo_r = c(mean(df$bw_r0), mean(df$bw_r1), mean(df$bw_r2))
+evo_g = c(mean(df$bw_g0), mean(df$bw_g1), mean(df$bw_g2))
+evo_b = c(mean(df$bw_b0), mean(df$bw_b1), mean(df$bw_b2))
+plot(evo_r, col = "red", type = "l",
+     main = "Mean rgb value of black->white flickering pixels", ylim = c(0,255),
+     ylab = "Mean value", xlab = "t0 = black, t1 = white, t2 = next color"
+    )
+points(evo_g, col = "green", type = "l")
+points(evo_b, col = "blue", type = "l")
+
+evo_r = c(mean(df$wb_r0), mean(df$wb_r1), mean(df$wb_r2))
+evo_g = c(mean(df$wb_g0), mean(df$wb_g1), mean(df$wb_g2))
+evo_b = c(mean(df$wb_b0), mean(df$wb_b1), mean(df$wb_b2))
+plot(evo_r, col = "red", type = "l",
+     main = "Mean rgb value of white->black flickering pixels", ylim = c(0,255),
+     ylab = "Mean value", xlab = "t0 = white, t1 = black, t2 = next color"
+    )
+points(evo_g, col = "green", type = "l")
+points(evo_b, col = "blue", type = "l")
+
+```
+
+```{r}
+plot(df$bw_r0, col = "red", type = "l",
+     main = "bw t0,  ...", ylim = c(0,255)
+    )
+points(df$bw_g0, col = "green", type = "l")
+points(df$bw_b0, col = "blue", type = "l")
+
+plot(df$bw_r1, col = "red", type = "l",
+     main = "bw t1, ...", ylim = c(0,255)
+    )
+points(df$bw_g1, col = "green", type = "l")
+points(df$bw_b1, col = "blue", type = "l")
+
+plot(df$bw_r2, col = "red", type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,255)
+    )
+points(df$bw_g2, col = "green", type = "l")
+points(df$bw_b2, col = "blue", type = "l")
+
+
+plot(df$wb_r0, col = "red", type = "l",
+     main = "wb t0,  ...", ylim = c(0,255)
+    )
+points(df$wb_g0, col = "green", type = "l")
+points(df$wb_b0, col = "blue", type = "l")
+
+plot(df$wb_r1, col = "red", type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_g1, col = "green", type = "l")
+points(df$wb_b1, col = "blue", type = "l")
+
+plot(df$wb_r2, col = "red", type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_g2, col = "green", type = "l")
+points(df$wb_b2, col = "blue", type = "l")
+```
+
+
+Comparing the flickers
+
+```{r}
+filename = "black_white_next/bike_15m_shift.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+ymax = max(c(df$bw_r,df$bw_b))
+plot(df$bw_r, col = "red", type = "l",
+     main = "Colored flickers: black, white, ..."#, ylim = c(1,4)
+    )
+points(df$bw_b, col="blue", type="l")
+
+# legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
+#       col=c("red", "blue"), cex=0.8)
+
+ymax = max(c(df$bw_r,df$bw_b))
+plot(df$wb_r, col = "red", type = "l",
+     main = "Colored flickers: white, black, ..."#, ylim = c(1,4)
+    )
+points(df$wb_b, col="blue", type="l")
+
+print("bw")
+print(mean(df$bw_b))
+print(mean(df$bw_r))
+print("wb")
+print(mean(df$wb_b))
+print(mean(df$wb_r))
+
+```
+
+Looking at sequences
+
+```{r}
+filename = "black_white_next/fpsi_transitions.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors= FALSE)
+
+combi_w = unique(df$white_tr)
+combi_b = unique(df$black_tr)
+print(combi_w)
+print(combi_b)
+
+print("white")
+for(combi in combi_w){
+  a = subset(df, white_tr == combi)
+  print(combi)
+  print(length(a$white_tr))
+}
+
+print("\n black")
+for(combi in combi_b){
+  a = subset(df, black_tr == combi)
+  print(combi)
+  print(length(a$black_tr))
+}
+
+a = subset(df, black_tr == "0_0_1_1")
+print(unique(a$white_tr))
+
+```
+
+
+Look at the average color of the sky
+
+```{r}
+filename = "black_white_next/bike_15m_left_sample.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(df$r, col = "red", type = "l",
+     main = "left corner rgb", ylim = c(0,255)
+    )
+points(df$b, col="blue", type="l")
+
+points(df$g, col="green", type="l")
+```
+
+
+
+Comparing the amount of blue in the top of the images (==background: sky, trees) vs the bottom (foreground: road).
+Hypothesis: maybe backgrounds tend to be redder and foregrounds tend to be bluer?
+
+```{r}
+filename = "top_bottom_diff.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+```
+
+```{r}
+plot(df$red_top, col = "red", type = "l",
+     main = "Top of frames", ylim = c(min(df$blue_top)-100000, max(df$red_top) + 100000)
+    )
+points(df$blue_top, col="blue", type="l")
+legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
+       col=c("red", "blue"), cex=0.8)
+
+plot(df$red_bottom, col = "red", type = "l",
+     main = "Bottom of frames", ylim = c(min(df$blue_bottom)-100000, max(df$red_bottom) + 100000)
+    )
+points(df$blue_bottom, col="blue", type="l")
+legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
+       col=c("red", "blue"), cex=0.8)
+
+
+plot(df$red_top, col = "red", type = "l", 
+     main = "Red in frames, bottom vs top", ylim = c(min(df$red_top)-100000, max(df$red_bottom) + 100000)
+    )
+points(df$red_bottom, col="red", type="l", lty=2)
+legend(15, max(df$red_top), legend=c("Red in top", "Red in bottom"),
+       col=c("red", "red"), lty=1:2, cex=0.8)
+
+plot(df$blue_top, col = "blue", type = "l", 
+     main = "Blue in frames, bottom vs top", ylim = c(min(df$blue_bottom)-100000, max(df$blue_bottom) + 100000)
+    )
+points(df$blue_bottom, col="blue", type="l", lty=2)
+legend(15, max(df$blue_top), legend=c("Blue in top", "Blue in bottom"),
+       col=c("blue", "blue"), lty=1:2, cex=0.8)
+```
+
+
+Test if approaching objects become bluer/redder as result of atmospheric dispersion
+
+```{r}
+filename = "reds_blues.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+```
+
+```{r}
+
+plot(df$red, col = "red", type = "l",
+     main = "Approaching tree", ylim = c(min(df$red)-2, max(df$blue) + 2)
+    )
+points(df$blue, col="blue", type="l")
+legend(8, 58, legend=c("Red average", "Blue average"),
+       col=c("red", "blue"),  lty=c(1,1), cex=0.8)
+```
+
+Check if moving objects have more blues on their motion direction side and more red on the other side
+
+```{r}
+filename = "motion_half.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+```
+
+```{r}
+plot(df$red_left, col = "red", type = "l",
+     main = "Left of frames"#, ylim = c(min(df$blue_top)-100000, max(df$red_top) + 100000)
+    )
+points(df$blue_left, col="blue", type="l")
+legend(8, 32, legend=c("Red Average", "Blue average"),
+       col=c("red", "blue"), lty=c(1,1), cex=0.8)
+
+plot(df$red_right, col = "red", type = "l",
+     main = "Right of frames", ylim = c(min(df$red_right)-2, max(df$blue_right) + 2)
+    )
+points(df$blue_right, col="blue", type="l")
+legend(8, 30, legend=c("Red Average", "Blue average"),
+       col=c("red", "blue"), lty=c(1,1), cex=0.8)
+
+```
+
+
+Colors
+
+```{r}
+dataFolder = "results//bike_lines_fw//"
+filename = "colors_average_20.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(x = df$red, type = "l", col = "red", ylab = "Average color values"
+     #, ylim=c(0,10)
+     )
+points(x = df$green, type = "l", col = "green")
+points(x = df$blue, type = "l", col = "blue")
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.

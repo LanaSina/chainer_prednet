@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 import os
-import sys
+#import sys
 
 
 usage = 'Usage: python {} DATA_DIR [N_IMAGES] [--help]'.format(__file__)
