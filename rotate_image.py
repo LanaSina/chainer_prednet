@@ -2,19 +2,19 @@ import os
 from PIL import Image
 
 # Rotate it by x degrees
-rotation = 90
+rotation = 45
 #1 for clockwise, -1 for counter-clockwise
-rotation_direction = 1
+rotation_direction = -1
 
 # Create an Image object from an Image
-input_image  = Image.open("./slim_flattened.jpg")
+input_image  = Image.open("./spiral.png")
 print(input_image.size)
 #to_crop = input_image.size[0] - input_image.size[1]
 #to_crop = to_crop/2 
 #print(to_crop)
 #input_image = input_image.crop((to_crop, 0, input_image.size[0] - to_crop, input_image.size[1]))
 
-output_directory = "./benham_frames_flattened_"+ str(-rotation_direction*rotation) +"/input_images/"
+output_directory = "./spiral_"+ str(-rotation_direction*rotation) +"/input_images/"
 output_size = (160,128)
 center = (output_size[0] - input_image.size[0], output_size[1]-input_image.size[1])
 center = (center[0]/2, center[1]/2)
