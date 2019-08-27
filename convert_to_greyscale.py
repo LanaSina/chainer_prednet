@@ -12,6 +12,8 @@ parser.add_argument('data_dir', action='store', nargs=None,
                     type=str, help='path to directory containing the input_images.')
 parser.add_argument('n_images', action='store', nargs='?', default=-1,
                     type=int, help='optional: total number of images to use.')
+parser.add_argument('--start', '--s', default=0, type=int, help='where in the image list to start the analysis')
+
 args = parser.parse_args()
 
 
@@ -26,7 +28,9 @@ n_images = args.n_images
 if n_images==-1:
     n_images = len(image_list)
 
-for image_file in image_list[:n_images]:
+ start = args.start
+
+for image_file in image_list[start:start+n_images]:
 			image_path = os.path.join(args.data_dir, image_file)
 			print("read ", image_path)
 			img = np.array(Image.open(image_path).convert('L'))
