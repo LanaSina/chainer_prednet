@@ -28,7 +28,7 @@ n_images = args.n_images
 if n_images==-1:
     n_images = len(image_list)
 
- start = args.start
+start = args.start
 
 for image_file in image_list[start:start+n_images]:
 			image_path = os.path.join(args.data_dir, image_file)
