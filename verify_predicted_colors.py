@@ -239,7 +239,7 @@ parser.add_argument('gs_image_dir', action='store', nargs='?', help='Path to ori
 parser.add_argument('output_dir', action='store', nargs='?', help='output directory')
 parser.add_argument('n_images', action='store', nargs='?', default=-1,
                     type=int, help='optional: total number of images to use.')
-parser.add_argument('--start', '-', default=0, type=int, help='where in the image list to start the analysis')
+parser.add_argument('--start', '--s', default=0, type=int, help='where in the image list to start the analysis')
 
 args = parser.parse_args()
 
