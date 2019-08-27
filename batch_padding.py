@@ -8,8 +8,10 @@ args = parser.parse_args()
 
 path = args.image_dir
 for filename in os.listdir(path):
-    num = filename.split('_')[1].split('y')[0]
-    print(num)
-    num = num.zfill(args.padding)
-    new_filename = num + ".png"
-    os.rename(os.path.join(path, filename), os.path.join(path, new_filename))
+	temp = filename.split(".")
+	num = temp[0]
+	ext = temp[len(temp)-1]
+	print(num)
+	num = num.zfill(args.padding)
+	new_filename = num + "." + ext
+	os.rename(os.path.join(path, filename), os.path.join(path, new_filename))
