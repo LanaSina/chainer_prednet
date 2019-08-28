@@ -2,6 +2,7 @@
 # also check the intensity of the greyscale
 
 import argparse
+import csv
 import cv2
 import numpy as np
 import os
@@ -23,37 +24,87 @@ def strong_index(rgb):
 
 def area_size(image_path, i, j):
 	# segment the image
-	image = cv2.imread(image_path)
-	image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-	# plt.imshow(image)
-	# plt.show()
-	gs = image[i,j,0]
+	image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+	gs = image[i,j]
 	error = 2 # out of 256
 	temp = gs-2
 	if temp < 0:
 		temp = 0
-	gs_min = np.array([temp, temp, temp])
+	gs_min = np.array([temp])
 
 	temp = gs+2
 	if temp > 255:
 		temp = 255
-	gs_max = np.array([temp, temp, temp])
-
-	print(gs_min)
-	print(gs_max)
+	gs_max = np.array([temp])
 
 	mask = cv2.inRange(image, gs_min, gs_max)
 	result = cv2.bitwise_and(image, image, mask=mask)
-	print(result)
 
 	current_output, num_ids = label(result)
-	print(current_output)
+	current_id = current_output[i,j].item()
+	# print(current_output)
+	selected_area = (current_output == current_id)
+	area = np.count_nonzero(selected_area)
+	# print(area)
 
-	plt.imshow(result)
-	plt.show()
+	# remove the area from predicted image
+
+
+	# plt.imshow(current_output)
+	# plt.show()
+	return(area, gs)
+
+def remove_area(image, i, j, color_index):
+	colors = image[i,j]
+	error = 2 # out of 256
+	temp = colors[color_index]-2
+	if temp < 0:
+		temp = 0
+	gs_min = np.zeros((3))
+	gs_min[color_index] = temp
+
+	temp = colors[color_index]+2
+	if temp > 255:
+		temp = 255
+	gs_max = np.ones((3))*255
+	gs_max[color_index] = temp
+
+	# print(gs_min)
+	# print(gs_max)
+
+	mask = cv2.inRange(image, gs_min, gs_max)
+	# plt.imshow(mask)
+	# plt.show()
+	# result = cv2.bitwise_and(image, image, mask=mask)
+	# plt.imshow(result*255)
+	# plt.show()
+
+	current_output, num_ids = label(mask)
+	# plt.imshow(current_output)
+	# plt.show()
+	# print(current_output[i,j])
+	current_id = current_output[i,j].item()
+	mask = cv2.inRange(current_output, current_id, current_id)
+	# plt.imshow(mask)
+	# plt.show()
+	unselected_area = cv2.bitwise_not(mask)
+	# plt.imshow(unselected_area)
+	# plt.show()
+
+	# unselected_area = (current_output != current_id)
+	
+	new_image = cv2.bitwise_and(image, image, mask=unselected_area)
+
+	# plt.imshow(new_image)
+	# plt.show()
+
+	return(new_image)
 
 # previous_gs_images = paths [t0,t1]
-def area_change(predicted_image, previous_gs_images):
+def area_change(predicted_image, previous_gs_images, writer):
+
+	modifed_prediction = predicted_image
 
 	for i in range(0,predicted_image.shape[0]):
 			for j in range(0,predicted_image.shape[1]):
@@ -61,8 +112,15 @@ def area_change(predicted_image, previous_gs_images):
 				strong_color = strong_index(predicted_image[i, j])
 				if strong_color != -1:
 					#claculate previous area size
-					print("here")
-					area = area_size(previous_gs_images[0], i, j)
+					area0, gs0 = area_size(previous_gs_images[0], i, j)
+					area1, gs1 = area_size(previous_gs_images[1], i, j)
+
+					# rows
+					result = [strong_color, gs0, gs1, area0, area1]
+					writer.writerow(result)
+
+					# remove this area from the image
+					modifed_prediction = remove_area(modifed_prediction, i, j, strong_color)
 
 
 # predictions_dir: predicted images
@@ -76,28 +134,35 @@ def process_images(predictions_dir, gs_image_dir, output_dir, image_count):
 		image_count =  len(image_list)
 
 	save_file = output_dir + "/area_analysis.py"
+	fieldnames = ['red','blue','green']
 
-	im_index = 0
+	with open(save_file, mode='w') as csv_file:
+		writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+		writer.writerow(fieldnames)
 
-	for image_file in predictions_list[2:2+image_count]:
-		prediction_path = os.path.join(predictions_dir, image_file)
-		print("read ", prediction_path)
-		predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
+		im_index = 0
 
-		previous_gs_images = []
-		gs_path = os.path.join(gs_image_dir, gs_image_list[im_index])
-		# gs_image = np.array(Image.open(gs_path).convert('RGB'))
-		previous_gs_images.append(gs_path)
-		gs_path = os.path.join(gs_image_dir, gs_image_list[im_index+1])
-		# gs_image = np.array(Image.open(gs_path).convert('RGB'))
-		previous_gs_images.append(gs_path)
+		for image_file in predictions_list[2:2+image_count]:
+			prediction_path = os.path.join(predictions_dir, image_file)
+			print("read ", prediction_path)
+			predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
 
-		# find area sizes changes
-		areas = area_change(predicted_image, previous_gs_images)
-		
-		# save it
-		# csv
-		im_index = im_index + 1
+			previous_gs_images = []
+			gs_path = os.path.join(gs_image_dir, gs_image_list[im_index])
+			# gs_image = np.array(Image.open(gs_path).convert('RGB'))
+			previous_gs_images.append(gs_path)
+			gs_path = os.path.join(gs_image_dir, gs_image_list[im_index+1])
+			# gs_image = np.array(Image.open(gs_path).convert('RGB'))
+			previous_gs_images.append(gs_path)
+
+			# find area sizes changes
+			areas = area_change(predicted_image, previous_gs_images, writer)
+			
+			# save it
+			result = []
+			writer.writerow(result)
+			
+			im_index = im_index + 1
 
 
 
