@@ -5,10 +5,65 @@ output:
   html_notebook: default
 ---
 
+
+```{r}
+dataFolder = "results/greyscale_analysis/"
+
+```
+
+
+```{r}
+filename = "10000/area_analysis.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+
+
+```
+
+
+
+```{r}
+
+#red
+sub = subset(df, color_index == 0)
+
+print(mean(sub$value_t0))
+print(mean(sub$value_t1))
+
+a0 = mean(sub$area_0)
+a1 = mean(sub$area_1)
+
+plot(c(a0, a1), type = "l", col = "red")
+    #ylim = c(0,2000))
+
+#blue
+sub = subset(df, color_index == 2)
+print(mean(sub$value_t0))
+print(mean(sub$value_t1))
+
+a0 = mean(sub$area_0)
+a1 = mean(sub$area_1)
+
+plot(c(a0, a1), type = "l", col = "blue")
+
+# green
+sub = subset(df, color_index == 1)
+print(mean(sub$value_t0))
+print(mean(sub$value_t1))
+
+a0 = mean(sub$area_0)
+a1 = mean(sub$area_1)
+
+plot(c(a0, a1), type = "l", col = "green")
+
+```
+
+
+
 ```{r}
 dataFolder = "image_analysis/"
 
-install.packages("RColorBrewer")
+# install.packages("RColorBrewer")
 library(RColorBrewer)
 ```
 

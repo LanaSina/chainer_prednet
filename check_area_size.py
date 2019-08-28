@@ -46,13 +46,7 @@ def area_size(image_path, i, j):
 	# print(current_output)
 	selected_area = (current_output == current_id)
 	area = np.count_nonzero(selected_area)
-	# print(area)
 
-	# remove the area from predicted image
-
-
-	# plt.imshow(current_output)
-	# plt.show()
 	return(area, gs)
 
 def remove_area(image, i, j, color_index):
@@ -109,7 +103,7 @@ def area_change(predicted_image, previous_gs_images, writer):
 	for i in range(0,predicted_image.shape[0]):
 			for j in range(0,predicted_image.shape[1]):
 
-				strong_color = strong_index(predicted_image[i, j])
+				strong_color = strong_index(modifed_prediction[i, j])
 				if strong_color != -1:
 					#claculate previous area size
 					area0, gs0 = area_size(previous_gs_images[0], i, j)
@@ -131,10 +125,10 @@ def process_images(predictions_dir, gs_image_dir, output_dir, image_count):
 	gs_image_list = sorted(os.listdir(gs_image_dir))
 
 	if(image_count == -1):
-		image_count =  len(image_list)
+		image_count =  len(predictions_list)
 
-	save_file = output_dir + "/area_analysis.py"
-	fieldnames = ['red','blue','green']
+	save_file = output_dir + "/area_analysis.csv"
+	fieldnames = ['color_index','value_t0','value_t1','area_0','area_1']
 
 	with open(save_file, mode='w') as csv_file:
 		writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -157,10 +151,6 @@ def process_images(predictions_dir, gs_image_dir, output_dir, image_count):
 
 			# find area sizes changes
 			areas = area_change(predicted_image, previous_gs_images, writer)
-			
-			# save it
-			result = []
-			writer.writerow(result)
 			
 			im_index = im_index + 1
 
