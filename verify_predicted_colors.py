@@ -65,9 +65,10 @@ def match(colors, col_image):
 
 			# check if predicted intensity is correct
 			for c in xrange(0,3):
-				diff = (colors[i,j,c]-col_image[i,j,c])
-				if ( abs(diff) < 50):
-					new_image[i,j,c] = col_image[i,j,c]
+				if(colors[i,j,c] > 50):
+					diff = (colors[i,j,c]-col_image[i,j,c])
+					if ( abs(diff) < 25):
+						new_image[i,j,c] = colors[i,j,c]
 
 	return(new_image)
 
@@ -196,7 +197,8 @@ def process_images(image_dir, col_image_dir, gs_image_dir, image_count, output_d
 		os.makedirs(overlay_dir)
 
 	im_index = 0
-	for image_file in image_list[start:start+image_count]:
+	# stop before last image because we are predicting the next one
+	for image_file in image_list[start:start+image_count-1]:
 		image_path = os.path.join(image_dir, image_file)
 		print("read ", image_path)
 
@@ -209,7 +211,7 @@ def process_images(image_dir, col_image_dir, gs_image_dir, image_count, output_d
 		print("saved image ", name)
 
 		# check if colors match with original color input
-		col_image_path = os.path.join(col_image_dir, col_image_list[start+im_index])
+		col_image_path = os.path.join(col_image_dir, col_image_list[start+im_index+1])
 		# print("col_image_path ", col_image_path)
 		col_image = np.array(Image.open(col_image_path).convert('RGB'))
 		matching_colors = match(colors, col_image) 
@@ -220,7 +222,7 @@ def process_images(image_dir, col_image_dir, gs_image_dir, image_count, output_d
 		print("saved image ", name)
 
 		# paste color on black and white input
-		gs_image_path = os.path.join(gs_image_dir, gs_image_list[start+im_index])
+		gs_image_path = os.path.join(gs_image_dir, gs_image_list[start+im_index+1])
 		gs_image = np.array(Image.open(gs_image_path).convert('RGB'))
 		overlay_image = overlay(matching_colors, gs_image) 
 		# save it

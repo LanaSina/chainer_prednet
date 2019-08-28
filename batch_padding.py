@@ -10,14 +10,12 @@ args = parser.parse_args()
 
 path = args.image_dir
 for filename in sorted(os.listdir(path)):
-	print(filename)
 	temp = filename.split(".")
 	num = temp[0]
-	print(num)
 	if(len(args.prefix)>0):
 		num = temp[0].split(args.prefix)[1]
 	ext = temp[len(temp)-1]
-	print(num)
 	num = num.zfill(args.padding)
 	new_filename = num + "." + ext
+	print(new_filename)
 	os.rename(os.path.join(path, filename), os.path.join(path, new_filename))
