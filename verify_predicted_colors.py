@@ -6,9 +6,9 @@ from PIL import Image
 # return the strongest color
 def strong_index(rgb):
 	m = np.mean(rgb)
-	v = np.var(rgb)
+	v = 20 #np.var(rgb)
 
-	for i in xrange(0,3):
+	for i in range(0,3):
 		if rgb[i] > m and (rgb[i]-m)*(rgb[i]-m)>v:
 			return(i)
 
@@ -25,11 +25,11 @@ def color_compensated(image_paths):
 	image1 = np.array(Image.open(image_paths[1]).convert('RGB'))
 	new_image = np.zeros(image0.shape)
 
-	for i in xrange(0,image0.shape[0]):
-		for j in xrange(0,image0.shape[1]):
+	for i in range(0,image0.shape[0]):
+		for j in range(0,image0.shape[1]):
 			color_increase = image1[i,j] - image0[i,j]
 
-			for c in xrange(0,3):
+			for c in range(0,3):
 				if(color_increase[c] > 0 ):
 					new_image[i,j,c] = image1[i, j, c]
 
@@ -42,8 +42,8 @@ def color_diff(image_path):
 	current_image = np.array(Image.open(image_path).convert('RGB'))
 	new_image = np.zeros(current_image.shape)
 
-	for i in xrange(0,current_image.shape[0]):
-		for j in xrange(0,current_image.shape[1]):
+	for i in range(0,current_image.shape[0]):
+		for j in range(0,current_image.shape[1]):
 
 			strong_color = strong_index(current_image[i, j])
 			if strong_color != -1:
@@ -55,8 +55,8 @@ def color_diff(image_path):
 def match(colors, col_image):
 	new_image = np.zeros(colors.shape)
 
-	for i in xrange(0,colors.shape[0]):
-		for j in xrange(0,colors.shape[1]):
+	for i in range(0,colors.shape[0]):
+		for j in range(0,colors.shape[1]):
 
 			# compare if strong colors are the same
 			# strong_color = strong_index(col_image[i, j])
@@ -64,7 +64,7 @@ def match(colors, col_image):
 				# new_image[i,j,strong_color] = col_image[i,j,strong_color]
 
 			# check if predicted intensity is correct
-			for c in xrange(0,3):
+			for c in range(0,3):
 				if(colors[i,j,c] > 50):
 					diff = (colors[i,j,c]-col_image[i,j,c])
 					if ( abs(diff) < 25):
@@ -77,12 +77,12 @@ def match(colors, col_image):
 def match_increase(colors, col_images):
 	new_image = np.zeros(colors.shape)
 
-	for i in xrange(0,colors.shape[0]):
-		for j in xrange(0,colors.shape[1]):
+	for i in range(0,colors.shape[0]):
+		for j in range(0,colors.shape[1]):
 
 			# new_image[i,j] = col_images[1][i,j] - col_images[0][i,j]
 			color_increase = col_images[1][i,j] - col_images[0][i,j]
-			for c in xrange(0,3):
+			for c in range(0,3):
 				if (colors[i,j,c] >= 0 and color_increase[c] > 0):
 					new_image[i,j,c] = colors[i,j,c] #col_images[1][i,j,c]
 
@@ -90,9 +90,9 @@ def match_increase(colors, col_images):
 
 
 def overlay(matching_colors, gs_image):
-	for i in xrange(0,matching_colors.shape[0]):
-		for j in xrange(0,matching_colors.shape[1]):
-			for color in xrange(0,3):
+	for i in range(0,matching_colors.shape[0]):
+		for j in range(0,matching_colors.shape[1]):
+			for color in range(0,3):
 				if matching_colors[i,j,color] > 0:
 					gs_image[i,j,color] = matching_colors[i,j,color]
 

@@ -7,54 +7,95 @@ output:
 
 
 ```{r}
+library(rgl)
+
 dataFolder = "results/greyscale_analysis/"
 
 ```
 
 
 ```{r}
+# filename = "benham/area_analysis.csv"
+# filename = "0/area_analysis.csv"
 filename = "10000/area_analysis.csv"
+
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
 
 
-
+c_index=0
 ```
 
+
+```{r}
+plot_areas = function(c_index, df){
+  colors = c("red", "green", "blue")
+
+  sub = subset(df, color_index == c_index)
+
+  # sub = subset(sub, value_t0 != 0)
+  # sub = subset(sub, color_value > 200)
+  plot(sub$value_t1, sub$value_t2)
+  points(c(0,50000), c(0,50000), type = "l", col= "red")
+  plot(sub$area_1, sub$area_2)
+  points(c(0,50000), c(0,50000), type = "l", col= "red")
+
+
+  v0 = mean(sub$value_t0)
+  v1 = mean(sub$value_t1)
+  v2 = mean(sub$value_t2)
+  
+  vec = c(v0, v1, v2)
+  plot(vec, type = "l", col = colors[c_index+1]
+       , main = "values", ylim = c(min(vec)-10, max(vec)+10)
+       )
+  
+  a0 = mean(sub$area_0)
+  a1 = mean(sub$area_1)
+  a2 = mean(sub$area_2)
+  
+  plot(c(a0, a1, a2), type = "l", col = colors[c_index+1], main = "areas")
+}
+```
 
 
 ```{r}
 
 #red
-sub = subset(df, color_index == 0)
+plot_areas(0, df)
+plot_areas(2, df)
+plot_areas(1, df)
 
-print(mean(sub$value_t0))
-print(mean(sub$value_t1))
 
-a0 = mean(sub$area_0)
-a1 = mean(sub$area_1)
+df_no_label = df
+df_no_label$color_index <- NULL
 
-plot(c(a0, a1), type = "l", col = "red")
-    #ylim = c(0,2000))
+pr <- prcomp(df_no_label, center = TRUE, scale = TRUE)
+summary(pr)
 
-#blue
-sub = subset(df, color_index == 2)
-print(mean(sub$value_t0))
-print(mean(sub$value_t1))
 
-a0 = mean(sub$area_0)
-a1 = mean(sub$area_1)
+plot(pr$x[,1],pr$x[,2], col=df$color_index+1)
+plot(pr$x[,2],pr$x[,3], col=df$color_index+1)
 
-plot(c(a0, a1), type = "l", col = "blue")
+plot3d(pr$x[,1],pr$x[,2],pr$x[,3], col=df$color_index+1)
 
-# green
-sub = subset(df, color_index == 1)
-print(mean(sub$value_t0))
-print(mean(sub$value_t1))
+plot_areas(0, sub)
+plot_areas(2, sub)
+plot_areas(1, sub)
+# 
+#sub = subset(df, color_index == 2)
+#plot(sub$color_value)
 
-a0 = mean(sub$area_0)
-a1 = mean(sub$area_1)
+sub = subset(df, area_2<20)
+sub = subset(sub, value_t0<20)
+length(subset(sub, color_index==0)$color_index)
+length(subset(sub, color_index==1)$color_index)
+length(subset(sub, color_index==2)$color_index)
 
-plot(c(a0, a1), type = "l", col = "green")
+sub = subset(df, value_t2>205 & value_t1<100)
+length(subset(sub, color_index==0)$color_index)
+length(subset(sub, color_index==1)$color_index)
+length(subset(sub, color_index==2)$color_index)
+
 
 ```
 
