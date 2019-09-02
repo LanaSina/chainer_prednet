@@ -25,6 +25,12 @@ public class Constants {
 
 	public final static int BENHAM_CLASSIC = 0;
 	public final static int BENHAM_VAR = 1;
+	public final static int BENHAM_RED = 2;
+	public final static int BENHAM_WEIRD= 3;
+	public final static int SIMPLE_SHAPES= 4;
+	public final static int THINNER_LINE= 5;
+	public final static int THICKER_LINE= 6;
+
 
 
 //	/** write data or not*/

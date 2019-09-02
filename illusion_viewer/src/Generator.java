@@ -121,7 +121,8 @@ public class Generator extends JPanel {
     private void drawBenham_var(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
-        g2.setStroke(new BasicStroke(3));
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
 
         if(phase==0){
             //draw inner circles
@@ -139,17 +140,14 @@ public class Generator extends JPanel {
             }
         } else if(phase==2){
             //draw a big black square
+            g.setColor(Color.red);
             int r = basic_radius + 6*separation;
             int x = center_x - r;
             int y = center_y - r;
             g.fillRect(x, y, r*2, r*2);
 
             phase = -1;
-        }/* else if(phase==2){
-            //draw nothing
-
-            phase = -1;
-        }*/
+        }
 
         //draw mask
         g.setColor(Color.white);
@@ -165,10 +163,129 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
-    private void drawBenham(Graphics g){
+    private void draw_one_shape(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
-        g2.setStroke(new BasicStroke(3));
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==0){
+
+//            g.fillRect(center_x+basic_radius, center_y-basic_radius, separation, separation);
+//            g.drawLine(center_x+basic_radius, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
+
+        } else if(phase==1){
+
+            g.fillRect(center_x+basic_radius, center_y-basic_radius, separation, separation);
+            g.drawLine(center_x+basic_radius, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
+
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
+
+        phase = phase+1;
+    }
+
+
+    private void thicker_line(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==0){
+
+        } else if(phase==1){
+
+            g.fillRect(center_x+basic_radius, center_y-basic_radius, separation, separation);
+            g.drawLine(center_x+basic_radius, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
+
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
+
+        phase = phase+1;
+    }
+
+    private void thinner_line(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==0){
+
+            g.fillRect(center_x+basic_radius, center_y-basic_radius, separation, separation);
+            g.drawLine(center_x+basic_radius, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
+
+        } else if(phase==1){
+
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
+
+        phase = phase+1;
+    }
+
+    private void drawBenham_red(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.red);
 
         if(phase==0){
             //draw inner arcs
@@ -195,13 +312,130 @@ public class Generator extends JPanel {
             }
         } else if(phase==2){
             //draw a big black square
+            g.setColor(Color.black);
             int r = basic_radius + 12*separation;
             int x = center_x - r;
             int y = center_y - r;
             g.fillRect(x, y, r*2, r*2);
 
             phase = -1;
-        }/* else if(phase==2){
+        }/* else if(phase==3){
+            //draw nothing
+
+            phase = -1;
+        }*/
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
+
+        phase = phase+1;
+    }
+
+    private void drawBenham_weird(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==0){
+            //draw inner arcs
+            int r = basic_radius;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            //r = basic_radius + 4*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==1){
+            //draw outer circles
+            int r = basic_radius + 6*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.red);
+            int r = basic_radius + 12*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }/* else if(phase==3){
+            //draw nothing
+
+            phase = -1;
+        }*/
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
+
+        phase = phase+1;
+    }
+
+    private void drawBenham(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==0){
+            //draw inner arcs
+            int r = basic_radius;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            //r = basic_radius + 4*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==1){
+            //draw outer circles
+            int r = basic_radius + 6*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 12*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }/* else if(phase==3){
             //draw nothing
 
             phase = -1;
@@ -234,15 +468,31 @@ public class Generator extends JPanel {
                 drawBenham_var(g);
                 break;
             }
-        }
+            case Constants.BENHAM_RED: {
+                drawBenham_red(g);
+                break;
+            }
 
-//                Graphics2D g2 = (Graphics2D) g;
-//                g2.setStroke(new BasicStroke(3));
-//                g.drawLine(BOX_WIDTH/2 , BOX_HEIGHT/2-size, BOX_WIDTH/2, BOX_HEIGHT/2+size);
-//                g.drawLine(BOX_WIDTH/2-size, BOX_HEIGHT/2, BOX_WIDTH/2+size, BOX_HEIGHT/2);
-//
-//                //g.fillRect(BOX_WIDTH/2-size, BOX_HEIGHT/2-size, size*2, size*2);
-//                //g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            case Constants.BENHAM_WEIRD: {
+                drawBenham_weird(g);
+                break;
+            }
+
+            case Constants.SIMPLE_SHAPES: {
+                draw_one_shape(g);
+                break;
+            }
+
+            case Constants.THINNER_LINE: {
+                thinner_line(g);
+                break;
+            }
+
+            case Constants.THICKER_LINE: {
+                thicker_line(g);
+                break;
+            }
+        }
 
     }
 
@@ -259,8 +509,6 @@ public class Generator extends JPanel {
         g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
 
         //draw pattern
-        g.setColor(Color.black);
-
         drawShapes(g);
 
         readyForSave = true;

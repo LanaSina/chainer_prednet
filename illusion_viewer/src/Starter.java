@@ -7,6 +7,8 @@ public class Starter {
     static JFrame frame;
     static String folderName = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/images/";
 
+    static int type = Constants.THINNER_LINE;
+
     public static void main(String[] args) {
         MyLog myLog = new MyLog("Starter", true);
 
@@ -20,7 +22,7 @@ public class Starter {
                 // Set up main window (using Swing's Jframe)
                 frame = new JFrame("");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setContentPane(new Generator(Constants.BENHAM_CLASSIC, frame, folderName));
+                frame.setContentPane(new Generator(type, frame, folderName));
                 frame.pack();
                 frame.setVisible(true);
             }
