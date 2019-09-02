@@ -24,6 +24,7 @@ public class Constants {
 	}
 
 	public final static int BENHAM_CLASSIC = 0;
+	public final static int BENHAM_VAR = 1;
 
 
 //	/** write data or not*/

@@ -1,3 +1,4 @@
+import communication.Constants;
 import communication.MyLog;
 
 import javax.imageio.ImageIO;
@@ -7,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static communication.Constants.BENHAM_CLASSIC;
 
 public class Generator extends JPanel {
     MyLog mlog = new MyLog("Generator", true);
@@ -16,8 +16,8 @@ public class Generator extends JPanel {
     private int UPDATE_RATE = 50;
 
     // Container box's width and height
-    private static final int BOX_WIDTH = 300;
-    private static final int BOX_HEIGHT = 300;
+    private static final int BOX_WIDTH = 500;
+    private static final int BOX_HEIGHT = 500;
 
     private int step = 0;
     private boolean save = false;
@@ -67,12 +67,12 @@ public class Generator extends JPanel {
                     readyForSave = false;
                     repaint();
 
-                    while(!readyForSave) {
-                        try {
-                            Thread.sleep(10);  // milliseconds
-                        } catch (InterruptedException ex) {
-                        }
-                    }
+//                    while(!readyForSave) {
+//                        try {
+//                            Thread.sleep(10);  // milliseconds
+//                        } catch (InterruptedException ex) {
+//                        }
+//                    }
 
                     if (save) {
                         saved = false;
@@ -86,12 +86,12 @@ public class Generator extends JPanel {
                     } catch (InterruptedException ex) {
                     }
 
-                    while(!saved) {
-                        try {
-                            Thread.sleep(10);  // milliseconds
-                        } catch (InterruptedException ex) {
-                        }
-                    }
+//                    while(!saved) {
+//                        try {
+//                            Thread.sleep(10);  // milliseconds
+//                        } catch (InterruptedException ex) {
+//                        }
+//                    }
                 }
             }
         };
@@ -116,9 +116,9 @@ public class Generator extends JPanel {
     int cirles = 3;
     int center_x = BOX_WIDTH/2;
     int center_y = BOX_HEIGHT/2;
-    int separation = 10; //pixels
+    int separation = 8; //pixels
     int basic_radius = 40;
-    private void drawBenham(Graphics g){
+    private void drawBenham_var(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(3));
@@ -132,35 +132,106 @@ public class Generator extends JPanel {
             }
         } else if(phase==1){
             //draw outer circles
-            int r = basic_radius + 4*separation;
+            int r = basic_radius + 3*separation;
             for(int i = 0; i<cirles; i++) {
                 g.drawOval(center_x-r, center_y-r, r*2, r*2);
                 r = r + separation;
             }
         } else if(phase==2){
             //draw a big black square
-            int r = basic_radius + 7*separation;
+            int r = basic_radius + 6*separation;
             int x = center_x - r;
             int y = center_y - r;
             g.fillRect(x, y, r*2, r*2);
 
-        } else if(phase==3){
+            phase = -1;
+        }/* else if(phase==2){
             //draw nothing
 
             phase = -1;
-        }
+        }*/
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
 
         phase = phase+1;
     }
 
+    private void drawBenham(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(3));
+
+        if(phase==0){
+            //draw inner arcs
+            int r = basic_radius;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            //r = basic_radius + 4*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==1){
+            //draw outer circles
+            int r = basic_radius + 6*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==2){
+            //draw a big black square
+            int r = basic_radius + 12*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }/* else if(phase==2){
+            //draw nothing
+
+            phase = -1;
+        }*/
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        int r = basic_radius + 7*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
+
+
+        phase = phase+1;
+    }
 
     /**
      *
      */
     private void drawShapes(Graphics g){
         switch (type){
-            case BENHAM_CLASSIC: {
+            case Constants.BENHAM_CLASSIC: {
                 drawBenham(g);
+                break;
+            }
+            case Constants.BENHAM_VAR: {
+                drawBenham_var(g);
                 break;
             }
         }
