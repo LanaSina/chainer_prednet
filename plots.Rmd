@@ -15,6 +15,99 @@ dataFolder = "results/greyscale_analysis/"
 
 
 ```{r}
+filename = "10000/flicker_analysis.csv"
+#filename = "benham/flicker_analysis.csv"
+
+
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+```
+
+
+```{r}
+
+df$id <- seq.int(nrow(df))
+sub = df
+# select right areas (circle is not circular...)
+
+
+sub = subset(sub, predicted_b>predicted_r)
+
+sub = subset(sub, area_1>area_2)
+sub = subset(sub, area_0>area_2)
+
+sub = subset(sub, (value_t1-value_t0)>50)
+
+
+plot(sub$value_t0, sub$value_t1)
+plot(sub$value_t1, sub$value_t2)
+
+plot(sub$area_0, sub$area_1)
+plot(sub$area_1, sub$area_2)
+
+plot(df$value_t0, df$value_t1)
+points(sub$value_t0, sub$value_t1, col = "blue")
+plot(df$value_t1, df$value_t2)
+points(sub$value_t1, sub$value_t2, col = "blue")
+
+plot(df$area_0, df$area_1)
+points(sub$area_0, sub$area_1, col = "blue")
+plot(df$area_1, df$area_2)
+points(sub$area_1, sub$area_2, col = "blue")
+
+plot(df$id, df$area_0)
+points(sub$id, sub$area_0, col="blue")
+plot(df$id, df$area_1)
+points(sub$id, sub$area_1, col="blue")
+plot(df$id, df$area_1)
+points(sub$id, sub$area_1, col="blue")
+
+plot(df$id, df$value_t0)
+points(sub$id, sub$value_t0, col="blue")
+plot(df$id, df$value_t1)
+points(sub$id, sub$value_t1, col="blue")
+plot(df$id, df$value_t2)
+points(sub$id, sub$value_t2, col="blue")
+
+
+plot(sub$area_0)
+plot(sub$area_1)
+plot(sub$area_2)
+plot(sub$value_t0)
+plot(sub$value_t1)
+plot(sub$value_t2)
+
+v0 = mean(sub$value_t0)
+v1 = mean(sub$value_t1)
+v2 = mean(sub$value_t2)
+
+vec = c(v0, v1, v2)
+plot(vec, type = "l", col = colors[c_index+1]
+   , main = "values", ylim = c(min(vec)-10, max(vec)+10)
+   )
+
+a0 = mean(sub$area_0)
+a1 = mean(sub$area_1)
+a2 = mean(sub$area_2)
+
+plot(c(a0, a1, a2), type = "l", col = colors[c_index+1], main = "areas")
+
+plot(sub$predicted_b, type="l", col="blue", ylim = c(0,255))
+#points(sub$predicted_g, type="l", col="green")
+points(sub$predicted_r, type="l", col="red")
+
+print(mean(sub$predicted_b))
+print(mean(sub$predicted_r))
+print(mean(sub$predicted_g))
+
+# black white black
+# medium medium-small small
+# lines, white +bg , black part
+  
+```
+
+
+```{r}
 # filename = "benham/area_analysis.csv"
 # filename = "0/area_analysis.csv"
 filename = "10000/area_analysis.csv"
