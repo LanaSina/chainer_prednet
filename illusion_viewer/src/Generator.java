@@ -42,7 +42,7 @@ public class Generator extends JPanel {
         String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
         try {
             snakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
-            bwSnakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
+            bwSnakesImage = ImageIO.read(new File(path, "snakes_2.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -187,7 +187,7 @@ public class Generator extends JPanel {
         int p_separation = 4;
 
         if(phase==timing){
-            int r =  40;
+            int r =  basic_radius;
             g.drawOval(center_x-r, center_y-r, r*2, r*2);
 //            for(int i = 0; i<cirles; i++) {
 //                //g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
@@ -216,10 +216,9 @@ public class Generator extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
         g.setColor(Color.black);
-        int p_separation = 4;
 
         if(phase==timing){
-            int r =  40;
+            int r =  basic_radius;
             g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
             g.drawLine(center_x+r, center_y-r, center_x-r, center_y+r);
         } /*else if(phase==1){
@@ -238,6 +237,31 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
+    private void draw_x_dephased(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+        int r =  basic_radius;
+
+        if(phase==timing){
+            g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            secondary_phase = secondary_phase + 30;
+            phase = -1;
+        } else{
+            g.drawLine(center_x+r, center_y-r, center_x-r, center_y+r);
+        }
+
+        phase = phase+1;
+    }
+
     private void thicker_line(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
@@ -247,10 +271,8 @@ public class Generator extends JPanel {
         if(phase==0){
 
         } else if(phase==1){
-
-            g.fillRect(center_x+basic_radius, center_y-basic_radius, separation, separation);
-            g.drawLine(center_x+basic_radius, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
-
+            g.fillRect(center_x+basic_radius/2, center_y-basic_radius, separation, separation);
+            g.drawLine(center_x+basic_radius/2, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
         } else if(phase==2){
             //draw a big black square
             g.setColor(Color.black);
@@ -283,12 +305,8 @@ public class Generator extends JPanel {
         g.setColor(Color.black);
 
         if(phase==0){
-
-            g.fillRect(center_x+basic_radius, center_y-basic_radius, separation, separation);
-            g.drawLine(center_x+basic_radius, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
-
-        } else if(phase==1){
-
+            g.fillRect(center_x+basic_radius/2, center_y-basic_radius, separation, separation);
+            g.drawLine(center_x+basic_radius/2, center_y-basic_radius, center_x+5*basic_radius, center_y-basic_radius);
         } else if(phase==2){
             //draw a big black square
             g.setColor(Color.black);
@@ -594,6 +612,14 @@ public class Generator extends JPanel {
             }
             case Constants.DRAW_X_1: {
                 draw_x(g, 0);
+                break;
+            }
+            case Constants.DRAW_X_PHASE_0: {
+                draw_x_dephased(g, 0);
+                break;
+            }
+            case Constants.DRAW_X_PHASE_1: {
+                draw_x_dephased(g, 1);
                 break;
             }
 

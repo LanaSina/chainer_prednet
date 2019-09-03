@@ -27,16 +27,19 @@ public class Constants {
 	public final static int BENHAM_VAR = 1;
 	public final static int BENHAM_RED = 2;
 	public final static int BENHAM_WEIRD= 3;
-	public final static int SIMPLE_SHAPES_0= 4;
-	public final static int SIMPLE_SHAPES_1= 5;
-	public final static int THINNER_LINE= 6;
-	public final static int THICKER_LINE= 7;
-	public final static int DRAW_X_0= 8;
-	public final static int DRAW_X_1= 9;
-	public final static int SNAKES_0= 10;
-	public final static int SNAKES_1= 11;
-	public final static int BAD_SNAKES= 12;
-	public final static int SNAKES_BW= 13;
+	public final static int SIMPLE_SHAPES_0 = 4;
+	public final static int SIMPLE_SHAPES_1 = 5;
+	public final static int THINNER_LINE = 6;
+	public final static int THICKER_LINE = 7;
+	public final static int DRAW_X_0 = 8;
+	public final static int DRAW_X_1 = 9;
+	public final static int SNAKES_0 = 10;
+	public final static int SNAKES_1 = 11;
+	public final static int BAD_SNAKES = 12;
+	public final static int SNAKES_BW = 13;
+	public final static int DRAW_X_PHASE_0 = 14;
+	public final static int DRAW_X_PHASE_1 = 15;
+
 
 //	/** write data or not*/
 //	public static final boolean save = true;
