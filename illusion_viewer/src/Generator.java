@@ -4,7 +4,9 @@ import communication.MyLog;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.File;
 import java.io.IOException;
 
@@ -29,6 +31,7 @@ public class Generator extends JPanel {
     String nameFormat = "%02d";
     String folderName;
     BufferedImage snakesImage;
+    BufferedImage bwSnakesImage;
 
 
     public Generator(int type, JFrame frame, String folderName){
@@ -39,9 +42,13 @@ public class Generator extends JPanel {
         String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
         try {
             snakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
+            bwSnakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+        op.filter(bwSnakesImage, bwSnakesImage);
 
         this.setPreferredSize(new Dimension(BOX_WIDTH, BOX_HEIGHT));
 
@@ -125,7 +132,7 @@ public class Generator extends JPanel {
     int center_x = BOX_WIDTH/2;
     int center_y = BOX_HEIGHT/2;
     int separation = 8; //pixels
-    int basic_radius = 40;
+    int basic_radius = 150;
     private void drawBenham_var(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
@@ -365,17 +372,45 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
-    private void draw_snakes(Graphics g, int timing){
+    private void draw_snakes(Graphics g, int timing, boolean bw){
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
         g.setColor(Color.black);
 
-        if(phase==timing){
+        if(phase==timing){//timing
+            int x = center_x - snakesImage.getWidth()/2;
+            int y = center_y - snakesImage.getHeight()/2;
+            if(bw){
+                g.drawImage(bwSnakesImage, x, y, null);
+            } else {
+                g.drawImage(snakesImage, x, y, null);
+            }
+        } else if(phase==2){//2
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = 350;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            secondary_phase = secondary_phase + 30;
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+    private void draw_bad_snakes(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==0){//timing
             int x = center_x - snakesImage.getWidth()/2;
             int y = center_y - snakesImage.getHeight()/2;
             g.drawImage(snakesImage, x, y, null);
-        } else if(phase==2){
+        } else if(phase==1){//2
             //draw a big black square
             g.setColor(Color.black);
             int r = 350;
@@ -563,14 +598,23 @@ public class Generator extends JPanel {
             }
 
             case Constants.SNAKES_0: {
-                draw_snakes(g, 0);
+                draw_snakes(g, 0, false);
                 break;
             }
             case Constants.SNAKES_1: {
-                draw_snakes(g, 0);
+                draw_snakes(g, 0, false);
+                break;
+            }
+            case Constants.SNAKES_BW: {
+                draw_snakes(g, 0, true);
+                break;
+            }
+            case Constants.BAD_SNAKES: {
+                draw_bad_snakes(g);
                 break;
             }
         }
+
 
     }
 

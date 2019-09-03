@@ -7,7 +7,7 @@ public class Starter {
     static JFrame frame;
     static String folderName = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/images/";
 
-    static int type = Constants.SNAKES_0;
+    static int type = Constants.BENHAM_WEIRD;
 
     public static void main(String[] args) {
         MyLog myLog = new MyLog("Starter", true);

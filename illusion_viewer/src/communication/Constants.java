@@ -35,7 +35,8 @@ public class Constants {
 	public final static int DRAW_X_1= 9;
 	public final static int SNAKES_0= 10;
 	public final static int SNAKES_1= 11;
-
+	public final static int BAD_SNAKES= 12;
+	public final static int SNAKES_BW= 13;
 
 //	/** write data or not*/
 //	public static final boolean save = true;
