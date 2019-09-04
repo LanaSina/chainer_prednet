@@ -22,7 +22,7 @@ public class Generator extends JPanel {
     private static final int BOX_HEIGHT = 800;
 
     private int step = 0;
-    private boolean save = false;
+    private boolean save;
     boolean readyForSave = false;
     boolean saved = true;
 
@@ -32,17 +32,20 @@ public class Generator extends JPanel {
     String folderName;
     BufferedImage snakesImage;
     BufferedImage bwSnakesImage;
+    BufferedImage fraserImage;
 
 
-    public Generator(int type, JFrame frame, String folderName){
+    public Generator(int type, JFrame frame, String folderName, boolean save){
         this.type = type;
         this.frame = frame;
         this.folderName = folderName;
+        this.save = save;
 
         String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
         try {
             snakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
             bwSnakesImage = ImageIO.read(new File(path, "snakes_2.jpg"));
+            fraserImage = ImageIO.read(new File(path, "fraser.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,14 +85,14 @@ public class Generator extends JPanel {
                     readyForSave = false;
                     repaint();
 
-//                    while(!readyForSave) {
-//                        try {
-//                            Thread.sleep(10);  // milliseconds
-//                        } catch (InterruptedException ex) {
-//                        }
-//                    }
+                    if(save){
+                        while(!readyForSave) {
+                            try {
+                                Thread.sleep(10);  // milliseconds
+                            } catch (InterruptedException ex) {
+                            }
+                        }
 
-                    if (save) {
                         saved = false;
                         screenshot();
                     }
@@ -101,12 +104,14 @@ public class Generator extends JPanel {
                     } catch (InterruptedException ex) {
                     }
 
-//                    while(!saved) {
-//                        try {
-//                            Thread.sleep(10);  // milliseconds
-//                        } catch (InterruptedException ex) {
-//                        }
-//                    }
+                    if(save) {
+                        while (!saved) {
+                            try {
+                                Thread.sleep(10);  // milliseconds
+                            } catch (InterruptedException ex) {
+                            }
+                        }
+                    }
                 }
             }
         };
@@ -117,7 +122,7 @@ public class Generator extends JPanel {
         Container c = frame.getContentPane();
         BufferedImage image = new BufferedImage(BOX_WIDTH, BOX_HEIGHT, BufferedImage.TYPE_INT_RGB);
         c.paint(image.getGraphics());
-        String name = String.format(nameFormat, step) + ".jpg";
+        String name = String.format(nameFormat, step) + ".png";
         try {
             ImageIO.write(image, "PNG", new File(folderName + name));
         } catch (IOException e) {
@@ -188,12 +193,12 @@ public class Generator extends JPanel {
 
         if(phase==timing){
             int r =  basic_radius;
-            g.drawOval(center_x-r, center_y-r, r*2, r*2);
-//            for(int i = 0; i<cirles; i++) {
-//                //g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
-//                g.drawOval(center_x-r, center_y-r, r*2, r*2);
-//                r = r + p_separation;
-//            }
+//            g.drawOval(center_x-r, center_y-r, r*2, r*2);
+            for(int i = 0; i<cirles; i++) {
+                //g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                g.drawOval(center_x-r, center_y-r, r*2, r*2);
+                r = r + p_separation;
+            }
 
         } /*else if(phase==1){
 
@@ -211,6 +216,180 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
+    //blue black green white
+    private void concentric_alt(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        int p_separation = 10;
+        g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+        //int p_separation = 4;
+        int r =  basic_radius/2;
+
+        if(phase==timing){
+
+            int angle = 0;
+            int sep_angle = 10;
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<5 ; i++) {
+                g.setColor(Color.blue);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+//                g.setColor(Color.black);
+//                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
+
+                g.setColor(Color.green);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation/2;
+            }
+
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            secondary_phase = secondary_phase + 30;
+            phase = -1;
+        } else {
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<5 ; i++) {
+//                g.setColor(Color.blue);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
+
+//                g.setColor(Color.green);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation/2;
+            }
+        }
+
+        phase = phase+1;
+    }
+
+    //blue black green white
+    private void concentric(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        int p_separation = 10;
+        g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+        //int p_separation = 4;
+        int r =  basic_radius/2;
+
+        if(phase==timing){
+
+            int angle = 0;
+            int sep_angle = 10;
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<3 ; i++) {
+//                g.setColor(Color.blue);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
+
+//                g.setColor(Color.green);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation/2;
+            }
+
+            for (int i =3; i<6 ; i++) {
+                g.setColor(Color.blue);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+//                g.setColor(Color.black);
+//                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
+
+                g.setColor(Color.green);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation/2;
+            }
+
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            secondary_phase = secondary_phase + 30;
+            phase = -1;
+        } else {
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<3 ; i++) {
+                g.setColor(Color.blue);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+//                g.setColor(Color.black);
+//                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
+
+                g.setColor(Color.green);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation/2;
+            }
+
+            for (int i=3; i<6 ; i++) {
+//                g.setColor(Color.blue);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
+
+//                g.setColor(Color.green);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation/2;
+            }
+        }
+
+        phase = phase+1;
+    }
+
     private void draw_x(Graphics g, int timing){
 
         Graphics2D g2 = (Graphics2D) g;
@@ -221,6 +400,72 @@ public class Generator extends JPanel {
             int r =  basic_radius;
             g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
             g.drawLine(center_x+r, center_y-r, center_x-r, center_y+r);
+        } /*else if(phase==1){
+
+        }*/ else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+
+    double rotating_speed = -Math.PI/48;
+    double rad_angle = 0;
+
+    private void draw_rotating_x(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==timing){
+            int r =  basic_radius;
+
+            int x1 = (int)(Math.cos(rad_angle)*r);
+            int y1 = (int)(Math.sin(rad_angle)*r);
+            int x2 = (int)(Math.cos(rad_angle + Math.PI)*r);
+            int y2 = (int)(Math.sin(rad_angle + Math.PI)*r);
+
+            g.drawLine(center_x+x1, center_y-y1, center_x+x2, center_y-y2);
+
+            double inv_angle = rad_angle + Math.PI/2;
+            x1 = (int)(Math.cos(inv_angle)*r);
+            y1 = (int)(Math.sin(inv_angle)*r);
+            x2 = (int)(Math.cos(inv_angle + Math.PI)*r);
+            y2 = (int)(Math.sin(inv_angle + Math.PI)*r);
+
+            g.drawLine(center_x+x1, center_y-y1, center_x+x2, center_y-y2);
+            rad_angle = rad_angle + rotating_speed;
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+    private void draw_plus(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==timing){
+            int r =  basic_radius;
+            g.drawLine(center_x, center_y-r, center_x, center_y+r);
+            g.drawLine(center_x-r, center_y, center_x+r, center_y);
         } /*else if(phase==1){
 
         }*/ else if(phase==2){
@@ -363,7 +608,7 @@ public class Generator extends JPanel {
             }
         } else if(phase==2){
             //draw a big black square
-            g.setColor(Color.black);
+            g.setColor(Color.red);
             int r = basic_radius + 12*separation;
             int x = center_x - r;
             int y = center_y - r;
@@ -404,6 +649,30 @@ public class Generator extends JPanel {
             } else {
                 g.drawImage(snakesImage, x, y, null);
             }
+        } else if(phase==2){//2
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = 350;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            secondary_phase = secondary_phase + 30;
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+    private void draw_frazer(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==timing){//timing
+            int x = center_x - snakesImage.getWidth()/2;
+            int y = center_y - snakesImage.getHeight()/2;
+            g.drawImage(fraserImage, x, y, null);
         } else if(phase==2){//2
             //draw a big black square
             g.setColor(Color.black);
@@ -592,7 +861,7 @@ public class Generator extends JPanel {
                 break;
             }
             case Constants.SIMPLE_SHAPES_1: {
-                simple_shape(g, 0);
+                simple_shape(g, 1);
                 break;
             }
 
@@ -611,7 +880,11 @@ public class Generator extends JPanel {
                 break;
             }
             case Constants.DRAW_X_1: {
-                draw_x(g, 0);
+                draw_x(g, 1);
+                break;
+            }
+            case Constants.ROTATING_X_1: {
+                draw_rotating_x(g, 1);
                 break;
             }
             case Constants.DRAW_X_PHASE_0: {
@@ -623,12 +896,17 @@ public class Generator extends JPanel {
                 break;
             }
 
+            case Constants.DRAW_PLUS: {
+                draw_plus(g,0);
+                break;
+            }
+
             case Constants.SNAKES_0: {
                 draw_snakes(g, 0, false);
                 break;
             }
             case Constants.SNAKES_1: {
-                draw_snakes(g, 0, false);
+                draw_snakes(g, 1, false);
                 break;
             }
             case Constants.SNAKES_BW: {
@@ -637,6 +915,20 @@ public class Generator extends JPanel {
             }
             case Constants.BAD_SNAKES: {
                 draw_bad_snakes(g);
+                break;
+            }
+
+            case Constants.CONCENTRIC_0: {
+                concentric(g, 0);
+                break;
+            }
+            case Constants.CONCENTRIC_1: {
+                concentric(g, 1);
+                break;
+            }
+
+            case Constants.FRASER: {
+                draw_frazer(g, 1);
                 break;
             }
         }

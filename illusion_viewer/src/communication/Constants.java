@@ -39,6 +39,12 @@ public class Constants {
 	public final static int SNAKES_BW = 13;
 	public final static int DRAW_X_PHASE_0 = 14;
 	public final static int DRAW_X_PHASE_1 = 15;
+	public final static int DRAW_PLUS = 16;
+	public final static int CONCENTRIC_0 = 17;
+	public final static int CONCENTRIC_1 = 18;
+	public final static int FRASER = 19;
+	public final static int ROTATING_X_1 = 20;
+
 
 
 //	/** write data or not*/
