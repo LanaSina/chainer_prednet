@@ -18,13 +18,16 @@ public class Starter {
 //    static int type = Constants.DRAW_X_PHASE_1;
 //    static int type = Constants.THINNER_LINE;
 //    static int type = Constants.THICKER_LINE;
-//    static int type = Constants.SNAKES_0;
+//    static int type = Constants.SNAKES_1;
 //    static int type = Constants.BAD_SNAKES;
 //    static int type = Constants.SNAKES_BW;
 //    static int type = Constants.FRASER;
 
 
-    static int type = Constants.CONCENTRIC_0;
+//    static int type = Constants.CONCENTRIC_0;
+//    static int type = Constants.NEW_BENHAM;
+    static int type = Constants.NO_MASK;
+
 
 
 

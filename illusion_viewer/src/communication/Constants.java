@@ -44,6 +44,8 @@ public class Constants {
 	public final static int CONCENTRIC_1 = 18;
 	public final static int FRASER = 19;
 	public final static int ROTATING_X_1 = 20;
+	public final static int NEW_BENHAM = 21;
+	public final static int NO_MASK = 22;
 
 
 

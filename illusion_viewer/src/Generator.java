@@ -14,6 +14,8 @@ import java.io.IOException;
 public class Generator extends JPanel {
     MyLog mlog = new MyLog("Generator", true);
 
+    private BufferedImage paintImage;
+
     private int type;
     private int UPDATE_RATE = 50;
 
@@ -26,20 +28,30 @@ public class Generator extends JPanel {
     boolean readyForSave = false;
     boolean saved = true;
 
-    static JFrame frame;
+    JFrame frame;
 
-    String nameFormat = "%02d";
+    String nameFormat = "%04d";
     String folderName;
     BufferedImage snakesImage;
     BufferedImage bwSnakesImage;
     BufferedImage fraserImage;
+    boolean do_update = true;
 
 
     public Generator(int type, JFrame frame, String folderName, boolean save){
         this.type = type;
-        this.frame = frame;
+        //this.frame = frame;
+        //frame.add(this);
         this.folderName = folderName;
         this.save = save;
+        paintImage = new BufferedImage(BOX_WIDTH, BOX_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+
+        this.frame = new JFrame("TheFrame");
+        this.frame.add(this);
+        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(BOX_WIDTH, BOX_HEIGHT);
+        this.frame.setVisible(true);
+
 
         String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
         try {
@@ -79,39 +91,27 @@ public class Generator extends JPanel {
 
                 while (true) {
 
-                    //mlog.say("timestep " + step);
+                    if (save) {
 
-                    // Refresh the display
-                    readyForSave = false;
-                    repaint();
+                        do_update = true;
+                        readyForSave = false;
+                        repaint();//*/
 
-                    if(save){
-                        while(!readyForSave) {
-                            try {
-                                Thread.sleep(10);  // milliseconds
-                            } catch (InterruptedException ex) {
-                            }
-                        }
-
-                        saved = false;
                         screenshot();
+
+                    } else {
+                        do_update = true;
+                        repaint();
                     }
 
 
                     step++;
                     try {
-                        Thread.sleep(UPDATE_RATE);//1000 / UPDATE_RATE);  // milliseconds
+                        Thread.sleep(UPDATE_RATE);
                     } catch (InterruptedException ex) {
                     }
 
-                    if(save) {
-                        while (!saved) {
-                            try {
-                                Thread.sleep(10);  // milliseconds
-                            } catch (InterruptedException ex) {
-                            }
-                        }
-                    }
+
                 }
             }
         };
@@ -119,15 +119,22 @@ public class Generator extends JPanel {
     }
 
     private void screenshot() {
-        Container c = frame.getContentPane();
-        BufferedImage image = new BufferedImage(BOX_WIDTH, BOX_HEIGHT, BufferedImage.TYPE_INT_RGB);
-        c.paint(image.getGraphics());
+
+        while (do_update){
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+            }
+        }
+
         String name = String.format(nameFormat, step) + ".png";
+        mlog.say(name);
         try {
-            ImageIO.write(image, "PNG", new File(folderName + name));
+            ImageIO.write(paintImage, "PNG", new File(folderName + name));
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         saved = true;
     }
 
@@ -138,6 +145,7 @@ public class Generator extends JPanel {
     int center_y = BOX_HEIGHT/2;
     int separation = 8; //pixels
     int basic_radius = 150;
+
     private void drawBenham_var(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
@@ -290,7 +298,7 @@ public class Generator extends JPanel {
     private void concentric(Graphics g, int timing){
 
         Graphics2D g2 = (Graphics2D) g;
-        int p_separation = 10;
+        int p_separation = 4;
         g2.setStroke(new BasicStroke(p_separation));
         g.setColor(Color.black);
         //int p_separation = 4;
@@ -322,15 +330,15 @@ public class Generator extends JPanel {
             }
 
             for (int i =3; i<6 ; i++) {
-                g.setColor(Color.blue);
-                g.fillRect(x, y, p_separation, h);
+                g.setColor(Color.green);
+//                g.fillRect(x, y, p_separation, h);
                 x+=p_separation;
 
 //                g.setColor(Color.black);
 //                g.fillRect(x, y, p_separation/2, h);
                 x+=p_separation/2;
 
-                g.setColor(Color.green);
+                g.setColor(Color.blue);
                 g.fillRect(x, y, p_separation, h);
                 x+=p_separation;
 
@@ -362,7 +370,7 @@ public class Generator extends JPanel {
                 x+=p_separation/2;
 
                 g.setColor(Color.green);
-                g.fillRect(x, y, p_separation, h);
+//                g.fillRect(x, y, p_separation, h);
                 x+=p_separation;
 
                 //white
@@ -384,6 +392,122 @@ public class Generator extends JPanel {
 
                 //white
                 x+=p_separation/2;
+            }
+        }
+
+        phase = phase+1;
+    }
+
+    private void no_mask(Graphics g, int timing){
+
+        Graphics2D g2 = (Graphics2D) g;
+        int p_separation = 12;
+        g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+
+        mlog.say("repaint " + phase);
+
+        if(phase==timing){
+
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<6 ; i++) {
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //black
+                x+=p_separation;
+
+                //white
+                x+=p_separation;
+            }
+
+        } else if(phase==1){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+//            phase = -1;
+        } else {
+
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<6 ; i++) {
+                x+=p_separation;
+
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                //white
+                x+=p_separation;
+            }
+            phase = -1;
+        }
+
+        phase = phase+1;
+
+    }
+
+    private void new_benham(Graphics g, int timing){
+
+//        UPDATE_RATE = (int) (Math.cos(secondary_phase/10.0)*25 + 70);
+
+        Graphics2D g2 = (Graphics2D) g;
+        int p_separation = 12;
+        g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+
+        if(phase==timing){
+
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<6 ; i++) {
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                g.setColor(Color.black);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+                //white
+//                x+=p_separation;
+            }
+
+        } else if(phase==2){
+            //draw a big black square
+            g.setColor(Color.black);
+            int r = basic_radius + 6*separation;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+            phase = -1;
+            secondary_phase = secondary_phase+1;
+        } else {
+            int x = center_x - 100;
+            int y = center_y - p_separation/2;
+            int h = 30;
+
+            for (int i =0; i<6 ; i++) {
+                g.setColor(Color.black);
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation, h);
+                x+=p_separation;
+                //white
+//                x+=p_separation;
             }
         }
 
@@ -581,7 +705,7 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.red);
+        g.setColor(Color.green);
 
         if(phase==0){
             //draw inner arcs
@@ -607,8 +731,8 @@ public class Generator extends JPanel {
                 r = r + separation;
             }
         } else if(phase==2){
-            //draw a big black square
-            g.setColor(Color.red);
+            //draw a big square
+            g.setColor(Color.black);
             int r = basic_radius + 12*separation;
             int x = center_x - r;
             int y = center_y - r;
@@ -836,7 +960,17 @@ public class Generator extends JPanel {
     /**
      *
      */
-    private void drawShapes(Graphics g){
+    private void drawShapes(){//(Graphics g){
+
+        Graphics g = paintImage.createGraphics();
+        // Paint background
+        g.setColor(Color.white);
+        g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+
+        // draw on paintImage using Graphics
+
+
+
         switch (type){
             case Constants.BENHAM_CLASSIC: {
                 drawBenham(g);
@@ -931,26 +1065,34 @@ public class Generator extends JPanel {
                 draw_frazer(g, 1);
                 break;
             }
+
+            case Constants.NEW_BENHAM: {
+                new_benham(g, 0);
+                break;
+            }
+
+            case Constants.NO_MASK: {
+                no_mask(g, 0);
+                break;
+            }
         }
 
+        do_update = false;
+
+        g.dispose();
+        // repaint panel with new modified paint
+        repaint();
 
     }
 
 
-    /**
-     * Custom rendering codes for drawing the JPanel
-     */
     @Override
-    public void paintComponent(Graphics g) {
+    protected void paintComponent(Graphics g){
         super.paintComponent(g);
+        g.drawImage(paintImage, 0, 0, null);
 
-        // Paint background
-        g.setColor(Color.white);
-        g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
-
-        //draw pattern
-        drawShapes(g);
-
-        readyForSave = true;
+        if(do_update) {
+            drawShapes();
+        }
     }
 }
