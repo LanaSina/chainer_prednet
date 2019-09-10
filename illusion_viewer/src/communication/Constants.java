@@ -46,6 +46,8 @@ public class Constants {
 	public final static int ROTATING_X_1 = 20;
 	public final static int NEW_BENHAM = 21;
 	public final static int NO_MASK = 22;
+	public final static int CONCURRENT = 23;
+	public final static int TIME_WARP = 24;
 
 
 

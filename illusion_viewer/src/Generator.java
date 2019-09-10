@@ -202,7 +202,7 @@ public class Generator extends JPanel {
         if(phase==timing){
             int r =  basic_radius;
 //            g.drawOval(center_x-r, center_y-r, r*2, r*2);
-            for(int i = 0; i<cirles; i++) {
+            for(int i = 0; i<5; i++) {
                 //g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
                 g.drawOval(center_x-r, center_y-r, r*2, r*2);
                 r = r + p_separation;
@@ -244,8 +244,8 @@ public class Generator extends JPanel {
 
             for (int i =0; i<5 ; i++) {
                 g.setColor(Color.blue);
-                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
 
 //                g.setColor(Color.black);
 //                g.fillRect(x, y, p_separation/2, h);
@@ -276,7 +276,7 @@ public class Generator extends JPanel {
             for (int i =0; i<5 ; i++) {
 //                g.setColor(Color.blue);
 //                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                x+=p_separation/2;
 
                 g.setColor(Color.black);
                 g.fillRect(x, y, p_separation/2, h);
@@ -313,17 +313,17 @@ public class Generator extends JPanel {
             int h = 30;
 
             for (int i =0; i<3 ; i++) {
-//                g.setColor(Color.blue);
-//                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                g.setColor(Color.blue);
+                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
 
                 g.setColor(Color.black);
-                g.fillRect(x, y, p_separation/2, h);
+//                g.fillRect(x, y, p_separation/2, h);
                 x+=p_separation/2;
 
 //                g.setColor(Color.green);
 //                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                x+=p_separation/2;
 
                 //white
                 x+=p_separation/2;
@@ -332,15 +332,15 @@ public class Generator extends JPanel {
             for (int i =3; i<6 ; i++) {
                 g.setColor(Color.green);
 //                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                x+=p_separation/2;
 
-//                g.setColor(Color.black);
-//                g.fillRect(x, y, p_separation/2, h);
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation/2, h);
                 x+=p_separation/2;
 
                 g.setColor(Color.blue);
-                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation/2;
 
                 //white
                 x+=p_separation/2;
@@ -356,43 +356,219 @@ public class Generator extends JPanel {
             secondary_phase = secondary_phase + 30;
             phase = -1;
         } else {
+            //phase = -1;
             int x = center_x - 100;
             int y = center_y - p_separation/2;
             int h = 30;
 
             for (int i =0; i<3 ; i++) {
                 g.setColor(Color.blue);
-                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+//                g.fillRect(x, y, p_separation, h);
+                x+=p_separation/2;
 
-//                g.setColor(Color.black);
-//                g.fillRect(x, y, p_separation/2, h);
+                g.setColor(Color.black);
+                g.fillRect(x, y, p_separation/2, h);
                 x+=p_separation/2;
 
                 g.setColor(Color.green);
 //                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                x+=p_separation/2;
 
                 //white
                 x+=p_separation/2;
             }
 
             for (int i=3; i<6 ; i++) {
-//                g.setColor(Color.blue);
-//                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                g.setColor(Color.blue);
+                g.fillRect(x, y, p_separation/2, h);
+                x+=p_separation/2;
 
                 g.setColor(Color.black);
-                g.fillRect(x, y, p_separation/2, h);
+//                g.fillRect(x, y, p_separation/2, h);
                 x+=p_separation/2;
 
 //                g.setColor(Color.green);
 //                g.fillRect(x, y, p_separation, h);
-                x+=p_separation;
+                x+=p_separation/2;
 
                 //white
                 x+=p_separation/2;
             }
+        }
+
+        phase = phase+1;
+    }
+
+
+
+    private void smooth_concurrent(Graphics g) {
+
+        int p_separation = 8;
+        //g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+
+        mlog.say("repaint " + phase);
+        int x = center_x;
+        int y = center_y;
+        int h = 60;
+
+        if (phase == 0) {
+            int r = p_separation;
+
+            //big  line
+            for (int i = 0; i < 4; i++){
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, r, h);
+                x += r*2;
+            }
+//            g.setColor(Color.black);
+//            g.fillRect(x, y, r, h);
+
+        } else if(phase==1){
+            int r = p_separation;
+
+//            for (int i = 0; i < 10; i++){
+//                g.setColor(Color.blue);
+//                g.fillRect(x, y, r, h);
+//                x += r * 2;
+//            }
+
+//            g.setColor(Color.black);
+//            g.fillRect(x, y, r, h);
+
+//            x += p_separation;
+//            g.setColor(Color.black);
+//            g.fillRect(x, y, r, h);
+
+        } else if (phase == 2) {
+            int r = p_separation;
+            x += r;
+
+            for (int i = 0; i < 4; i++) {
+
+                g.setColor(Color.black);
+                g.fillRect(x, y, r, h);
+                x += r * 2;
+            }
+
+//            g.setColor(Color.black);
+//            int r = basic_radius + 6 * separation;
+//            x = center_x - r;
+//            y = center_y - r;
+//            g.fillRect(x, y, r * 2, r * 2);
+
+//            phase = -1;
+        } else if (phase == 3) {
+
+            g.setColor(Color.black);
+            int r = basic_radius + 6 * separation;
+            x = center_x - r;
+            y = center_y - r;
+            g.fillRect(x, y, r * 2, r * 2);
+//
+            phase = -1;
+        }
+
+            phase = phase+1;
+    }
+
+    private void time_warp(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        int p_separation = 8;
+        //g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+
+        mlog.say("repaint " + phase);
+        int x = center_x;
+        int y = center_y;
+        int h = 60;
+
+        if(phase==0){
+            UPDATE_RATE = 200;
+
+            int r = p_separation;
+
+            //big  line
+            g.setColor(Color.black);
+            g.fillRect(x, y, r, h);
+
+        } else if(phase==1){
+            UPDATE_RATE = 40; //next one
+            int r = p_separation;
+
+            x += p_separation;
+            g.setColor(Color.black);
+            g.fillRect(x, y, r, h);
+
+//        } else if (phase == 2){
+//
+//            g.setColor(Color.black);
+//            g.fillRect(x, y, p_separation, h);
+
+//            g.setColor(Color.black);
+//            int r = basic_radius + 6*separation;
+//            x = center_x - r;
+//            y = center_y - r;
+//            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+
+    private void smooth_growing(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        int p_separation = 12;
+        //g2.setStroke(new BasicStroke(p_separation));
+        g.setColor(Color.black);
+
+        int x = center_x;
+        int y = center_y;
+        int h = 30;
+
+        if(phase==0){
+
+
+
+        } else if(phase==1){
+
+            //thin black line
+            int r = 2;//p_separation/2;
+
+            g.setColor(Color.red);
+            g.fillRect(x-r/2, y, r, h);
+
+        } else if (phase == 2){
+
+            //thin red line
+//            int r = p_separation/2;
+//            g.setColor(Color.red);
+//            g.fillRect(x-r/2, y, r, h);
+
+            //thin red lines
+//            int r = 1;
+//            g.setColor(Color.red);
+//            g.fillRect(x - p_separation/4, y, r, h);
+//            g.fillRect(x + p_separation/4 - r, y, r, h);
+
+            int r = p_separation/2;
+
+            //big black line
+
+            g.setColor(Color.black);
+            g.fillRect(x-r/2, y, r, h);
+        } else {
+
+            //thick  line
+            int r = p_separation;
+            g.setColor(Color.black);
+            g.fillRect(x-r/2, y, r, h);
+            phase = -1;
         }
 
         phase = phase+1;
@@ -765,7 +941,35 @@ public class Generator extends JPanel {
         g2.setStroke(new BasicStroke(1));
         g.setColor(Color.black);
 
-        if(phase==timing){//timing
+//        if(phase==timing){//timing
+//            int x = center_x - snakesImage.getWidth()/2;
+//            int y = center_y - snakesImage.getHeight()/2;
+//            if(bw){
+//                g.drawImage(bwSnakesImage, x, y, null);
+//            } else {
+//                g.drawImage(snakesImage, x, y, null);
+//            }
+//        } else if(phase==1) {//2
+//            //draw a big black square
+////            g.setColor(Color.black);
+////            int r = 350;
+////            int x = center_x - r;
+////            int y = center_y - r;
+////            g.fillRect(x, y, r * 2, r * 2);
+//        } else if(phase==2) {//2
+//            //draw a big black square
+//            g.setColor(Color.black);
+//            int r = 350;
+//            int x = center_x - r;
+//            int y = center_y - r;
+//            g.fillRect(x, y, r * 2, r * 2);
+//            phase = -1;
+//        }
+
+
+        if(phase==0){//timing
+
+        } else if(phase==1) {//2
             int x = center_x - snakesImage.getWidth()/2;
             int y = center_y - snakesImage.getHeight()/2;
             if(bw){
@@ -773,16 +977,11 @@ public class Generator extends JPanel {
             } else {
                 g.drawImage(snakesImage, x, y, null);
             }
-        } else if(phase==2){//2
-            //draw a big black square
-            g.setColor(Color.black);
-            int r = 350;
-            int x = center_x - r;
-            int y = center_y - r;
-            g.fillRect(x, y, r*2, r*2);
-            secondary_phase = secondary_phase + 30;
+        } else if(phase==2) {
+
             phase = -1;
         }
+
 
         phase = phase+1;
     }
@@ -1073,6 +1272,15 @@ public class Generator extends JPanel {
 
             case Constants.NO_MASK: {
                 no_mask(g, 0);
+                break;
+            }
+
+            case Constants.CONCURRENT: {
+                smooth_concurrent(g);
+                break;
+            }
+            case Constants.TIME_WARP: {
+                time_warp(g);
                 break;
             }
         }
