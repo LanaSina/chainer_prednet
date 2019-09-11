@@ -2,6 +2,7 @@
 # also check the intensity of the greyscale
 
 import argparse
+from array import array
 import csv
 import cv2
 import numpy as np
@@ -71,23 +72,23 @@ def get_area_parameters(image):
 			pixel = image[i,j] 
 
 		# ignore areas that have been removed
-		if( (pixel[0]+pixel[1]+pixel[2]) == 0):
+		if( (1.0*pixel[0]+pixel[1]+pixel[2]) == 0):
 			pass
 
 		size = size +1
-		av_rgb = av_rgb + rgb
+		av_rgb = av_rgb + pixel
 		center = center + [i,j]
 
-	center = center/size
+	center = [center[0]/size, center[1]/size]
 	av_rgb = av_rgb/size - 1
 
-	return(size, center, rgb)
+	return(size, center, av_rgb)
 
 
 # image = something between 1 and 256
 def select_area(image, i, j):
 	# segment the image
-	rgb = image[i,j]
+	rgb = 1.0*image[i,j]
 	error = 25
 	temp = rgb - error
 
@@ -111,10 +112,10 @@ def select_area(image, i, j):
 	result = cv2.bitwise_and(image, image, mask=mask)
 
 	current_output, num_ids = label(result)
-	current_id = current_output[i,j].item()
+	current_id = current_output[i,j]
 
-	selected_area = (current_output == current_id)
-	new_image = cv2.bitwise_and(image, image, mask=selected_area)
+	selected_mask = cv2.inRange(current_output, current_id, current_id)
+	new_image = cv2.bitwise_and(image, image, mask=selected_mask)
 	# plt.imshow(new_image)
 	# plt.show()
 
@@ -160,7 +161,7 @@ def remove_area(image, i, j, color_index):
 	return(new_image)
 
 # previous_images, output_dir, writer
-def areas_changes(previous_images, output_dir, writer):
+def areas_changes(im_index, previous_images, output_dir, writer):
 
 	# find an area
 	# calculate its center, size, and average rgb
@@ -172,44 +173,61 @@ def areas_changes(previous_images, output_dir, writer):
 	# remove area from original image at t0, look for next area
 	# repeat until whole image at t0 is processed
 
+	print("previous_images", previous_images)
+
 	image_t0 = cv2.imread(previous_images[0])
 	image_t0 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
-	image_t1 = cv2.imread(previous_images[0])
+	image_t1 = cv2.imread(previous_images[1])
 	image_t1 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
-	image_t2 = cv2.imread(previous_images[0])
+	image_t2 = cv2.imread(previous_images[2])
 	image_t2 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
 
 	# add +1 to everything to differenciate black areas from removed areas
+	image_t0 = (image_t0/255.0)*254 
 	image_t0 = image_t0 + 1
-
+	area_id = 0
 	for i in range(0,image_t0.shape[0]):
 			for j in range(0,image_t0.shape[1]):
 
 				pixel = image_t0[i,j] 
+				# print(pixel)
 
 				# ignore areas that have been removed
 				if( (pixel[0]+pixel[1]+pixel[2]) == 0):
-					pass
+					# print( "not", pixel)
+					continue
+
+				# print("here", pixel)
 
 				# get an array only containing this area
 				selected_area_0 = select_area(image_t0, i, j)
+				# plt.imshow(selected_area_0)
+				# plt.show()
 				# calculate size, center, and average rgb
 				size_t0, center_t0, rgb_t0 = get_area_parameters(selected_area_0) 
 				# get corresponding area in next image
-				selected_area = selected_area(image_t1, center_t0[0], center_t0[1])
-				size_t1, center_t1, rgb_t1 = get_area_parameters(selected_area) 
+				selected = select_area(image_t1, int(center_t0[0]), int(center_t0[1]))
+				size_t1, center_t1, rgb_t1 = get_area_parameters(selected) 
+				# plt.imshow(selected)
+				# plt.show()
 				# get corresponding area in next image
-				selected_area = selected_area(image_t2, center_t1[0], center_t1[1])
-				size_t2, center_t2, rgb_t2 = get_area_parameters(selected_area) 
+				selected = select_area(image_t2, int(center_t1[0]), int(center_t1[1]))
+				size_t2, center_t2, rgb_t2 = get_area_parameters(selected) 
 
 				# rows
-				# fieldnames = ['area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
-				result = [strong_color, modifed_prediction[i, j][strong_color], gs0, gs1, gs2, area0, area1, area2]
+				# fieldnames = ['image_t0', 'area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
+				result = [im_index, area_id, size_t0, size_t1, size_t2, rgb_t0, rgb_t1, rgb_t2]
 				writer.writerow(result)
 
 				# remove this area from the image
-				to_remove = (selected_area_0 != 0)
-				image_t0 = cv2.bitwise_and(image, image, mask=to_remove)
+				#to_remove = (selected_area_0 != 0)
+				mask = cv2.inRange(selected_area_0, 0, 0)
+				# plt.imshow(mask)
+				# plt.show()
+				image_t0 = cv2.bitwise_and(image_t0, image_t0, mask=mask)
+				# plt.imshow(image_t0)
+				# plt.show()
+				area_id = area_id + 1
 
 
 # previous_gs_images = paths [t0,t1,t2]
@@ -386,14 +404,15 @@ def record_area_changes(real_image_dir, output_dir, image_count):
 
 	save_file = output_dir + "/area_change_analysis.csv"
 	print(save_file)
-	fieldnames = ['area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
+	fieldnames = ['image_0','area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
 
 	with open(save_file, mode='w') as csv_file:
+
 		writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 		writer.writerow(fieldnames)
-
 		im_index = 0
-		for image_file in real_image_list[2:image_count-2]:
+		print("all ", real_image_list[2:image_count])
+		for image_file in real_image_list[2:image_count]:
 			path = os.path.join(real_image_dir, image_file)
 			print("read ", path)
 			# predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
@@ -405,9 +424,10 @@ def record_area_changes(real_image_dir, output_dir, image_count):
 			previous_images.append(previous_path)
 			previous_images.append(path)
 
-			areas_changes(previous_images, output_dir, writer)
+			areas_changes(im_index,previous_images, output_dir, writer)
 			
 			im_index = im_index + 1
+			print("here")
 
 
 parser = argparse.ArgumentParser(description='image_analysis')

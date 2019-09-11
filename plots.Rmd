@@ -9,9 +9,29 @@ output:
 ```{r}
 library(rgl)
 
-dataFolder = "results/greyscale_analysis/"
+# dataFolder = "results/greyscale_analysis/"
+dataFolder = "image_analysis/fpsi_100/"
 
 ```
+
+
+```{r}
+filename = "area_change_analysis.csv"
+#filename = "benham/flicker_analysis.csv"
+
+
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
+```{r}
+
+sub = subset(df, size_t0<size_t1)
+plot(df$size_t0)
+mean(sub$size_t0)
+mean(sub$size_t1)
+mean(sub$size_t2)
+```
+
 
 
 ```{r}
