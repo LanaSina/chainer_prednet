@@ -71,51 +71,79 @@ def get_area_parameters(image):
 		for j in range(0,image.shape[1]):
 			pixel = image[i,j] 
 
-		# ignore areas that have been removed
-		if( (1.0*pixel[0]+pixel[1]+pixel[2]) == 0):
-			pass
+			# ignore areas that have been removed
+			if( (1.0*pixel[0]+pixel[1]+pixel[2]) == 0):
+				continue
 
-		size = size +1
-		av_rgb = av_rgb + pixel
-		center = center + [i,j]
+			size = size +1
+			av_rgb = av_rgb + pixel
+			center = center + [i,j]
+
+	# if(size==0):
+	# 	print("is 0")
+	# 	plt.imshow(image)
+	# 	plt.show()
 
 	center = [center[0]/size, center[1]/size]
-	av_rgb = av_rgb/size - 1
+	av_rgb = av_rgb/size
 
 	return(size, center, av_rgb)
 
 
 # image = something between 1 and 256
 def select_area(image, i, j):
+	# print("show image a", i, j)
+	# print("image[i,j] 1")
+	# print(image[i,j])
+	# plt.imshow(image)
+	# plt.show()
+
 	# segment the image
 	rgb = 1.0*image[i,j]
-	error = 25
+	error = 20
 	temp = rgb - error
 
-	for i in range(0,3):
+	for k in range(0,3):
 		# avoid removed areas
-		if temp[i] < 1:
-			temp[i] = 1
+		if temp[k] < 1:
+			temp[k] = 1.0
 	gs_min = temp
 
+	rgb = 1.0*image[i,j].copy()
 	temp = rgb + error
-	for i in range(0,3):
-		# avoid removed areas
-		if temp[i] > 255:
-			temp[i] = 255
+	for k in range(0,3):
+		if temp[k] > 255:
+			temp[k] = 255
 	gs_max = np.array(temp)
 
 	mask = cv2.inRange(image, gs_min, gs_max)
+	# print("show image b")
 	# plt.imshow(mask)
 	# plt.show()
 
+	# print("image")
+	# plt.imshow(image)
+	# plt.show()
 	result = cv2.bitwise_and(image, image, mask=mask)
+	# print("result")
+	# plt.imshow(result)
+	# plt.show()
 
 	current_output, num_ids = label(result)
 	current_id = current_output[i,j]
 
+	# print("current_id",current_id, "total", num_ids)
+	# plt.imshow(current_output)
+	# plt.show()
+
+
 	selected_mask = cv2.inRange(current_output, current_id, current_id)
+	# plt.imshow(selected_mask)
+	# plt.show()
 	new_image = cv2.bitwise_and(image, image, mask=selected_mask)
+	# plt.imshow(image)
+	# plt.show()
+	# print("new image")
 	# plt.imshow(new_image)
 	# plt.show()
 
@@ -173,27 +201,35 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 	# remove area from original image at t0, look for next area
 	# repeat until whole image at t0 is processed
 
-	print("previous_images", previous_images)
+	# print("previous_images", previous_images)
 
 	image_t0 = cv2.imread(previous_images[0])
 	image_t0 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
 	image_t1 = cv2.imread(previous_images[1])
-	image_t1 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
+	image_t1 = cv2.cvtColor(image_t1, cv2.COLOR_BGR2RGB)
 	image_t2 = cv2.imread(previous_images[2])
-	image_t2 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
+	image_t2 = cv2.cvtColor(image_t2, cv2.COLOR_BGR2RGB)
 
-	# add +1 to everything to differenciate black areas from removed areas
-	image_t0 = (image_t0/255.0)*254 
-	image_t0 = image_t0 + 1
+	
+	# image_t0 = (image_t0*254.0/255.0)
+	# image_t0 = image_t0 + 1
+	# image_t1 = (image_t1*254.0/255.0)
+	# image_t1 = image_t1 + 1
+	# image_t2 = (image_t2*254.0/255.0)
+	# image_t2 = image_t2 + 1
+
 	area_id = 0
 	for i in range(0,image_t0.shape[0]):
 			for j in range(0,image_t0.shape[1]):
+
+				print("j", j, "max", image_t0.shape[1])
+				print("i", i, "max", image_t0.shape[0])
 
 				pixel = image_t0[i,j] 
 				# print(pixel)
 
 				# ignore areas that have been removed
-				if( (pixel[0]+pixel[1]+pixel[2]) == 0):
+				if( pixel[0]<=1 or pixel[1]<=1 or pixel[2] <= 1):
 					# print( "not", pixel)
 					continue
 
@@ -201,9 +237,11 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 
 				# get an array only containing this area
 				selected_area_0 = select_area(image_t0, i, j)
+				# print("selected_area_0")
 				# plt.imshow(selected_area_0)
 				# plt.show()
 				# calculate size, center, and average rgb
+				# print("parameters 0")
 				size_t0, center_t0, rgb_t0 = get_area_parameters(selected_area_0) 
 				# get corresponding area in next image
 				selected = select_area(image_t1, int(center_t0[0]), int(center_t0[1]))
@@ -222,12 +260,15 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 				# remove this area from the image
 				#to_remove = (selected_area_0 != 0)
 				mask = cv2.inRange(selected_area_0, 0, 0)
+				# print("mask")
 				# plt.imshow(mask)
 				# plt.show()
 				image_t0 = cv2.bitwise_and(image_t0, image_t0, mask=mask)
+				# print("image_t0")
 				# plt.imshow(image_t0)
 				# plt.show()
 				area_id = area_id + 1
+				print("done")
 
 
 # previous_gs_images = paths [t0,t1,t2]

@@ -26,7 +26,7 @@ df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsA
 ```{r}
 
 sub = subset(df, size_t0<size_t1)
-plot(df$size_t0)
+plot(df$size_t0, type="l")
 mean(sub$size_t0)
 mean(sub$size_t1)
 mean(sub$size_t2)
