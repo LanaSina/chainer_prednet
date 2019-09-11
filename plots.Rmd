@@ -25,11 +25,31 @@ df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsA
 
 ```{r}
 
+# growing
 sub = subset(df, size_t0<size_t1)
 plot(df$size_t0, type="l")
 mean(sub$size_t0)
 mean(sub$size_t1)
 mean(sub$size_t2)
+
+print("----- r")
+mean(sub$r0)
+mean(sub$r1)
+mean(sub$r2)
+print("----- g")
+mean(sub$g0)
+mean(sub$g1)
+mean(sub$g2)
+print("----- b")
+mean(sub$b0)
+mean(sub$b1)
+mean(sub$b2)
+
+print("combined")
+mean((sub$r0+sub$g0+sub$b0))
+mean((sub$r1+sub$g1+sub$b1))
+mean((sub$r2+sub$g2+sub$b2))
+
 ```
 
 
