@@ -10,7 +10,7 @@ output:
 library(rgl)
 
 # dataFolder = "results/greyscale_analysis/"
-dataFolder = "image_analysis/fpsi_100/"
+dataFolder = "image_analysis/bike_15m/"
 
 ```
 
@@ -25,30 +25,176 @@ df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsA
 
 ```{r}
 
+df$mean_rgb0 = (df$r0+df$g0+df$b0)/3
+df$mean_rgb1 = (df$r1+df$g1+df$b1)/3
+df$mean_rgb2 = (df$r2+df$g2+df$b2)/3
+# plot(df$size_t0, type="l")
+# points(df$size_t1, type="l", col= "red")
+# points(df$size_t2, type="l", col = "blue")
+
 # growing
 sub = subset(df, size_t0<size_t1)
-plot(df$size_t0, type="l")
+# bad heuristic / we actually want thin lines, not surfaces
+# or do we....
+# mean_size = mean(df$size_t1)
+# sub = subset(sub, size_t1< mean_size/3)
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+all_increasing = length(sub$r0)
+sub = subset(sub, size_t1<size_t2)
+c_increasing = length(sub$r0)
+c_increasing/all_increasing
+
+
+# plot(sub$size_t0, type="l")
+# points(sub$size_t1, type="l", col= "red")
+# points(sub$size_t2, type="l", col = "blue")
+
 mean(sub$size_t0)
 mean(sub$size_t1)
 mean(sub$size_t2)
 
-print("----- r")
-mean(sub$r0)
-mean(sub$r1)
-mean(sub$r2)
-print("----- g")
-mean(sub$g0)
-mean(sub$g1)
-mean(sub$g2)
-print("----- b")
-mean(sub$b0)
-mean(sub$b1)
-mean(sub$b2)
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
 
-print("combined")
-mean((sub$r0+sub$g0+sub$b0))
-mean((sub$r1+sub$g1+sub$b1))
-mean((sub$r2+sub$g2+sub$b2))
+plot(mean_combined, type="l", ylim = c(110,130)
+     , main = "Increasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+# decreasing
+sub = subset(df, size_t0>size_t1)
+# mean(sub$size_t0)
+# mean(sub$size_t1)
+# mean(sub$size_t2)
+#sub = subset(sub, size_t1< mean_size/3)
+
+all_decreasing = length(sub$r0)
+sub = subset(sub, size_t1>size_t2)
+c_decreasing = length(sub$r0)
+c_decreasing/all_decreasing
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(50,150)
+     , main = "Decreasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+# now sort by intensity
+# getting lighter
+sub = subset(df, mean_rgb0<mean_rgb1)
+# 1st color is black
+# sub = subset(sub, mean_rgb0<50)
+
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+all_lighter = length(sub$r0)
+sub = subset(sub, mean_rgb1<mean_rgb2)
+c_lighter = length(sub$r0)
+c_lighter/all_lighter
+
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(100,150)
+     , main = "Getting lighter", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting lighter", ylab = "area size", xlab = "time")
+
+# getting darker
+sub = subset(df, mean_rgb0>mean_rgb1)
+
+# all_darker = length(sub$r0)
+# sub = subset(sub, mean_rgb1>mean_rgb2)
+# c_darker = length(sub$r0)
+# c_darker/all_darker
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting darker", ylab = "area size", xlab = "time")
+
+
+
+
+# dark areas
+sub_d = subset(df, mean_rgb1<50)
+# growing
+sub = subset(sub_d, size_t0<size_t1)
+
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+all_increasing = length(sub$r0)
+sub = subset(sub, size_t1<size_t2)
+c_increasing = length(sub$r0)
+c_increasing/all_increasing
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,100)
+     , main = "Dark - Increasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+# decreasing
+sub = subset(sub_d, size_t0>size_t1)
+
+all_decreasing = length(sub$r0)
+sub = subset(sub, size_t1>size_t2)
+c_decreasing = length(sub$r0)
+c_decreasing/all_decreasing
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,100)
+     , main = "Dark - Decreasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+# try things
+sub = subset(sub, b2>b1)
+
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting bluer (t2>t1)", ylab = "area size", xlab = "time")
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(80,150)
+     , main = "Getting bluer (t2>t1)", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
 
 ```
 

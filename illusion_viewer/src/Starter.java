@@ -9,7 +9,7 @@ public class Starter {
     static  boolean save = false;
 
 //    static int type = Constants.BENHAM_CLASSIC;
-//    static int type = Constants.BENHAM_RED;
+    static int type = Constants.BENHAM_RED;
 //    static int type = Constants.SIMPLE_SHAPES_1;
 //    static int type = Constants.DRAW_X_0;
 //    static int type = Constants.DRAW_X_1;
@@ -22,7 +22,7 @@ public class Starter {
 //    static int type = Constants.SNAKES_0;
 //    static int type = Constants.BAD_SNAKES;
 //    static int type = Constants.SNAKES_BW;
-    static int type = Constants.FRASER;
+//    static int type = Constants.FRASER;
 
 
 //    static int type = Constants.CONCENTRIC_0;

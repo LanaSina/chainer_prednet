@@ -20,8 +20,8 @@ public class Generator extends JPanel {
     private int UPDATE_RATE = 50;
 
     // Container box's width and height
-    private static final int BOX_WIDTH = 800;
-    private static final int BOX_HEIGHT = 800;
+    private static final int BOX_WIDTH = 160; //160; //800
+    private static final int BOX_HEIGHT = 120; //120; //800
 
     private int step = 0;
     private boolean save;
@@ -143,8 +143,8 @@ public class Generator extends JPanel {
     int cirles = 3;
     int center_x = BOX_WIDTH/2;
     int center_y = BOX_HEIGHT/2;
-    int separation = 8; //pixels
-    int basic_radius = 150;
+    int separation = 4; //8 //4
+    int basic_radius = 15; //150 //15
 
     private void drawBenham_var(Graphics g){
 
@@ -175,6 +175,15 @@ public class Generator extends JPanel {
             g.fillRect(x, y, r*2, r*2);
 
             phase = -1;
+//        } else if(phase==3){
+//            //draw a big black square
+//            g.setColor(Color.red);
+//            int r = basic_radius + 6*separation;
+//            int x = center_x - r;
+//            int y = center_y - r;
+//            g.fillRect(x, y, r*2, r*2);
+//
+//            phase = -1;
         }
 
         //draw mask
@@ -881,7 +890,7 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.green);
+        g.setColor(Color.blue);
 
         if(phase==0){
             //draw inner arcs
@@ -1102,7 +1111,9 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
+        //darker
+        Color c = new Color(0,80,0);
+        g.setColor(c);//black
 
         if(phase==0){
             //draw inner arcs
@@ -1129,7 +1140,10 @@ public class Generator extends JPanel {
             }
         } else if(phase==2){
             //draw a big black square
-            g.setColor(Color.black);
+            //even darker
+            c = new Color(0,60,0);
+            g.setColor(c);//black
+
             int r = basic_radius + 12*separation;
             int x = center_x - r;
             int y = center_y - r;
@@ -1162,7 +1176,8 @@ public class Generator extends JPanel {
     private void drawShapes(){//(Graphics g){
 
         Graphics g = paintImage.createGraphics();
-        // Paint background
+        // Paint pale background
+//        Color c = new Color(0,100,0);
         g.setColor(Color.white);
         g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
 

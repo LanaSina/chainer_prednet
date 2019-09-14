@@ -86,12 +86,7 @@ def get_area_parameters(image):
 
 
 # image = something between 1 and 256
-def select_area(image, i, j):
-	# print("show image a", i, j)
-	# print("image[i,j] 1")
-	# print(image[i,j])
-	# plt.imshow(image)
-	# plt.show()
+def select_area(image, i, j, show):
 
 	# segment the image
 	rgb = 1.0*image[i,j]
@@ -111,41 +106,28 @@ def select_area(image, i, j):
 			temp[k] = 255
 	gs_max = np.array(temp)
 
-	# print("rgb")
-	# print(rgb)
-	# print(gs_min)
-	# print(gs_max)
-
 	mask = cv2.inRange(image, gs_min, gs_max)
-	# print("show image b")
-	# plt.imshow(mask)
-	# plt.show()
 
-	# print("image")
-	# plt.imshow(image)
-	# plt.show()
 	result = cv2.bitwise_and(image, image, mask=mask)
-	# print("result")
-	# plt.imshow(result)
-	# plt.show()
 
 	current_output, num_ids = label(result)
 	current_id = current_output[i,j]
 
-	# print("current_id",current_id, "total", num_ids)
-	# plt.imshow(current_output)
-	# plt.show()
-
-
 	selected_mask = cv2.inRange(current_output, current_id, current_id)
-	# plt.imshow(selected_mask)
-	# plt.show()
 	new_image = cv2.bitwise_and(image, image, mask=selected_mask)
-	# plt.imshow(image)
-	# plt.show()
-	# print("new image")
-	# plt.imshow(new_image)
-	# plt.show()
+	if (show):
+		plt.imshow(new_image)
+		plt.show()
+
+	return(new_image, selected_mask)
+
+
+def select_area_from_mask(image, mask, show):
+
+	new_image = cv2.bitwise_and(image, image, mask=mask)
+	if (show):
+		plt.imshow(new_image)
+		plt.show()
 
 	return(new_image)
 
@@ -210,17 +192,10 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 	image_t2 = cv2.imread(previous_images[2])
 	image_t2 = cv2.cvtColor(image_t2, cv2.COLOR_BGR2RGB)
 
-	
-	# image_t0 = (image_t0*254.0/255.0)
-	# image_t0 = image_t0 + 1
-	# image_t1 = (image_t1*254.0/255.0)
-	# image_t1 = image_t1 + 1
-	# image_t2 = (image_t2*254.0/255.0)
-	# image_t2 = image_t2 + 1
-
+	show = False
 	area_id = 0
-	for i in range(0,20):#image_t0.shape[0]):
-			print("i", i, "max", image_t0.shape[0])
+	for i in range(0,image_t0.shape[0]):
+			# print("i", i, "max", image_t0.shape[0])
 			for j in range(0,image_t0.shape[1]):
 
 				pixel0 = image_t0[i,j] 
@@ -236,18 +211,30 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 					continue
 
 				# get an array only containing this area
-				# print("t0")
-				selected_area_0 = select_area(image_t0, i, j)
+				selected_area_0, _ = select_area(image_t0, i, j, show)
 				size_t0, center_t0, rgb_t0 = get_area_parameters(selected_area_0) 
 				# get corresponding area in next image
-				# print(center_t0)
-				# print("t1")
-				selected = select_area(image_t1, int(center_t0[0]), int(center_t0[1]))
-				size_t1, center_t1, rgb_t1 = get_area_parameters(selected) 
+				selected_area_1, _ = select_area(image_t1, int(center_t0[0]), int(center_t0[1]), show)
+				size_t1, center_t1, rgb_t1 = get_area_parameters(selected_area_1) 
 				# get corresponding area in next image
-				# print("t2")
-				selected = select_area(image_t2, int(center_t1[0]), int(center_t1[1]))
-				size_t2, center_t2, rgb_t2 = get_area_parameters(selected) 
+				selected_area_2, _ = select_area(image_t2, int(center_t1[0]), int(center_t1[1]), show)
+				size_t2, center_t2, rgb_t2 = get_area_parameters(selected_area_2) 
+
+				# if (size_t0>size_t1 and size_t1>size_t2):# and rgb_t2[0]<rgb_t0[0]):
+				# 	w=10
+				# 	h=10
+				# 	fig=plt.figure(figsize=(8, 8))
+				# 	columns = 3
+				# 	rows = 1
+				# 	fig.add_subplot(rows, columns, 1)
+				# 	plt.imshow(selected_area_0)
+				# 	fig.add_subplot(rows, columns, 2)
+				# 	plt.imshow(selected_area_1)
+				# 	fig.add_subplot(rows, columns, 3)
+				# 	plt.imshow(selected_area_2)
+
+				# 	plt.show()
+
 
 				# rows
 				# fieldnames = ['image_t0', 'area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
@@ -261,7 +248,84 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 				mask = cv2.inRange(selected_area_0, 0, 0)
 				image_t0 = cv2.bitwise_and(image_t0, image_t0, mask=mask)
 				area_id = area_id + 1
-				print("done")
+
+
+# previous_images, output_dir, writer
+def fixed_areas_changes(im_index, previous_images, output_dir, writer):
+
+	# find an area
+	# calculate its center, size, and average rgb
+	# find same area in next image using center value
+	# calculate its center, size, and average rgb
+	# find same area in next next image
+	# calculate its size and average rgb
+	# record all values
+	# remove area from original image at t0, look for next area
+	# repeat until whole image at t0 is processed
+
+	# print("previous_images", previous_images)
+
+	image_t0 = cv2.imread(previous_images[0])
+	image_t0 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
+	image_t1 = cv2.imread(previous_images[1])
+	image_t1 = cv2.cvtColor(image_t1, cv2.COLOR_BGR2RGB)
+	image_t2 = cv2.imread(previous_images[2])
+	image_t2 = cv2.cvtColor(image_t2, cv2.COLOR_BGR2RGB)
+
+	show = False
+	area_id = 0
+	for i in range(0,image_t0.shape[0]):
+			# print("i", i, "max", image_t0.shape[0])
+			for j in range(0,image_t0.shape[1]):
+
+				pixel0 = image_t0[i,j] 
+				pixel1 = image_t1[i,j] 
+				pixel2 = image_t2[i,j] 
+
+				# ignore areas that have been removed/ and by default, ignore black areas too
+				if( pixel0[0]<=1 or pixel0[1]<=1 or pixel0[2] <= 1):
+					continue
+				if( pixel1[0]<=1 or pixel1[1]<=1 or pixel1[2] <= 1):
+					continue
+				if( pixel2[0]<=1 or pixel2[1]<=1 or pixel2[2] <= 1):
+					continue
+
+				# get an array only containing this area, from the 3rd image
+				selected_area_2, mask = select_area(image_t2, i, j, show)
+				size_t2, center_t2, rgb_t2 = get_area_parameters(selected_area_2) 
+				# get this exact same area from image 1 and 0
+				selected_area_1 = select_area_from_mask(image_t1, mask, show)
+				size_t1, center_t1, rgb_t1 = get_area_parameters(selected_area_1) 
+				selected_area_0 = select_area(image_t0, mask, show)
+				size_t0, center_t0, rgb_t0 = get_area_parameters(selected_area_0)  
+
+				# if (size_t0>size_t1 and size_t1>size_t2):# and rgb_t2[0]<rgb_t0[0]):
+				# 	w=10
+				# 	h=10
+				# 	fig=plt.figure(figsize=(8, 8))
+				# 	columns = 3
+				# 	rows = 1
+				# 	fig.add_subplot(rows, columns, 1)
+				# 	plt.imshow(selected_area_0)
+				# 	fig.add_subplot(rows, columns, 2)
+				# 	plt.imshow(selected_area_1)
+				# 	fig.add_subplot(rows, columns, 3)
+				# 	plt.imshow(selected_area_2)
+
+				# 	plt.show()
+
+				# rows
+				# fieldnames = ['image_t0', 'area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
+				result = [im_index, area_id, size_t0, size_t1, size_t2]
+				result.extend(rgb_t0)
+				result.extend(rgb_t1)
+				result.extend(rgb_t2)
+				writer.writerow(result)
+
+				# remove this area from the image
+				mask = cv2.inRange(selected_area_0, 0, 0)
+				image_t0 = cv2.bitwise_and(image_t0, image_t0, mask=mask)
+				area_id = area_id + 1
 
 
 # previous_gs_images = paths [t0,t1,t2]
@@ -436,7 +500,7 @@ def record_area_changes(real_image_dir, output_dir, image_count):
 	if(image_count == -1):
 		image_count =  len(real_image_list)
 
-	save_file = output_dir + "/area_change_analysis.csv"
+	save_file = output_dir + "/fixed_area_change_analysis.csv"
 	print(save_file)
 	fieldnames = ['image_0','area_id','size_t0','size_t1','size_t2','r0','g0','b0','r1','g1','b1','r2','g2','b2']
 
