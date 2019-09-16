@@ -23,6 +23,8 @@ public class Constants {
 		return b;
 	}
 
+	public final static boolean BIG_SCALE = false;
+
 	public final static int BENHAM_CLASSIC = 0;
 	public final static int BENHAM_VAR = 1;
 	public final static int BENHAM_RED = 2;

@@ -20,8 +20,10 @@ public class Generator extends JPanel {
     private int UPDATE_RATE = 50;
 
     // Container box's width and height
-    private static final int BOX_WIDTH = 160; //160; //800
-    private static final int BOX_HEIGHT = 120; //120; //800
+    //private static final
+    int BOX_WIDTH;
+    //private static final
+    int BOX_HEIGHT;
 
     private int step = 0;
     private boolean save;
@@ -37,11 +39,33 @@ public class Generator extends JPanel {
     BufferedImage fraserImage;
     boolean do_update = true;
 
+    //graphical parameters
+    int phase = 0;
+    int cirles = 3;
+    int center_x;
+    int center_y;
+    int separation;
+    int basic_radius;
+
 
     public Generator(int type, JFrame frame, String folderName, boolean save){
         this.type = type;
-        //this.frame = frame;
-        //frame.add(this);
+
+        if(Constants.BIG_SCALE){
+            BOX_WIDTH = 800;
+            BOX_HEIGHT = 800;
+            separation = 8;
+            basic_radius = 150;
+        } else {
+            BOX_WIDTH = 160;
+            BOX_HEIGHT = 120;
+            separation = 4;
+            basic_radius = 15;
+        }
+
+        center_x = BOX_WIDTH/2;
+        center_y = BOX_HEIGHT/2;
+
         this.folderName = folderName;
         this.save = save;
         paintImage = new BufferedImage(BOX_WIDTH, BOX_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
@@ -58,6 +82,9 @@ public class Generator extends JPanel {
             snakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
             bwSnakesImage = ImageIO.read(new File(path, "snakes_2.jpg"));
             fraserImage = ImageIO.read(new File(path, "fraser.png"));
+
+            snakesImage = resize(snakesImage, BOX_HEIGHT);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -118,6 +145,34 @@ public class Generator extends JPanel {
         gameThread.start();
     }
 
+
+    /**
+     * Takes a BufferedImage and resizes it according to the provided targetSize
+     *
+     * @param src the source BufferedImage
+     * @param targetSize maximum height (if portrait) or width (if landscape)
+     * @return a resized version of the provided BufferedImage
+     */
+    private BufferedImage resize(BufferedImage src, int targetSize) {
+        if (targetSize <= 0) {
+            return src; //this can't be resized
+        }
+        int targetWidth = targetSize;
+        int targetHeight = targetSize;
+        float ratio = ((float) src.getHeight() / (float) src.getWidth());
+        if (ratio <= 1) { //square or landscape-oriented image
+            targetHeight = (int) Math.ceil((float) targetWidth * ratio);
+        } else { //portrait image
+            targetWidth = Math.round((float) targetHeight / ratio);
+        }
+        BufferedImage bi = new BufferedImage(targetWidth, targetHeight, src.getTransparency() == Transparency.OPAQUE ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bi.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR); //produces a balanced resizing (fast and decent quality)
+        g2d.drawImage(src, 0, 0, targetWidth, targetHeight, null);
+        g2d.dispose();
+        return bi;
+    }
+
     private void screenshot() {
 
         while (do_update){
@@ -137,14 +192,6 @@ public class Generator extends JPanel {
 
         saved = true;
     }
-
-
-    int phase = 0;
-    int cirles = 3;
-    int center_x = BOX_WIDTH/2;
-    int center_y = BOX_HEIGHT/2;
-    int separation = 4; //8 //4
-    int basic_radius = 15; //150 //15
 
     private void drawBenham_var(Graphics g){
 
@@ -796,14 +843,14 @@ public class Generator extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
         g.setColor(Color.black);
-        int r =  basic_radius;
+        int r =  basic_radius*2;
 
         if(phase==timing){
             g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
         } else if(phase==2){
             //draw a big black square
             g.setColor(Color.black);
-            r = basic_radius + 6*separation;
+            r = r/2;// + 6*separation;
             int x = center_x - r;
             int y = center_y - r;
             g.fillRect(x, y, r*2, r*2);
@@ -987,7 +1034,8 @@ public class Generator extends JPanel {
                 g.drawImage(snakesImage, x, y, null);
             }
         } else if(phase==2) {
-
+            g.setColor(Color.black);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
             phase = -1;
         }
 
@@ -1112,7 +1160,7 @@ public class Generator extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
         //darker
-        Color c = new Color(0,80,0);
+        Color c = Color.black; //new Color(0,80,0);
         g.setColor(c);//black
 
         if(phase==0){
@@ -1141,7 +1189,7 @@ public class Generator extends JPanel {
         } else if(phase==2){
             //draw a big black square
             //even darker
-            c = new Color(0,60,0);
+            // c = new Color(0,60,0);
             g.setColor(c);//black
 
             int r = basic_radius + 12*separation;

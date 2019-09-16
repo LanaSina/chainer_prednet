@@ -90,7 +90,7 @@ def select_area(image, i, j, show):
 
 	# segment the image
 	rgb = 1.0*image[i,j]
-	error = 20
+	error = 40
 	temp = rgb - error
 
 	for k in range(0,3):
@@ -116,8 +116,20 @@ def select_area(image, i, j, show):
 	selected_mask = cv2.inRange(current_output, current_id, current_id)
 	new_image = cv2.bitwise_and(image, image, mask=selected_mask)
 	if (show):
+		w=10
+		h=10
+		fig=plt.figure(figsize=(8, 8))
+		columns = 1
+		rows = 3
+		fig.add_subplot(rows, columns, 1)
+		plt.imshow(image)
+		fig.add_subplot(rows, columns, 2)
+		plt.imshow(selected_mask)
+		fig.add_subplot(rows, columns, 3)
 		plt.imshow(new_image)
+
 		plt.show()
+
 
 	return(new_image, selected_mask)
 
@@ -195,7 +207,6 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 	show = False
 	area_id = 0
 	for i in range(0,image_t0.shape[0]):
-			# print("i", i, "max", image_t0.shape[0])
 			for j in range(0,image_t0.shape[1]):
 
 				pixel0 = image_t0[i,j] 
@@ -249,21 +260,18 @@ def areas_changes(im_index, previous_images, output_dir, writer):
 				image_t0 = cv2.bitwise_and(image_t0, image_t0, mask=mask)
 				area_id = area_id + 1
 
-
+# add +1 to rgb values that are == 0
+def add_one_to_0s(image):
+	for i in range(0,image.shape[0]):
+			for j in range(0,image.shape[1]):
+				pixel = image[i,j]
+				for p in range(0,3):
+					if(pixel[p]==0):
+						pixel[p] = 1
+	return(image)
+				
 # previous_images, output_dir, writer
 def fixed_areas_changes(im_index, previous_images, output_dir, writer):
-
-	# find an area
-	# calculate its center, size, and average rgb
-	# find same area in next image using center value
-	# calculate its center, size, and average rgb
-	# find same area in next next image
-	# calculate its size and average rgb
-	# record all values
-	# remove area from original image at t0, look for next area
-	# repeat until whole image at t0 is processed
-
-	# print("previous_images", previous_images)
 
 	image_t0 = cv2.imread(previous_images[0])
 	image_t0 = cv2.cvtColor(image_t0, cv2.COLOR_BGR2RGB)
@@ -272,10 +280,16 @@ def fixed_areas_changes(im_index, previous_images, output_dir, writer):
 	image_t2 = cv2.imread(previous_images[2])
 	image_t2 = cv2.cvtColor(image_t2, cv2.COLOR_BGR2RGB)
 
+	image_t0 = add_one_to_0s(image_t0)
+	image_t1 = add_one_to_0s(image_t1)
+	image_t2 = add_one_to_0s(image_t2)
+
+	# plt.imshow(image_t2)
+	# plt.show()
+
 	show = False
 	area_id = 0
 	for i in range(0,image_t0.shape[0]):
-			# print("i", i, "max", image_t0.shape[0])
 			for j in range(0,image_t0.shape[1]):
 
 				pixel0 = image_t0[i,j] 
@@ -296,23 +310,23 @@ def fixed_areas_changes(im_index, previous_images, output_dir, writer):
 				# get this exact same area from image 1 and 0
 				selected_area_1 = select_area_from_mask(image_t1, mask, show)
 				size_t1, center_t1, rgb_t1 = get_area_parameters(selected_area_1) 
-				selected_area_0 = select_area(image_t0, mask, show)
+				selected_area_0 = select_area_from_mask(image_t0, mask, show)
 				size_t0, center_t0, rgb_t0 = get_area_parameters(selected_area_0)  
 
 				# if (size_t0>size_t1 and size_t1>size_t2):# and rgb_t2[0]<rgb_t0[0]):
-				# 	w=10
-				# 	h=10
-				# 	fig=plt.figure(figsize=(8, 8))
-				# 	columns = 3
-				# 	rows = 1
-				# 	fig.add_subplot(rows, columns, 1)
-				# 	plt.imshow(selected_area_0)
-				# 	fig.add_subplot(rows, columns, 2)
-				# 	plt.imshow(selected_area_1)
-				# 	fig.add_subplot(rows, columns, 3)
-				# 	plt.imshow(selected_area_2)
+				# w=10
+				# h=10
+				# fig=plt.figure(figsize=(8, 8))
+				# columns = 1
+				# rows = 3
+				# fig.add_subplot(rows, columns, 1)
+				# plt.imshow(selected_area_0)
+				# fig.add_subplot(rows, columns, 2)
+				# plt.imshow(selected_area_1)
+				# fig.add_subplot(rows, columns, 3)
+				# plt.imshow(selected_area_2)
 
-				# 	plt.show()
+				plt.show()
 
 				# rows
 				# fieldnames = ['image_t0', 'area_id','size_t0','size_t1','size_t2','rgb_t0','rgb_t1','rgb_t2']
@@ -376,23 +390,15 @@ def has_flickered(read_gs_images, i, j):
 
 	return False
 
-# def area_has_decreased():
-
 
 def flickers(previous_gs_images, predicted_image, output_dir, writer):
 	read_gs_images = []
-	# print("here")
 
 	for path in previous_gs_images:
 		read_gs_images.extend([cv2.imread(path, cv2.IMREAD_GRAYSCALE)])
 
-
-	# plt.imshow(read_gs_images[0])
-	# plt.show()
-
 	for i in range(0,predicted_image.shape[0]):
 			for j in range(0,predicted_image.shape[1]):
-				#print("here")
 
 				# check for flicker
 				if(has_flickered(read_gs_images, i, j)):
@@ -406,10 +412,10 @@ def flickers(previous_gs_images, predicted_image, output_dir, writer):
 					result.extend(predicted_image[i,j])
 					writer.writerow(result)
 
-# predictions_dir: predicted images
+# prediction_dir: predicted images
 # gs_image_dir: greyscale input
-def process_flicker(predictions_dir, gs_image_dir, real_image_dir, output_dir, image_count):
-	predictions_list = sorted(os.listdir(predictions_dir))
+def process_flicker(prediction_dir, gs_image_dir, real_image_dir, output_dir, image_count):
+	predictions_list = sorted(os.listdir(prediction_dir))
 	gs_image_list = sorted(os.listdir(gs_image_dir))
 	real_image_list = sorted(os.listdir(real_image_dir))
 
@@ -429,7 +435,7 @@ def process_flicker(predictions_dir, gs_image_dir, real_image_dir, output_dir, i
 		# use prediction of t+2 (==prediction at t+1)
 		# and real images at t and t+1
 		for image_file in predictions_list[2:2+image_count]:
-			prediction_path = os.path.join(predictions_dir, image_file)
+			prediction_path = os.path.join(prediction_dir, image_file)
 			print("read ", prediction_path)
 			predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
 
@@ -451,11 +457,11 @@ def process_flicker(predictions_dir, gs_image_dir, real_image_dir, output_dir, i
 			
 			im_index = im_index + 1
 
-# predictions_dir: predicted images
+# prediction_dir: predicted images
 # gs_image_dir: greyscale input
-def process_images(predictions_dir, gs_image_dir, real_image_dir, output_dir, image_count):
+def process_images(prediction_dir, gs_image_dir, real_image_dir, output_dir, image_count):
 
-	predictions_list = sorted(os.listdir(predictions_dir))
+	predictions_list = sorted(os.listdir(prediction_dir))
 	gs_image_list = sorted(os.listdir(gs_image_dir))
 	real_image_list = sorted(os.listdir(real_image_dir))
 
@@ -474,7 +480,7 @@ def process_images(predictions_dir, gs_image_dir, real_image_dir, output_dir, im
 		# use prediction of t+2 (==prediction at t+1)
 		# and real images at t and t+1
 		for image_file in predictions_list[2:2+image_count]:
-			prediction_path = os.path.join(predictions_dir, image_file)
+			prediction_path = os.path.join(prediction_dir, image_file)
 			print("read ", prediction_path)
 			predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
 
@@ -494,8 +500,10 @@ def process_images(predictions_dir, gs_image_dir, real_image_dir, output_dir, im
 			im_index = im_index + 1
 
 
-def record_area_changes(real_image_dir, output_dir, image_count):
+def record_area_changes(real_image_dir, prediction_dir, output_dir, image_count):
 	real_image_list = sorted(os.listdir(real_image_dir))
+	prediction_list = sorted(os.listdir(prediction_dir))
+
 
 	if(image_count == -1):
 		image_count =  len(real_image_list)
@@ -516,20 +524,29 @@ def record_area_changes(real_image_dir, output_dir, image_count):
 			# predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
 
 			previous_images = []
+			# previous_path = os.path.join(real_image_dir, real_image_list[im_index])
+			# previous_images.append(previous_path)
+			# previous_path = os.path.join(real_image_dir, real_image_list[im_index+1])
+			# previous_images.append(previous_path)
+			# previous_images.append(path)
 			previous_path = os.path.join(real_image_dir, real_image_list[im_index])
 			previous_images.append(previous_path)
 			previous_path = os.path.join(real_image_dir, real_image_list[im_index+1])
 			previous_images.append(previous_path)
-			previous_images.append(path)
+			# last image is the prediction
+			previous_path = os.path.join(prediction_dir, prediction_list[im_index+1])
+			previous_images.append(previous_path)
 
-			areas_changes(im_index,previous_images, output_dir, writer)
+			print(previous_images)
+
+			fixed_areas_changes(im_index,previous_images, output_dir, writer)
 			
 			im_index = im_index + 1
 			print("here")
 
 
 parser = argparse.ArgumentParser(description='image_analysis')
-parser.add_argument('predictions_dir', action='store', nargs='?', help='Path to prednet output images')
+parser.add_argument('prediction_dir', action='store', nargs='?', help='Path to prednet output images')
 parser.add_argument('gs_image_dir', action='store', nargs='?', help='Path to original greyscale images used as input')
 parser.add_argument('real_image_dir', action='store', nargs='?', help='Path to original images')
 parser.add_argument('output_dir', action='store', nargs='?', help='output directory')
@@ -540,7 +557,7 @@ args = parser.parse_args()
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
-#process_images(args.predictions_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
-#process_flicker(args.predictions_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
+#process_images(args.prediction_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
+#process_flicker(args.prediction_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
 #process_flicker(args.real_image_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
-record_area_changes(args.real_image_dir, args.output_dir,  args.n_images)
+record_area_changes(args.real_image_dir, args.prediction_dir, args.output_dir,  args.n_images)
