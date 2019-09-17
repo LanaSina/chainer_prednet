@@ -141,8 +141,13 @@ plot(mean_sizes, type="l"
 
 
 
-sub = subset(df, r2>g2 & r2>b2)
-sub = subset(df, b2>r2)
+sub = subset(df, r2>g2)# & r2>b2)
+sub = subset(df, b2>r2+90)
+
+plot(df$mean_rgb1, type="l")
+
+# getting darker + area sizes go from 20 to 80: add blue and green, red follows decreasing slope noormally
+# getting lighter + 6400 to 7000: remove a bit of all colors, but remove more red
 ```
 
 ```{r}

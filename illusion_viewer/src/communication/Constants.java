@@ -23,7 +23,7 @@ public class Constants {
 		return b;
 	}
 
-	public final static boolean BIG_SCALE = false;
+	public final static boolean BIG_SCALE = true;
 
 	public final static int BENHAM_CLASSIC = 0;
 	public final static int BENHAM_VAR = 1;
@@ -50,6 +50,7 @@ public class Constants {
 	public final static int NO_MASK = 22;
 	public final static int CONCURRENT = 23;
 	public final static int TIME_WARP = 24;
+	public final static int STATIC = 25;
 
 
 
