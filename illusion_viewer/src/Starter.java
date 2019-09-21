@@ -17,8 +17,8 @@ public class Starter {
 //    static int type = Constants.DRAW_X_PHASE_0;
 //    static int type = Constants.THICKER_LINE;
 
-    static int type = Constants.SNAKES_1;
-//    static int type = Constants.BAD_SNAKES;
+//    static int type = Constants.SNAKES_0;
+//    static int type = Constants.SNAKES_1;
 //    static int type = Constants.SNAKES_BW;
 //    static int type = Constants.FRASER;
 
@@ -29,8 +29,8 @@ public class Starter {
 //    static int type = Constants.TIME_WARP;
 
 //    static int type = Constants.STATIC;
-//static int type = Constants.FLASH_CUSTOM;
-//    static int type = Constants.TRAIN;
+    static int type = Constants.TRAIN;
+//    static int type = Constants.CUSTOM_IMAGE;
 
 
     public static void main(String[] args) {
@@ -43,10 +43,46 @@ public class Starter {
         // Run GUI in the Event Dispatcher Thread (EDT) instead of main thread.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+
                 // Set up main window (using Swing's Jframe)
                 frame = new JFrame("");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setContentPane(new Generator(type, frame, folderName, save));
+                Generator generator = new Generator(type, frame, save);
+
+                String customImage = "";
+                int phase = 1;
+
+                switch (type) {
+                    case Constants.SNAKES_0: {
+                        customImage = "snakes_clean.png";
+                        phase = 0;
+                        break;
+                    }
+                    case Constants.SNAKES_1: {
+                        customImage = "snakes_clean.png";
+                        phase = 1;
+                        break;
+                    }
+                    case Constants.SNAKES_BW: {
+                        customImage = "snakes_2_bw.jpg";
+                        phase = 1;
+                        break;
+                    }
+                    case Constants.FRASER: {
+                        customImage = "fraser.png";
+                        phase = 1;
+                        break;
+                    }
+                    case Constants.TRAIN: {
+                        customImage = "train.png";
+                        phase = 1;
+                        break;
+                    }
+                }
+
+                generator.setImage(customImage, phase);
+
+                frame.setContentPane(generator);
                 frame.pack();
                 frame.setVisible(true);
             }

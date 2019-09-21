@@ -32,11 +32,7 @@ public class Generator extends JPanel {
     JFrame frame;
 
     String nameFormat = "%04d";
-    String folderName;
-    BufferedImage image;
-//            snakesImage;
-//    BufferedImage bwSnakesImage;
-//    BufferedImage fraserImage;
+    BufferedImage image = null;
     boolean do_update = true;
 
     //graphical parameters
@@ -46,9 +42,10 @@ public class Generator extends JPanel {
     int center_y;
     int separation;
     int basic_radius;
+    int timing = 1;
 
 
-    public Generator(int type, JFrame frame, String folderName, boolean save){
+    public Generator(int type, JFrame frame, boolean save){
         this.type = type;
 
         if(Constants.BIG_SCALE){
@@ -66,7 +63,6 @@ public class Generator extends JPanel {
         center_x = BOX_WIDTH/2;
         center_y = BOX_HEIGHT/2;
 
-        this.folderName = folderName;
         this.save = save;
         paintImage = new BufferedImage(BOX_WIDTH, BOX_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 
@@ -76,44 +72,14 @@ public class Generator extends JPanel {
         frame.setSize(BOX_WIDTH, BOX_HEIGHT);
         this.frame.setVisible(true);
 
-
-        String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
-
-        try {
-            switch (type) {
-                case Constants.SNAKES_0: {
-                    image =resize(ImageIO.read(new File(path, "snakes_clean.png")), BOX_WIDTH);
-                    break;
-                }
-                case Constants.SNAKES_1: {
-                    image = resize(ImageIO.read(new File(path, "snakes_clean.png")), BOX_WIDTH);
-                    break;
-                }
-                case Constants.SNAKES_BW: {
-                    image = resize(ImageIO.read(new File(path, "snakes_2_bw.jpg")), BOX_HEIGHT);
-                    break;
-                }
-                case Constants.FRASER: {
-                    image = resize(ImageIO.read(new File(path, "fraser.png")), BOX_HEIGHT);
-                    break;
-                }
-                case Constants.TRAIN: {
-                    image = resize(ImageIO.read(new File(path, "train.png")), BOX_HEIGHT*2/3);
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         this.setPreferredSize(new Dimension(BOX_WIDTH, BOX_HEIGHT));
 
         if (save) {
             //create directory
-            File theDir = new File(folderName);
+            File theDir = new File(Constants.IMAGE_OUTPUT_PATH);
             // if the directory does not exist, create it
             if (!theDir.exists()) {
-                mlog.say("creating directory: " + folderName);
+                mlog.say("creating directory: " + Constants.IMAGE_OUTPUT_PATH);
                 boolean result = false;
                 try {
                     theDir.mkdirs();
@@ -161,6 +127,22 @@ public class Generator extends JPanel {
 
 
     /**
+     *
+     * @param imageName the name of the image you want to display
+     * @param timing 0: the image will be displayed after a white mask. 1: the image will be displayed after a black mask.
+     */
+    public void setImage(String imageName, int timing){
+        if(imageName.length()>0) {
+            try {
+                image = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, imageName)), BOX_HEIGHT * 2 / 3);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.timing = timing;
+        }
+    }
+
+    /**
      * Takes a BufferedImage and resizes it according to the provided targetSize
      *
      * @param src the source BufferedImage
@@ -199,7 +181,7 @@ public class Generator extends JPanel {
         String name = String.format(nameFormat, step) + ".png";
         mlog.say(name);
         try {
-            ImageIO.write(paintImage, "PNG", new File(folderName + name));
+            ImageIO.write(paintImage, "PNG", new File(Constants.IMAGE_OUTPUT_PATH + name));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -562,7 +544,7 @@ public class Generator extends JPanel {
             phase = -1;
         }
 
-            phase = phase+1;
+        phase = phase+1;
     }
 
     private void time_warp(Graphics g){
@@ -1193,9 +1175,9 @@ public class Generator extends JPanel {
     }
 
 
-    private void drawFlashCustom(Graphics g){
+    private void drawFlashCustom(Graphics g, int timing){
 
-        if(phase==0){
+        if(phase==timing){
             //draw black mask
             g.setColor(Color.black);
             g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
@@ -1204,7 +1186,7 @@ public class Generator extends JPanel {
             //draw image
             drawStaticSnakes(g);
         } else if(phase==2){
-           //draw white
+            //draw white
             phase = -1;
         }
 
@@ -1323,9 +1305,9 @@ public class Generator extends JPanel {
         drawBands(r, g2, 30, h);
     }
 
-        /**
-         *
-         */
+    /**
+     *
+     */
     private void drawShapes(){//(Graphics g){
 
         Graphics g = paintImage.createGraphics();
@@ -1336,130 +1318,106 @@ public class Generator extends JPanel {
 
         // draw on paintImage using Graphics
 
+        if(image!=null){
+            showDephasedImage(g, timing, image);
+        } else {
 
+            switch (type) {
+                case Constants.BENHAM_CLASSIC: {
+                    drawBenham(g);
+                    break;
+                }
+                case Constants.BENHAM_VAR: {
+                    drawBenham_var(g);
+                    break;
+                }
+                case Constants.BENHAM_RED: {
+                    drawBenham_red(g);
+                    break;
+                }
 
-        switch (type){
-            case Constants.BENHAM_CLASSIC: {
-                drawBenham(g);
-                break;
-            }
-            case Constants.BENHAM_VAR: {
-                drawBenham_var(g);
-                break;
-            }
-            case Constants.BENHAM_RED: {
-                drawBenham_red(g);
-                break;
-            }
+                case Constants.BENHAM_WEIRD: {
+                    drawBenham_weird(g);
+                    break;
+                }
 
-            case Constants.BENHAM_WEIRD: {
-                drawBenham_weird(g);
-                break;
-            }
+                case Constants.SIMPLE_SHAPES_0: {
+                    simple_shape(g, 0);
+                    break;
+                }
+                case Constants.SIMPLE_SHAPES_1: {
+                    simple_shape(g, 1);
+                    break;
+                }
 
-            case Constants.SIMPLE_SHAPES_0: {
-                simple_shape(g, 0);
-                break;
-            }
-            case Constants.SIMPLE_SHAPES_1: {
-                simple_shape(g, 1);
-                break;
-            }
+                case Constants.THINNER_LINE: {
+                    thinner_line(g);
+                    break;
+                }
 
-            case Constants.THINNER_LINE: {
-                thinner_line(g);
-                break;
-            }
+                case Constants.THICKER_LINE: {
+                    thicker_line(g);
+                    break;
+                }
 
-            case Constants.THICKER_LINE: {
-                thicker_line(g);
-                break;
-            }
+                case Constants.DRAW_X_0: {
+                    draw_x(g, 0);
+                    break;
+                }
+                case Constants.DRAW_X_1: {
+                    draw_x(g, 1);
+                    break;
+                }
+                case Constants.ROTATING_X_1: {
+                    draw_rotating_x(g, 1);
+                    break;
+                }
+                case Constants.DRAW_X_PHASE_0: {
+                    draw_x_dephased(g, 0);
+                    break;
+                }
+                case Constants.DRAW_X_PHASE_1: {
+                    draw_x_dephased(g, 1);
+                    break;
+                }
 
-            case Constants.DRAW_X_0: {
-                draw_x(g, 0);
-                break;
-            }
-            case Constants.DRAW_X_1: {
-                draw_x(g, 1);
-                break;
-            }
-            case Constants.ROTATING_X_1: {
-                draw_rotating_x(g, 1);
-                break;
-            }
-            case Constants.DRAW_X_PHASE_0: {
-                draw_x_dephased(g, 0);
-                break;
-            }
-            case Constants.DRAW_X_PHASE_1: {
-                draw_x_dephased(g, 1);
-                break;
-            }
+                case Constants.DRAW_PLUS: {
+                    draw_plus(g, 0);
+                    break;
+                }
 
-            case Constants.DRAW_PLUS: {
-                draw_plus(g,0);
-                break;
-            }
-            case Constants.SNAKES_0: {
-                showDephasedImage(g, 0, image);
-                break;
-            }
-            case Constants.SNAKES_1: {
-                showDephasedImage(g, 1, image);
-                break;
-            }
-            case Constants.SNAKES_BW: {
-                showDephasedImage(g, 0, image);
-                break;
-            }
+                case Constants.CONCENTRIC_0: {
+                    concentric(g, 0);
+                    break;
+                }
+                case Constants.CONCENTRIC_1: {
+                    concentric(g, 1);
+                    break;
+                }
 
-            case Constants.CONCENTRIC_0: {
-                concentric(g, 0);
-                break;
-            }
-            case Constants.CONCENTRIC_1: {
-                concentric(g, 1);
-                break;
-            }
+                case Constants.NEW_BENHAM: {
+                    new_benham(g, 0);
+                    break;
+                }
 
-            case Constants.FRASER: {
-                showDephasedImage(g, 1, image);
-                break;
-            }
+                case Constants.NO_MASK: {
+                    no_mask(g, 0);
+                    break;
+                }
 
-            case Constants.NEW_BENHAM: {
-                new_benham(g, 0);
-                break;
-            }
+                case Constants.CONCURRENT: {
+                    smooth_concurrent(g);
+                    break;
+                }
+                case Constants.TIME_WARP: {
+                    time_warp(g);
+                    break;
+                }
 
-            case Constants.NO_MASK: {
-                no_mask(g, 0);
-                break;
-            }
-
-            case Constants.CONCURRENT: {
-                smooth_concurrent(g);
-                break;
-            }
-            case Constants.TIME_WARP: {
-                time_warp(g);
-                break;
-            }
-
-            case Constants.STATIC:{
-                drawStaticSnakes(g);
-                break;
-            }
-
-            case Constants.FLASH_CUSTOM:{
-                drawFlashCustom(g);
-                break;
-            }
-
-            case Constants.TRAIN:{
-                showDephasedImage(g, 0, image);
-                break;
+                case Constants.STATIC: {
+                    drawStaticSnakes(g);
+                    break;
+                }
             }
         }
 

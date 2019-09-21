@@ -23,6 +23,9 @@ public class Constants {
 		return b;
 	}
 
+	public final static String IMAGE_OUTPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/images/";
+	public final static String IMAGE_INPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
+
 	public final static boolean BIG_SCALE = true;
 
 	public final static int BENHAM_CLASSIC = 0;
@@ -51,7 +54,6 @@ public class Constants {
 	public final static int CONCURRENT = 23;
 	public final static int TIME_WARP = 24;
 	public final static int STATIC = 25;
-	public final static int FLASH_CUSTOM = 26;
 	public final static int TRAIN = 27;
 
 }
