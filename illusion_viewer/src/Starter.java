@@ -5,9 +5,11 @@ import javax.swing.*;
 
 public class Starter {
     static JFrame frame;
+
+    /** set to true to save image frames*/
     static  boolean save = false;
 
-//    static int type = Constants.BENHAM_CLASSIC;
+    static int type = Constants.BENHAM_CLASSIC;
 //    static int type = Constants.BENHAM_RED;
 //    static int type = Constants.SIMPLE_SHAPES_0;
 //    static int type = Constants.DRAW_X_0;
@@ -28,7 +30,7 @@ public class Starter {
 //    static int type = Constants.TIME_WARP;
 
 //    static int type = Constants.STATIC;
-    static int type = Constants.TRAIN;
+//    static int type = Constants.TRAIN;
 
     /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;

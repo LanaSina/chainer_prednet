@@ -24,8 +24,10 @@ public class Constants {
 	}
 
 	public final static String IMAGE_OUTPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/images/";
-	public final static String IMAGE_INPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
+	// public final static String IMAGE_INPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
+	public final static String IMAGE_INPUT_PATH = "example_images/";
 
+	/** set to false to save prednet-sized images */
 	public final static boolean BIG_SCALE = true;
 
 	public final static int BENHAM_CLASSIC = 0;

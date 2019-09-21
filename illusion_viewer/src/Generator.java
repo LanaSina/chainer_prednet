@@ -16,6 +16,7 @@ public class Generator extends JPanel {
     private BufferedImage paintImage;
 
     private int type;
+    /** flashing rate in milliseconds */
     private int UPDATE_RATE = 50;
 
     // Container box's width and height
