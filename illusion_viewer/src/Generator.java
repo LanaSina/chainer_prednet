@@ -4,6 +4,7 @@ import communication.MyLog;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +33,10 @@ public class Generator extends JPanel {
 
     String nameFormat = "%04d";
     String folderName;
-    BufferedImage snakesImage;
-    BufferedImage bwSnakesImage;
-    BufferedImage fraserImage;
+    BufferedImage image;
+//            snakesImage;
+//    BufferedImage bwSnakesImage;
+//    BufferedImage fraserImage;
     boolean do_update = true;
 
     //graphical parameters
@@ -76,19 +78,33 @@ public class Generator extends JPanel {
 
 
         String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
+
         try {
-            snakesImage = ImageIO.read(new File(path, "snakes_1.jpg"));
-            bwSnakesImage = resize(ImageIO.read(new File(path, "snakes_2_bw.jpg")), BOX_WIDTH);
-            fraserImage = resize(ImageIO.read(new File(path, "fraser.png")), BOX_HEIGHT);
-
-            snakesImage = resize(snakesImage, BOX_WIDTH);
-
+            switch (type) {
+                case Constants.SNAKES_0: {
+                    image =resize(ImageIO.read(new File(path, "snakes_clean.png")), BOX_WIDTH);
+                    break;
+                }
+                case Constants.SNAKES_1: {
+                    image = resize(ImageIO.read(new File(path, "snakes_clean.png")), BOX_WIDTH);
+                    break;
+                }
+                case Constants.SNAKES_BW: {
+                    image = resize(ImageIO.read(new File(path, "snakes_2_bw.jpg")), BOX_HEIGHT);
+                    break;
+                }
+                case Constants.FRASER: {
+                    image = resize(ImageIO.read(new File(path, "fraser.png")), BOX_HEIGHT);
+                    break;
+                }
+                case Constants.TRAIN: {
+                    image = resize(ImageIO.read(new File(path, "train.png")), BOX_HEIGHT*2/3);
+                    break;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-//        ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
-//        op.filter(bwSnakesImage, bwSnakesImage);
 
         this.setPreferredSize(new Dimension(BOX_WIDTH, BOX_HEIGHT));
 
@@ -862,23 +878,39 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
-        int r =  basic_radius*2;
+        Color c = new Color(150, 200, 0);
+        c = Color.GREEN;
+        g.setColor(c);
+        int r =  basic_radius;
 
         if(phase==timing){
-            g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
+            //g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
+
+            g.drawLine(center_x-r, center_y-r/6, center_x+r, center_y-r/6);
         } else if(phase==2){
             //draw a big black square
             g.setColor(Color.black);
             r = r/2;// + 6*separation;
             int x = center_x - r;
             int y = center_y - r;
-            g.fillRect(x, y, r*2, r*2);
-            secondary_phase = secondary_phase + 30;
+//            g.fillRect(x, y, r*2, r*2);
+
+            int width = 50;
+            for (int i=0; i<r*2; i=i+2*width){
+                g.fillRect(x + i, y, width, r*2);
+            }
+
             phase = -1;
         } else{
-            g.drawLine(center_x+r, center_y-r, center_x-r, center_y+r);
+//            g.drawLine(center_x+r, center_y-r, center_x-r, center_y+r);
+            g.drawLine(center_x-r, center_y+r/6, center_x+r, center_y+r/6);
         }
+
+//        g.setColor(Color.black);
+//        r = r/6;
+//        int x = center_x - r;
+//        int y = center_y - r;
+//        g.fillRect(x, y, r*2, r*2);
 
         phase = phase+1;
     }
@@ -1010,104 +1042,6 @@ public class Generator extends JPanel {
 
         phase = phase+1;
     }
-
-    private void draw_snakes(Graphics g, int timing, boolean bw){
-
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
-
-//        if(phase==timing){//timing
-//            int x = center_x - snakesImage.getWidth()/2;
-//            int y = center_y - snakesImage.getHeight()/2;
-//            if(bw){
-//                g.drawImage(bwSnakesImage, x, y, null);
-//            } else {
-//                g.drawImage(snakesImage, x, y, null);
-//            }
-//        } else if(phase==1) {//2
-//            //draw a big black square
-////            g.setColor(Color.black);
-////            int r = 350;
-////            int x = center_x - r;
-////            int y = center_y - r;
-////            g.fillRect(x, y, r * 2, r * 2);
-//        } else if(phase==2) {//2
-//            //draw a big black square
-//            g.setColor(Color.black);
-//            int r = 350;
-//            int x = center_x - r;
-//            int y = center_y - r;
-//            g.fillRect(x, y, r * 2, r * 2);
-//            phase = -1;
-//        }
-
-        if(phase==0) {//2
-            int x = center_x - snakesImage.getWidth()/2;
-            int y = center_y - snakesImage.getHeight()/2;
-            if(bw){
-                g.drawImage(bwSnakesImage, x, y+20, null);
-            } else {
-                g.drawImage(snakesImage, x, y, null);
-            }
-        } else if(phase==2) {
-            g.setColor(Color.black);
-            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
-            phase = -1;
-        }
-
-
-        phase = phase+1;
-    }
-
-    private void draw_frazer(Graphics g, int timing){
-
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
-
-        if(phase==timing){//timing
-            int x = center_x - snakesImage.getWidth()/2;
-            int y = center_y - snakesImage.getHeight()/2;
-            g.drawImage(fraserImage, x, y, null);
-        } else if(phase==2){//2
-            //draw a big black square
-            g.setColor(Color.black);
-            int r = 350;
-            int x = center_x - r;
-            int y = center_y - r;
-            g.fillRect(x, y, r*2, r*2);
-            secondary_phase = secondary_phase + 30;
-            phase = -1;
-        }
-
-        phase = phase+1;
-    }
-
-    private void draw_bad_snakes(Graphics g){
-
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
-
-        if(phase==0){//timing
-            int x = center_x - snakesImage.getWidth()/2;
-            int y = center_y - snakesImage.getHeight()/2;
-            g.drawImage(snakesImage, x, y, null);
-        } else if(phase==1){//2
-            //draw a big black square
-            g.setColor(Color.black);
-            int r = 350;
-            int x = center_x - r;
-            int y = center_y - r;
-            g.fillRect(x, y, r*2, r*2);
-            secondary_phase = secondary_phase + 30;
-            phase = -1;
-        }
-
-        phase = phase+1;
-    }
-
 
     private void drawBenham_weird(Graphics g){
 
@@ -1259,25 +1193,45 @@ public class Generator extends JPanel {
     }
 
 
-    private void drawStaticSnakes(Graphics g) {
+    private void drawFlashCustom(Graphics g){
 
-        Graphics2D g2 = (Graphics2D) g;
-        //g2.setStroke(new BasicStroke(40));
-        //darker
-        Color c = Color.black; //new Color(0,80,0);
-        g.setColor(c);//black
+        if(phase==0){
+            //draw black mask
+            g.setColor(Color.black);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
 
-        //change origins
-        g2.translate(center_x, center_y);
-        g2.scale(1.0, -1.0);
+        } else if(phase==1){
+            //draw image
+            drawStaticSnakes(g);
+        } else if(phase==2){
+           //draw white
+            phase = -1;
+        }
 
-        //g2d.scale(1.0, -1.0);
+        phase = phase+1;
+    }
 
-        //draw dark
-        int r = basic_radius;
-        int w_0 = 20;
-        int h_0 = 50;
-        int density = 30;
+
+
+    // height
+
+    /**
+     *
+     * @param r is radius
+     * @param g2
+     * @param shift_angle
+     * @param h_0
+     */
+    private void drawBands(int r, Graphics2D g2, int shift_angle, int h_0){
+
+        AffineTransform old = g2.getTransform();
+
+        g2.rotate(Math.toRadians(shift_angle));
+
+        //draw black
+        g2.setColor(Color.black);//black
+        int w_0 = h_0/4;//2*diff;
+        int density = 20;
         for(int i = 0; i<360; i=i+density) {
             int x = 0 ;
             int y = r ;
@@ -1288,13 +1242,18 @@ public class Generator extends JPanel {
             g2.draw(rect);
             g2.fill(rect);
         }
+        g2.setTransform(old);
+        g2.rotate(Math.toRadians(shift_angle));
 
-        //thin gray
+        //thin gray/red
+        Color red = new Color(200,100,100);
+        //dark gray/blue
+        Color blue = new Color(0,0,150);
 
-        g.setColor(Color.lightGray);
-        int w_1 = 10;
+        g2.setColor(red);
+        int w_1 = w_0-2;//diff;
         for(int i = 0; i<360; i=i+density) {
-            int x = w_0 ;
+            int x = w_0;
             int y = r ;
 
             Rectangle rect = new Rectangle(x, y, w_1, h_0);
@@ -1304,6 +1263,64 @@ public class Generator extends JPanel {
             g2.fill(rect);
         }
 
+        g2.setTransform(old);
+        g2.rotate(Math.toRadians(shift_angle));
+
+        g2.setColor(blue);
+        int w_2 = w_0+2;//3*diff;
+        for(int i = 0; i<360; i=i+density) {
+            int x = -w_2;
+            int y = r ;
+
+            Rectangle rect = new Rectangle(x, y, w_2, h_0);
+
+            g2.rotate(Math.toRadians(density));
+            g2.draw(rect);
+            g2.fill(rect);
+        }
+
+        g2.setTransform(old);
+    }
+
+    private void showDephasedImage(Graphics g, int timing, BufferedImage image){
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        if(phase==timing){
+            int x = center_x - image.getWidth()/2;
+            int y = center_y - image.getHeight()/2;
+            g.drawImage(image, x, y, null);
+        } else if(phase==2){//2
+            //draw a big black square
+            g.setColor(Color.black);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+
+    private void drawStaticSnakes(Graphics g) {
+
+        Graphics2D g2 = (Graphics2D) g;
+        //change origins
+        g2.translate(center_x, center_y);
+        g2.scale(1.0, -1.0);
+
+        int r = basic_radius;///2;
+        int h = 40;
+        drawBands(r, g2, 0, h);
+        r = r - h;
+        h = h*3/4;
+        drawBands(r, g2, 30, h);
+        r = r - h;
+        h = h*3/4;
+        drawBands(r, g2, 30, h);
+        r = r - h;
+        h = h*3/4;
+        drawBands(r, g2, 30, h);
     }
 
         /**
@@ -1384,21 +1401,16 @@ public class Generator extends JPanel {
                 draw_plus(g,0);
                 break;
             }
-
             case Constants.SNAKES_0: {
-                draw_snakes(g, 0, false);
+                showDephasedImage(g, 0, image);
                 break;
             }
             case Constants.SNAKES_1: {
-                draw_snakes(g, 1, false);
+                showDephasedImage(g, 1, image);
                 break;
             }
             case Constants.SNAKES_BW: {
-                draw_snakes(g, 0, true);
-                break;
-            }
-            case Constants.BAD_SNAKES: {
-                draw_bad_snakes(g);
+                showDephasedImage(g, 0, image);
                 break;
             }
 
@@ -1412,7 +1424,7 @@ public class Generator extends JPanel {
             }
 
             case Constants.FRASER: {
-                draw_frazer(g, 1);
+                showDephasedImage(g, 1, image);
                 break;
             }
 
@@ -1437,6 +1449,17 @@ public class Generator extends JPanel {
 
             case Constants.STATIC:{
                 drawStaticSnakes(g);
+                break;
+            }
+
+            case Constants.FLASH_CUSTOM:{
+                drawFlashCustom(g);
+                break;
+            }
+
+            case Constants.TRAIN:{
+                showDephasedImage(g, 0, image);
+                break;
             }
         }
 

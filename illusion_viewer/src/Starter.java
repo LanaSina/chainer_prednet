@@ -15,8 +15,9 @@ public class Starter {
 //    static int type = Constants.DRAW_X_1;
 //    static int type = Constants.ROTATING_X_1;
 //    static int type = Constants.DRAW_X_PHASE_0;
+//    static int type = Constants.THICKER_LINE;
 
-//    static int type = Constants.SNAKES_0;
+    static int type = Constants.SNAKES_1;
 //    static int type = Constants.BAD_SNAKES;
 //    static int type = Constants.SNAKES_BW;
 //    static int type = Constants.FRASER;
@@ -27,8 +28,9 @@ public class Starter {
 //    static int type = Constants.CONCURRENT;
 //    static int type = Constants.TIME_WARP;
 
-    static int type = Constants.STATIC;
-
+//    static int type = Constants.STATIC;
+//static int type = Constants.FLASH_CUSTOM;
+//    static int type = Constants.TRAIN;
 
 
     public static void main(String[] args) {

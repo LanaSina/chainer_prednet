@@ -37,7 +37,7 @@ public class Constants {
 	public final static int DRAW_X_1 = 9;
 	public final static int SNAKES_0 = 10;
 	public final static int SNAKES_1 = 11;
-	public final static int BAD_SNAKES = 12;
+	// public final static int BAD_SNAKES = 12;
 	public final static int SNAKES_BW = 13;
 	public final static int DRAW_X_PHASE_0 = 14;
 	public final static int DRAW_X_PHASE_1 = 15;
@@ -51,23 +51,7 @@ public class Constants {
 	public final static int CONCURRENT = 23;
 	public final static int TIME_WARP = 24;
 	public final static int STATIC = 25;
-
-
-
-//	/** write data or not*/
-//	public static final boolean save = true;
-//	/** draw network graph or not*/
-//	public static final boolean draw_net = true;
-//    public static boolean displayPredictions = false;
-//
-//
-//	//types of experiments
-//	public static final int VISION_EXPERIMENT = 0;
-//	public static final int SYNECO_EXPERIMENT = 1;
-//	public static final int FOOD_EXPERIMENT = 2;
-//	public static final int EVEN_EXPERIMENT = 3;
-//	public static final int EXOPLANET_EXPERIMENT = 4;
-//	public static final int INPUT_TRANSITION_EVEN_EXPERIMENT = 5;
-//	public static final int INPUT_TRANSITION_EXOPLANET_EXPERIMENT = 6;
+	public final static int FLASH_CUSTOM = 26;
+	public final static int TRAIN = 27;
 
 }
