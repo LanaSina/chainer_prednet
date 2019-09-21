@@ -5,7 +5,6 @@ import javax.swing.*;
 
 public class Starter {
     static JFrame frame;
-    static String folderName = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/images/";
     static  boolean save = false;
 
 //    static int type = Constants.BENHAM_CLASSIC;
@@ -30,7 +29,11 @@ public class Starter {
 
 //    static int type = Constants.STATIC;
     static int type = Constants.TRAIN;
+
+    /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;
+    /** this will be ignored for other types */
+    static String customImageName = "myimage.png";
 
 
     public static void main(String[] args) {
@@ -49,9 +52,9 @@ public class Starter {
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 Generator generator = new Generator(type, frame, save);
 
-                String customImage = "";
                 int phase = 1;
 
+                String customImage = "";
                 switch (type) {
                     case Constants.SNAKES_0: {
                         customImage = "snakes_clean.png";
@@ -75,6 +78,11 @@ public class Starter {
                     }
                     case Constants.TRAIN: {
                         customImage = "train.png";
+                        phase = 1;
+                        break;
+                    }
+                    case Constants.CUSTOM_IMAGE: {
+                        customImage = customImageName;
                         phase = 1;
                         break;
                     }

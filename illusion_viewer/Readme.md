@@ -26,7 +26,7 @@ Click "next" until setup is finished.
 
 Source files are in the `src` folder.
 
-In `Constants` change the name of the output folder.
+In `Constants` change the name of the output folder (where image can be saved) and of the input folder (where the images that are displayed are).
 
 In `Starter` you can change the type of illusion that is displayed.
 

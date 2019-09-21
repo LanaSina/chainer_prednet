@@ -54,6 +54,7 @@ public class Constants {
 	public final static int CONCURRENT = 23;
 	public final static int TIME_WARP = 24;
 	public final static int STATIC = 25;
+	public final static int CUSTOM_IMAGE = 26;
 	public final static int TRAIN = 27;
 
 }
