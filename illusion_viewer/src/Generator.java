@@ -34,6 +34,8 @@ public class Generator extends JPanel {
 
     String nameFormat = "%04d";
     BufferedImage image = null;
+    BufferedImage primaryImage = null;
+    BufferedImage secondaryImage = null;
     boolean do_update = true;
 
     //graphical parameters
@@ -93,6 +95,14 @@ public class Generator extends JPanel {
             }
         }
 
+        // don't do this
+        try {
+            primaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "generalized_benham_inner.png")), BOX_HEIGHT );
+            secondaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "generalized_benham_outer.png")), BOX_HEIGHT );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Start the motion
         Thread gameThread = new Thread() {
             public void run() {
@@ -135,7 +145,7 @@ public class Generator extends JPanel {
     public void setImage(String imageName, int timing){
         if(imageName.length()>0) {
             try {
-                image = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, imageName)), BOX_HEIGHT * 2 / 3);
+                image = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, imageName)), BOX_HEIGHT );
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -862,7 +872,7 @@ public class Generator extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
         Color c = new Color(150, 200, 0);
-        c = Color.GREEN;
+        //c = Color.GREEN;
         g.setColor(c);
         int r =  basic_radius;
 
@@ -965,6 +975,63 @@ public class Generator extends JPanel {
         g.fillRect(center_x, center_y, center_x, center_y);
 
 
+        phase = phase+1;
+    }
+
+    private void drawGrowing(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+
+        //paler color
+        int contrast = 100;
+        Color c = new Color(contrast,contrast,contrast);
+        contrast = 255;
+        Color pale = new Color(contrast,contrast,contrast);
+        g.setColor(c);
+        g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+
+        int size_ = 50;
+
+        if(phase==0){
+            //paler color
+//            contrast = 115;
+//            c = new Color(contrast,contrast,contrast);
+//            g.setColor(c);
+//            size_ = 40;
+//            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
+
+            //size_ = 50;
+            //regular color
+            contrast = 0;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
+
+            //hollow center
+            g.setColor(pale);
+            size_ = 20;
+            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
+
+        } else if(phase==2){
+            //draw a big black square
+            contrast = 0;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+            //g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
+
+
+            phase = -1;
+        } else {
+
+            //white
+            g.setColor(pale);
+//            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
+
+
+        }
         phase = phase+1;
     }
 
@@ -1279,6 +1346,12 @@ public class Generator extends JPanel {
             g.setColor(Color.black);
             g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
             phase = -1;
+        } else {
+            //draw white
+            int contrast = 100;
+            Color c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
         }
 
         phase = phase+1;
@@ -1306,16 +1379,54 @@ public class Generator extends JPanel {
         drawBands(r, g2, 30, h);
     }
 
+
+    /**
+     *
+     * @param g
+     * @param timing 0 to show inner first
+     */
+    private void drawGeneralizedBenham(Graphics g, int timing){
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        mlog.say("phase " + phase);
+
+
+        if(phase==timing){
+            int x = center_x - primaryImage.getWidth()/2;
+            int y = center_y - primaryImage.getHeight()/2;
+            g.drawImage(primaryImage, x, y, null);
+        } else if(phase==2){//2
+            //draw a big black square
+            g.setColor(Color.black);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            phase = -1;
+        } else {
+            int x = center_x - secondaryImage.getWidth()/2;
+            int y = center_y - secondaryImage.getHeight()/2;
+            g.drawImage(secondaryImage, x, y, null);
+            //phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
     /**
      *
      */
     private void drawShapes(){//(Graphics g){
 
         Graphics g = paintImage.createGraphics();
-        // Paint pale background
-//        Color c = new Color(0,100,0);
+
+//        int contrast = 100;
+//        Color c = new Color(contrast,contrast,contrast);
+//        g.setColor(c);
+
         g.setColor(Color.white);
         g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+
+
 
         // draw on paintImage using Graphics
 
@@ -1417,6 +1528,16 @@ public class Generator extends JPanel {
 
                 case Constants.STATIC: {
                     drawStaticSnakes(g);
+                    break;
+                }
+
+                case Constants.GENERALIZED_BENHAM: {
+                    drawGeneralizedBenham(g,0);
+                    break;
+                }
+
+                case Constants.GROWING: {
+                    drawGrowing(g);
                     break;
                 }
             }

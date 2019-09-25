@@ -58,5 +58,8 @@ public class Constants {
 	public final static int STATIC = 25;
 	public final static int CUSTOM_IMAGE = 26;
 	public final static int TRAIN = 27;
+	public final static int GENERALIZED_BENHAM = 28;
+	public final static int GROWING = 29;
+
 
 }

@@ -9,7 +9,7 @@ public class Starter {
     /** set to true to save image frames*/
     static  boolean save = false;
 
-    static int type = Constants.BENHAM_CLASSIC;
+//    static int type = Constants.BENHAM_CLASSIC;
 //    static int type = Constants.BENHAM_RED;
 //    static int type = Constants.SIMPLE_SHAPES_0;
 //    static int type = Constants.DRAW_X_0;
@@ -31,6 +31,10 @@ public class Starter {
 
 //    static int type = Constants.STATIC;
 //    static int type = Constants.TRAIN;
+//    static int type = Constants.GENERALIZED_BENHAM;
+    static int type = Constants.GROWING;
+
+
 
     /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;
@@ -65,27 +69,27 @@ public class Starter {
                     }
                     case Constants.SNAKES_1: {
                         customImage = "snakes_clean.png";
-                        phase = 1;
+                        phase = 0;
                         break;
                     }
                     case Constants.SNAKES_BW: {
                         customImage = "snakes_2_bw.jpg";
-                        phase = 1;
+                        phase = 0;
                         break;
                     }
                     case Constants.FRASER: {
                         customImage = "fraser.png";
-                        phase = 1;
+                        phase = 0;
                         break;
                     }
                     case Constants.TRAIN: {
-                        customImage = "train.png";
-                        phase = 1;
+                        customImage = "night_train.png";
+                        phase = 0;
                         break;
                     }
                     case Constants.CUSTOM_IMAGE: {
                         customImage = customImageName;
-                        phase = 1;
+                        phase = 0;
                         break;
                     }
                 }

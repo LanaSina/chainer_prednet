@@ -46,4 +46,8 @@ Apply -> OK
 
 Click `run` (the green play button to the right of the green hammer)
 
+## Make video from frames (high quality, quickTime compatible)
+
+`ffmpeg -framerate 20 -i "%04d.png" -pix_fmt yuv420p -vb 20M _out.mp4`
+
 
