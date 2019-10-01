@@ -313,18 +313,20 @@ def fixed_areas_changes(im_index, previous_images, output_dir, writer):
 				selected_area_0 = select_area_from_mask(image_t0, mask, show)
 				size_t0, center_t0, rgb_t0 = get_area_parameters(selected_area_0)  
 
-				# if (size_t0>size_t1 and size_t1>size_t2):# and rgb_t2[0]<rgb_t0[0]):
-				# w=10
-				# h=10
-				# fig=plt.figure(figsize=(8, 8))
-				# columns = 1
-				# rows = 3
-				# fig.add_subplot(rows, columns, 1)
-				# plt.imshow(selected_area_0)
-				# fig.add_subplot(rows, columns, 2)
-				# plt.imshow(selected_area_1)
-				# fig.add_subplot(rows, columns, 3)
-				# plt.imshow(selected_area_2)
+				print("s0 ", size_t0, " s1 ", size_t1, " s2 ", size_t2)
+
+				if (size_t0>size_t1):# and size_t1<size_t2):# and rgb_t2[0]<rgb_t0[0]):
+					w=10
+					h=10
+					fig=plt.figure(figsize=(8, 8))
+					columns = 1
+					rows = 3
+					fig.add_subplot(rows, columns, 1)
+					plt.imshow(selected_area_0)
+					fig.add_subplot(rows, columns, 2)
+					plt.imshow(selected_area_1)
+					fig.add_subplot(rows, columns, 3)
+					plt.imshow(selected_area_2)
 
 				plt.show()
 
@@ -502,13 +504,13 @@ def process_images(prediction_dir, gs_image_dir, real_image_dir, output_dir, ima
 
 def record_area_changes(real_image_dir, prediction_dir, output_dir, image_count):
 	real_image_list = sorted(os.listdir(real_image_dir))
-	prediction_list = sorted(os.listdir(prediction_dir))
+	#prediction_list = sorted(os.listdir(prediction_dir))
 
 
 	if(image_count == -1):
 		image_count =  len(real_image_list)
 
-	save_file = output_dir + "/fixed_area_change_analysis.csv"
+	save_file = output_dir + "/_temp_fixed_area_change_analysis.csv"
 	print(save_file)
 	fieldnames = ['image_0','area_id','size_t0','size_t1','size_t2','r0','g0','b0','r1','g1','b1','r2','g2','b2']
 
@@ -534,9 +536,11 @@ def record_area_changes(real_image_dir, prediction_dir, output_dir, image_count)
 			previous_path = os.path.join(real_image_dir, real_image_list[im_index+1])
 			previous_images.append(previous_path)
 			# last image is the prediction
-			previous_path = os.path.join(prediction_dir, prediction_list[im_index+1])
+			#prediction_dir
+			previous_path = os.path.join(real_image_dir, real_image_list[im_index+2]) #prediction_list[im_index+1])
 			previous_images.append(previous_path)
 
+			print("previous images ------ ")
 			print(previous_images)
 
 			fixed_areas_changes(im_index,previous_images, output_dir, writer)

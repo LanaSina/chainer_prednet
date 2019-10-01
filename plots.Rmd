@@ -10,16 +10,17 @@ output:
 library(rgl)
 
 # dataFolder = "results/greyscale_analysis/"
-#dataFolder = "image_analysis/bike_15m/"
-dataFolder = "image_analysis/flipbook_results/"
+# dataFolder = "image_analysis/bike_15m/"
+dataFolder = "image_analysis/fpsi_100/"
+# dataFolder = "image_analysis/flipbook_results/"
 
 ```
 
 
 ```{r}
-# filename = "area_change_analysis.csv"
-#filename = "benham/flicker_analysis.csv"
-filename = "fixed_area_change_analysis.csv"
+ filename = "area_change_analysis_20.csv"
+# filename = "benham/flicker_analysis.csv"
+# filename = "fixed_area_change_analysis.csv"
 
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 
@@ -139,12 +140,6 @@ mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
 plot(mean_sizes, type="l"
      , main = "Getting darker", ylab = "area size", xlab = "time")
 
-
-
-sub = subset(df, r2>g2)# & r2>b2)
-sub = subset(df, b2>r2+90)
-
-plot(df$mean_rgb1, type="l")
 
 # getting darker + area sizes go from 20 to 80: add blue and green, red follows decreasing slope noormally
 # getting lighter + 6400 to 7000: remove a bit of all colors, but remove more red

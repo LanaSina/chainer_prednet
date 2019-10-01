@@ -50,4 +50,11 @@ Click `run` (the green play button to the right of the green hammer)
 
 `ffmpeg -framerate 20 -i "%04d.png" -pix_fmt yuv420p -vb 20M _out.mp4`
 
+Make gif: put the frames you want to loop in a folder.
+
+```
+ffmpeg -framerate 20 -i "%04d.png" -pix_fmt yuv420p -vb 20M _out.avi
+ffmpeg -i _out.avi -pix_fmt rgb24 -loop 0 _out.gif
+```
+
 

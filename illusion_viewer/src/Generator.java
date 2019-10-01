@@ -5,6 +5,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,7 @@ public class Generator extends JPanel {
     BufferedImage image = null;
     BufferedImage primaryImage = null;
     BufferedImage secondaryImage = null;
+    BufferedImage thirdImage = null;
     boolean do_update = true;
 
     //graphical parameters
@@ -96,11 +99,20 @@ public class Generator extends JPanel {
         }
 
         // don't do this
-        try {
-            primaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "generalized_benham_inner.png")), BOX_HEIGHT );
-            secondaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "generalized_benham_outer.png")), BOX_HEIGHT );
-        } catch (IOException e) {
-            e.printStackTrace();
+//        try {
+//            primaryImage = ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "arrows.png"));
+//            secondaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "fire_medium.png")), BOX_HEIGHT);
+//            thirdImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "fire_big.png")), BOX_HEIGHT);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        if(type == Constants.CONTRAST){
+            try {
+                primaryImage  = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "rabbit.png")), BOX_HEIGHT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         // Start the motion
@@ -873,37 +885,65 @@ public class Generator extends JPanel {
         g2.setStroke(new BasicStroke(1));
         Color c = new Color(150, 200, 0);
         //c = Color.GREEN;
-        g.setColor(c);
+        g.setColor(Color.black);
         int r =  basic_radius;
 
         if(phase==timing){
             //g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
 
-            g.drawLine(center_x-r, center_y-r/6, center_x+r, center_y-r/6);
+            g.drawLine(100, center_y-r/6, BOX_WIDTH-100, center_y-r/6);
         } else if(phase==2){
-            //draw a big black square
-            g.setColor(Color.black);
+
             r = r/2;// + 6*separation;
-            int x = center_x - r;
+            int x = 100; //center_x - r;
             int y = center_y - r;
-//            g.fillRect(x, y, r*2, r*2);
+
+            Color[] colors = {Color.black, Color.darkGray, Color.blue, Color.red};
 
             int width = 50;
-            for (int i=0; i<r*2; i=i+2*width){
-                g.fillRect(x + i, y, width, r*2);
+            for (int i=0; i<colors.length; i++){
+                g.setColor(colors[i]);
+                int xx = i*2*width;
+                g.fillRect(x + xx, y, width, r*2);
             }
 
             phase = -1;
         } else{
-//            g.drawLine(center_x+r, center_y-r, center_x-r, center_y+r);
-            g.drawLine(center_x-r, center_y+r/6, center_x+r, center_y+r/6);
+            g.drawLine(100, center_y+r/6, BOX_WIDTH-100, center_y+r/6);
         }
 
-//        g.setColor(Color.black);
-//        r = r/6;
-//        int x = center_x - r;
-//        int y = center_y - r;
-//        g.fillRect(x, y, r*2, r*2);
+        phase = phase+1;
+    }
+
+    private void drawColorBands(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        //g2.setStroke(new BasicStroke(1));
+        Color c = new Color(150, 200, 0);
+        //c = Color.GREEN;
+        g.setColor(Color.black);
+
+
+        if(phase==0){
+            //g.drawLine(center_x-r, center_y-r, center_x+r, center_y+r);
+
+            g.drawLine(100, 100, BOX_WIDTH-100, 100);
+        } else if(phase==2){
+//            g.setColor(Color.black);
+//
+//            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+
+            int startX = 0, startY = 0, endX = BOX_WIDTH, endY = 0;
+
+            Color startColor = Color.black;
+            Color endColor = Color.white;
+
+            GradientPaint gradient = new GradientPaint(startX, startY, startColor, endX, endY, endColor);
+            g2.setPaint(gradient);
+
+            g2.fill(new Rectangle2D.Double(0,0,BOX_WIDTH,BOX_HEIGHT));
+            phase = -1;
+        }
 
         phase = phase+1;
     }
@@ -978,61 +1018,186 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
-    private void drawGrowing(Graphics g){
+    private void drawContrast(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
 
+        int contrast;
+        Color c;
+
         //paler color
-        int contrast = 100;
-        Color c = new Color(contrast,contrast,contrast);
-        contrast = 255;
-        Color pale = new Color(contrast,contrast,contrast);
+//        int contrast = 100;//100 //40
+//        Color c = new Color(contrast,contrast,contrast);
+//
+//        //background
+        c = new Color(130,50,50);
         g.setColor(c);
         g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+//
+//        //right
+//        contrast = 40;//100 //40
+//        c = new Color(contrast,contrast,contrast);
+//        g.setColor(c);
+//        g.fillRect(BOX_WIDTH/2, 0, BOX_WIDTH/2, BOX_HEIGHT);
 
-        int size_ = 50;
+        int size_ = 20;
+        int offset = 200;
+
+        int x = center_x - primaryImage.getWidth()/2;
+        int y = center_y - primaryImage.getHeight()/2;
+        g.drawImage(primaryImage, x, y, null);
 
         if(phase==0){
-            //paler color
-//            contrast = 115;
-//            c = new Color(contrast,contrast,contrast);
-//            g.setColor(c);
-//            size_ = 40;
-//            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
-
-            //size_ = 50;
-            //regular color
             contrast = 0;
             c = new Color(contrast,contrast,contrast);
             g.setColor(c);
-            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
 
-            //hollow center
-            g.setColor(pale);
-            size_ = 20;
-            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
+            g.fillOval(center_x-offset, center_y-size_, size_*2, size_*2);
+            g.fillRect(center_x-offset, center_y-size_, size_*2, size_*2);
 
-        } else if(phase==2){
-            //draw a big black square
-            contrast = 0;
+            contrast = 255;
             c = new Color(contrast,contrast,contrast);
             g.setColor(c);
-            //g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
-            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
-
-
+            g.fillRect(center_x+150, center_y-size_, size_*2, size_*2);
+        } else if (phase == 1){
+            contrast = 255;
             phase = -1;
-        } else {
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillOval(center_x-offset, center_y-size_, size_*2, size_*2);
+            g.fillRect(center_x-offset, center_y-size_, size_*2, size_*2);
 
-            //white
-            g.setColor(pale);
-//            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
-            g.fillRect(center_x-size_, center_y-size_, size_*2, size_*2);
-
+            contrast = 0;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillRect(center_x-offset, center_y-size_, size_*2, size_*2);
+            g.fillRect(center_x+150, center_y-size_, size_*2, size_*2);
 
         }
+
+        size_ = 60;
+
+        //nose
+        if(secondary_phase==0){
+            contrast = 255;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillRect(center_x-35, center_y+80, size_, size_*2);
+            int n=3;
+            int[] xpoints = new int[n];
+            x = center_x - size_ -1;
+            xpoints[0] = x;
+            xpoints[1] = x+size_;
+            xpoints[2] = x+size_;
+
+            int[] ypoints = new int[n];
+            y = center_y + 100;
+            ypoints[0] = y;
+            ypoints[1] = y;
+            ypoints[2] = y+30*2-20;
+
+            g.fillPolygon(xpoints, ypoints, n);
+
+            contrast = 0;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillRect(center_x-35+size_, center_y+80, size_, size_*2);
+
+            x = center_x-1;
+            xpoints[0] = x;
+            xpoints[1] = x+size_;
+            xpoints[2] = x;
+
+            ypoints[0] = y;
+            ypoints[1] = y;
+            ypoints[2] = y+30*2-20;
+            g.fillPolygon(xpoints, ypoints, n);
+
+        } else if (secondary_phase == 2){
+            contrast = 0;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillRect(center_x-35, center_y+80, size_*2, size_*2);
+            int n=3;
+            int[] xpoints = new int[n];
+            x = center_x - size_ -1;
+            xpoints[0] = x;
+            xpoints[1] = x+size_;
+            xpoints[2] = x+size_;
+
+            int[] ypoints = new int[n];
+            y = center_y + 100;
+            ypoints[0] = y;
+            ypoints[1] = y;
+            ypoints[2] = y+30*2-20;
+
+            g.fillPolygon(xpoints, ypoints, n);
+
+            contrast = 255;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillRect(center_x-35+size_, center_y+80, size_, size_*2);
+
+            x = center_x-1;
+            xpoints[0] = x;
+            xpoints[1] = x+size_;
+            xpoints[2] = x;
+
+            ypoints[0] = y;
+            ypoints[1] = y;
+            ypoints[2] = y+30*2-20;
+            g.fillPolygon(xpoints, ypoints, n);
+
+            secondary_phase = -1;
+
+        } else {
+
+            //background
+            contrast = 255;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+//            g.fillRect(center_x-35, center_y+80, size_*2, size_*2);
+
+            int n=3;
+            int[] xpoints = new int[n];
+            x = center_x - size_ -1;
+            xpoints[0] = x;
+            xpoints[1] = x+size_*2;
+            xpoints[2] = center_x-1;
+            int[] ypoints = new int[n];
+            y = center_y + 100;
+            ypoints[0] = y;
+            ypoints[1] = y;
+            ypoints[2] = y+30*2-20;
+            g.fillPolygon(xpoints, ypoints, n);
+
+
+            //draw nose lines
+            contrast = 0;
+            c = new Color(contrast,contrast,contrast);
+            g.setColor(c);
+
+            y = center_y+80+2;
+            g2.setStroke(new BasicStroke(1));
+//            g.drawLine(center_x-31, y, center_x-31 + size_*2, y);
+//            g.drawLine(center_x-1, y, center_x-1, y + size_*2);
+
+            x = center_x-31;
+            y = y + 40;
+//            g.drawLine(x -100, y, x + size_*2 + 100, y);
+            // create new QuadCurve2D.Float
+            QuadCurve2D q = new QuadCurve2D.Float();
+            // draw QuadCurve2D.Float with set coordinates
+            q.setCurve(x-120, y+20, x, y-50, x+170, y+20);
+            g2.draw(q);
+            q.setCurve(x+150, y+35, x, y-35, x-100, y+35);
+            g2.draw(q);
+
+        }
+
         phase = phase+1;
+        secondary_phase = secondary_phase+1;
     }
 
     private void drawBenham_red(Graphics g){
@@ -1090,6 +1255,69 @@ public class Generator extends JPanel {
         g.fillRect(center_x, center_y, center_x, center_y);
 
 
+        phase = phase+1;
+    }
+
+    private void drawDarkBenham(Graphics g){
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        //background
+        int r = basic_radius + 12*separation;
+        int x = center_x - r;
+        int y = center_y - r;
+        g.fillRect(x, y, r*2, r*2);
+
+
+        if(phase==0){
+            //draw inner arcs
+            g.setColor(Color.white);
+
+            r = basic_radius;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            //r = basic_radius + 4*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==1){
+            //draw outer circles
+            g.setColor(Color.white);
+
+            r = basic_radius + 6*separation;
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+                r = r + separation;
+            }
+            for(int i = 0; i<cirles; i++) {
+                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+                r = r + separation;
+            }
+        } else if(phase==2){
+            //draw a big square
+            g.setColor(Color.white);
+            r = basic_radius + 12*separation;
+            x = center_x - r;
+            y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+
+            phase = -1;
+        }
+
+        //draw mask
+        g.setColor(Color.white);
+        //draw left part
+        r = basic_radius + 7*separation;
+        x = center_x - r;
+        y = center_y - r;
+        g.fillRect(0, 0, center_x, BOX_HEIGHT);
+        //draw bottom right part
+        g.fillRect(center_x, center_y, center_x, center_y);
         phase = phase+1;
     }
 
@@ -1337,7 +1565,7 @@ public class Generator extends JPanel {
         g2.setStroke(new BasicStroke(1));
         g.setColor(Color.black);
 
-        if(phase==timing){
+        if(phase==0){
             int x = center_x - image.getWidth()/2;
             int y = center_y - image.getHeight()/2;
             g.drawImage(image, x, y, null);
@@ -1345,13 +1573,31 @@ public class Generator extends JPanel {
             //draw a big black square
             g.setColor(Color.black);
             g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+
+//            int startX = 0, startY = 0, endX = BOX_WIDTH, endY = 0;
+//
+//            Color startColor = Color.black;
+//            Color endColor = Color.white;
+//
+//            if(secondary_phase==1){
+//                startColor = Color.white;
+//                endColor = Color.black;
+//                secondary_phase = -1;
+//            }
+//
+//            GradientPaint gradient = new GradientPaint(startX, startY, startColor, endX, endY, endColor);
+//            g2.setPaint(gradient);
+//
+//            g2.fill(new Rectangle2D.Double(0,0,BOX_WIDTH,BOX_HEIGHT));
+//
+//            secondary_phase = secondary_phase+1;
             phase = -1;
         } else {
             //draw white
             int contrast = 100;
             Color c = new Color(contrast,contrast,contrast);
-            g.setColor(c);
-            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+//            g.setColor(c);
+//            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
         }
 
         phase = phase+1;
@@ -1407,6 +1653,60 @@ public class Generator extends JPanel {
             int y = center_y - secondaryImage.getHeight()/2;
             g.drawImage(secondaryImage, x, y, null);
             //phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+
+    private void drawFire(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        mlog.say("phase " + phase);
+
+
+        if(phase==0){
+            int x = center_x - primaryImage.getWidth()/2;
+            int y = center_y - primaryImage.getHeight()/2;
+            g.drawImage(primaryImage, x, y, null);
+        } else if(phase==1){
+            int x = center_x - secondaryImage.getWidth()/2;
+            int y = center_y - secondaryImage.getHeight()/2;
+            g.drawImage(secondaryImage, x, y, null);
+        } else if(phase==2){
+            int x = center_x - thirdImage.getWidth()/2;
+            int y = center_y - thirdImage.getHeight()/2;
+            g.drawImage(thirdImage, x, y, null);
+        } else {
+            //draw a big black square
+            g.setColor(Color.black);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+
+    private void drawArrows(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+
+
+        int y = center_y - primaryImage.getHeight()/2;
+        int x = center_x + phase*50 - primaryImage.getWidth()/2;
+
+        if(phase<4){
+            g.drawImage(primaryImage, x, y, null);
+        } else {
+            //draw a big black square
+            g.setColor(Color.black);
+            g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
+            phase = -1;
         }
 
         phase = phase+1;
@@ -1536,8 +1836,28 @@ public class Generator extends JPanel {
                     break;
                 }
 
-                case Constants.GROWING: {
-                    drawGrowing(g);
+                case Constants.CONTRAST: {
+                    drawContrast(g);
+                    break;
+                }
+
+                case Constants.FIRE: {
+                    drawFire(g);
+                    break;
+                }
+
+                case Constants.ARROW: {
+                    drawArrows(g);
+                    break;
+                }
+
+                case Constants.COLOR_BANDS: {
+                    drawColorBands(g);
+                    break;
+                }
+
+                case Constants.DARK_BENHAM: {
+                    drawDarkBenham(g);
                     break;
                 }
             }

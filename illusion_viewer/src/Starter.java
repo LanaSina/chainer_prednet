@@ -7,7 +7,7 @@ public class Starter {
     static JFrame frame;
 
     /** set to true to save image frames*/
-    static  boolean save = false;
+    static  boolean save = true;
 
 //    static int type = Constants.BENHAM_CLASSIC;
 //    static int type = Constants.BENHAM_RED;
@@ -32,14 +32,21 @@ public class Starter {
 //    static int type = Constants.STATIC;
 //    static int type = Constants.TRAIN;
 //    static int type = Constants.GENERALIZED_BENHAM;
-    static int type = Constants.GROWING;
+//    static int type = Constants.CONTRAST;
+//    static int type = Constants.FIRE;
+//    static int type = Constants.ARROW;
+//    static int type = Constants.COLOR_BANDS;
+
+    static int type = Constants.DARK_BENHAM;
+
+
 
 
 
     /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;
     /** this will be ignored for other types */
-    static String customImageName = "myimage.png";
+    static String customImageName = "frazer_lines.jpg";
 
 
     public static void main(String[] args) {
