@@ -99,13 +99,13 @@ public class Generator extends JPanel {
         }
 
         // don't do this
-//        try {
-//            primaryImage = ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "arrows.png"));
-//            secondaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "fire_medium.png")), BOX_HEIGHT);
+        try {
+            primaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "woman.jpg")), BOX_HEIGHT);;
+            secondaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "invert_zebra.jpg")), BOX_HEIGHT);
 //            thirdImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "fire_big.png")), BOX_HEIGHT);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if(type == Constants.CONTRAST){
             try {
@@ -1026,20 +1026,11 @@ public class Generator extends JPanel {
         int contrast;
         Color c;
 
-        //paler color
-//        int contrast = 100;//100 //40
-//        Color c = new Color(contrast,contrast,contrast);
-//
 //        //background
         c = new Color(130,50,50);
         g.setColor(c);
         g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
-//
-//        //right
-//        contrast = 40;//100 //40
-//        c = new Color(contrast,contrast,contrast);
-//        g.setColor(c);
-//        g.fillRect(BOX_WIDTH/2, 0, BOX_WIDTH/2, BOX_HEIGHT);
+
 
         int size_ = 20;
         int offset = 200;
@@ -1071,7 +1062,6 @@ public class Generator extends JPanel {
             contrast = 0;
             c = new Color(contrast,contrast,contrast);
             g.setColor(c);
-//            g.fillRect(center_x-offset, center_y-size_, size_*2, size_*2);
             g.fillRect(center_x+150, center_y-size_, size_*2, size_*2);
 
         }
@@ -1260,20 +1250,34 @@ public class Generator extends JPanel {
 
     private void drawDarkBenham(Graphics g){
 
+        Color mainColor = Color.red;//Color.darkGray;
+        Color lineColor = Color.blue;//Color.gray;
+
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
+        g.setColor(mainColor);
+
 
         //background
         int r = basic_radius + 12*separation;
-        int x = center_x - r;
+        int x = center_x;// - r;
         int y = center_y - r;
-        g.fillRect(x, y, r*2, r*2);
+//        g.setColor(mainColor); //darkgray
+//        g.fillRect(x, y, r, r*2);
+//        g.setColor(Color.lightGray);
+//        g.fillRect(center_x+r/2, y, r/2, r*2);
 
+        g.setColor(mainColor);
+        //background
+        g.fillRect(center_x, y, r*2, r*2);
 
         if(phase==0){
             //draw inner arcs
-            g.setColor(Color.white);
+            g.setColor(lineColor);
+
+//            g.fillRect(center_x+10, center_y-100+10, 20, 20);
+//            g.fillRect(center_x+50, center_y-100+10, 25, 25);
+
 
             r = basic_radius;
             for(int i = 0; i<cirles; i++) {
@@ -1287,7 +1291,12 @@ public class Generator extends JPanel {
             }
         } else if(phase==1){
             //draw outer circles
-            g.setColor(Color.white);
+            g.setColor(lineColor);
+
+//            g.fillRect(center_x+10, center_y-100+10, 25, 25);
+
+//            g.fillRect(center_x+50, center_y-100+10, 20, 20);
+
 
             r = basic_radius + 6*separation;
             for(int i = 0; i<cirles; i++) {
@@ -1300,7 +1309,7 @@ public class Generator extends JPanel {
             }
         } else if(phase==2){
             //draw a big square
-            g.setColor(Color.white);
+            g.setColor(lineColor);
             r = basic_radius + 12*separation;
             x = center_x - r;
             y = center_y - r;
@@ -1325,44 +1334,34 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.black);
+        //darker
+        Color c = Color.black; //new Color(0,80,0);
+        g.setColor(c);//black
 
         if(phase==0){
-            //draw a big square
             g.setColor(Color.black);
-//            int r = basic_radius + 12*separation;
-//            int x = center_x - r;
-//            int y = center_y - r;
-//            g.fillRect(x, y, r*2, r*2);
-//
-//            g.setColor(Color.white);
+            for (int i = center_x-100; i<center_x+100; i = i+2 ){
+                for (int j = center_y-50; j<center_y; j = j+2 ){
+                    g.drawLine(i,j,i+1,j+1);
+                }
+            }
 
-            //draw inner arcs
-            int r = basic_radius;
-            for(int i = 0; i<cirles; i++) {
-                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
-                r = r + separation;
-            }
-            //r = basic_radius + 4*separation;
-            for(int i = 0; i<cirles; i++) {
-                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
-                r = r + separation;
-            }
+//            g.drawRect(center_x-100, center_y-20, 150, 2);
         } else if(phase==1){
+            g.setColor(Color.black);
             //draw outer circles
-            int r = basic_radius + 6*separation;
-            for(int i = 0; i<cirles; i++) {
-                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
-                r = r + separation;
+
+            for (int i = center_x-100; i<center_x+100; i = i+2 ){
+                for (int j = center_y+1; j<center_y+50; j = j+2 ){
+                    g.drawLine(i,j,i+1,j+1);
+                }
             }
-            for(int i = 0; i<cirles; i++) {
-                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
-                r = r + separation;
-            }
+//            g.drawRect(center_x-20, center_y, 150, 2);
         } else if(phase==2){
-            //draw a big  square
-            g.setColor(Color.red);
-            int r = basic_radius + 12*separation;
+
+            g.setColor(Color.black);//black
+
+            int r = 150;
             int x = center_x - r;
             int y = center_y - r;
             g.fillRect(x, y, r*2, r*2);
@@ -1370,16 +1369,105 @@ public class Generator extends JPanel {
             phase = -1;
         }
 
-        //draw mask
-        g.setColor(Color.white);
-        //draw left part
-        int r = basic_radius + 7*separation;
-        int x = center_x - r;
-        int y = center_y - r;
-        g.fillRect(0, 0, center_x, BOX_HEIGHT);
-        //draw bottom right part
-        g.fillRect(center_x, center_y, center_x, center_y);
+        phase = phase+1;
+    }
 
+
+    private void drawBenhamImage(Graphics g){
+
+        UPDATE_RATE = 500;
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);//black
+
+        int w = primaryImage.getWidth();
+        int h = primaryImage.getHeight();
+
+        int phases = 4;
+        int n_colors = phases - 1;
+        int color_step = 256/phases;
+        int max = color_step*(phases-phase);
+
+
+        //more time == darker appearrance == small rgb
+//        for (int i = 0; i<w; i = i+3 ){
+//            for (int j = 0; j<h; j = j+3 ){
+//                Color pix = new Color(primaryImage.getRGB(i,j));
+//                if(pix.getRed()>=max-color_step && pix.getRed()<max) {
+//                    g.drawLine(i, j, i + 1, j + 1);
+//                }
+//            }
+//        }
+
+//        int i_step = w/phases;
+//        g.setColor(Color.black);
+//        for(int p = 0; p<phases; p++){
+//
+//            int xstart = p*i_step;
+//            //dots
+//            for (int i = xstart; i<w; i = i+3 ){
+//                for (int j = 0; j<h; j = j+3 ){
+//                    Color pix = new Color(primaryImage.getRGB(i,j));
+//                    if(pix.getRed()>=max-color_step && pix.getRed()<max) {
+//                        g.drawLine(i, j, i + 1, j + 1);
+//                    }
+//                }
+//            }
+//        }
+
+
+
+        for (int i = 0; i<w; i = i+3 ){
+            double temp = i*1.0/(w+1);
+            int relative_x = (int)(temp*phases);
+            relative_x = relative_x+1; //1 to phases
+
+            //int relative_x =
+            for (int j = 0; j<h; j = j+3 ){
+                Color pix = new Color(primaryImage.getRGB(i,j));
+
+                // what degree of grayscale should this pixel be
+                temp = pix.getRed()*1.0/256;
+                int relative_color = (int)(temp*n_colors) + 1; //1 to n_colors
+                // how far from the current mask should it be
+                // high rgb = pale = right after the mask
+                int a = (phases-relative_color);
+                a = (a+relative_x+n_colors)%phases;
+                if(a == phase){
+                    g.drawLine(i, j, i + 1, j + 1);
+                }
+            }
+        }
+
+        //mask
+        int i_step = w/phases;
+        int xstart = phase*i_step;
+        g.fillRect(xstart,0,i_step,h);
+
+//        xstart = (phases/2)*i_step;
+//        //dots
+//        for (int x = xstart; x<w; x = x+3 ){
+//            for (int j = 0; j<h; j = j+3 ){
+//                Color pix = new Color(primaryImage.getRGB(i,j));
+//                if(pix.getRed()>=max-color_step && pix.getRed()<max) {
+//                    g.drawLine(i, j, i + 1, j + 1);
+//                }
+//            }
+//        }
+
+
+        mlog.say("phase " + phase);
+        if(phase+1>=phases){
+
+            //mask
+//            g.setColor(Color.black);//black
+//            g.fillRect(0, 0, w, h);
+
+//            g.drawImage(secondaryImage, 0, 0, null);
+
+            phase = -1;
+        }
 
         phase = phase+1;
     }
@@ -1460,12 +1548,9 @@ public class Generator extends JPanel {
         g.setColor(Color.white);
         //draw left part
         int r = basic_radius + 7*separation;
-        int x = center_x - r;
-        int y = center_y - r;
         g.fillRect(0, 0, center_x, BOX_HEIGHT);
         //draw bottom right part
         g.fillRect(center_x, center_y, center_x, center_y);
-
 
         phase = phase+1;
     }
@@ -1858,6 +1943,11 @@ public class Generator extends JPanel {
 
                 case Constants.DARK_BENHAM: {
                     drawDarkBenham(g);
+                    break;
+                }
+
+                case Constants.BENHAM_IMAGE: {
+                    drawBenhamImage(g);
                     break;
                 }
             }

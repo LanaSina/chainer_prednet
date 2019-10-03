@@ -64,4 +64,5 @@ public class Constants {
 	public final static int ARROW = 31;
 	public final static int COLOR_BANDS = 32;
 	public final static int DARK_BENHAM = 33;
+	public final static int BENHAM_IMAGE = 34;
 }
