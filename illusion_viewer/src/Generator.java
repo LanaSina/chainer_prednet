@@ -100,7 +100,7 @@ public class Generator extends JPanel {
 
         // don't do this
         try {
-            primaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "woman.jpg")), BOX_HEIGHT);;
+            primaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "rose.jpg")), BOX_HEIGHT);;
             secondaryImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "invert_zebra.jpg")), BOX_HEIGHT);
 //            thirdImage = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, "fire_big.png")), BOX_HEIGHT);
         } catch (IOException e) {
@@ -1375,7 +1375,7 @@ public class Generator extends JPanel {
 
     private void drawBenhamImage(Graphics g){
 
-        UPDATE_RATE = 500;
+        UPDATE_RATE = 50;
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
@@ -1390,7 +1390,7 @@ public class Generator extends JPanel {
         int max = color_step*(phases-phase);
 
 
-        //more time == darker appearrance == small rgb
+        //more time == darker appearance == small rgb
 //        for (int i = 0; i<w; i = i+3 ){
 //            for (int j = 0; j<h; j = j+3 ){
 //                Color pix = new Color(primaryImage.getRGB(i,j));
@@ -1418,32 +1418,112 @@ public class Generator extends JPanel {
 
 
 
-        for (int i = 0; i<w; i = i+3 ){
-            double temp = i*1.0/(w+1);
-            int relative_x = (int)(temp*phases);
-            relative_x = relative_x+1; //1 to phases
+//        for (int i = 0; i<w; i = i+3 ){
+//            double temp = i*1.0/(w+1);
+//            int relative_x = (int)(temp*phases);
+//            relative_x = relative_x+1; //1 to phases
+//
+//            //int relative_x =
+//            for (int j = 0; j<h; j = j+3 ){
+//                Color pix = new Color(primaryImage.getRGB(i,j));
+//
+//                // what degree of grayscale should this pixel be
+//                temp = pix.getRed()*1.0/256;
+//                int relative_color = (int)(temp*n_colors) + 1; //1 to n_colors
+//                // how far from the current mask should it be
+//                // high rgb = pale = right after the mask
+//                int a = (phases-relative_color);
+//                a = (a+relative_x+n_colors)%phases;
+//                if(a == phase){
+//                    g.drawLine(i, j, i + 1, j + 1);
+//                }
+//            }
+//        }
 
-            //int relative_x =
-            for (int j = 0; j<h; j = j+3 ){
-                Color pix = new Color(primaryImage.getRGB(i,j));
 
-                // what degree of grayscale should this pixel be
-                temp = pix.getRed()*1.0/256;
-                int relative_color = (int)(temp*n_colors) + 1; //1 to n_colors
-                // how far from the current mask should it be
-                // high rgb = pale = right after the mask
-                int a = (phases-relative_color);
-                a = (a+relative_x+n_colors)%phases;
-                if(a == phase){
-                    g.drawLine(i, j, i + 1, j + 1);
+
+        int i_step = w/phases;
+        int xstart = phase*i_step;
+        Color startColor = Color.black;
+        Color endColor = Color.white;
+        int gr_size = i_step/2;
+        GradientPaint gradient;// = new GradientPaint(xstart, 0, endColor, xstart+gr_size, 0, startColor);
+
+        for (int pseudo_x=0; pseudo_x<phases; pseudo_x++){
+            xstart = pseudo_x*i_step;
+
+            gradient = new GradientPaint(xstart, 0, endColor, xstart+gr_size, 0, startColor);
+            g2.setPaint(gradient);
+
+            for (int i = xstart; i<xstart+i_step/2; i = i+3 ){
+                double temp = i*1.0/(w+1);
+                int relative_x = (int)(temp*phases);
+                relative_x = relative_x+1; //1 to phases
+
+                for (int j = 0; j<h; j = j+3 ){
+                    Color pix = new Color(primaryImage.getRGB(i,j));
+
+                    // what degree of grayscale should this pixel be
+                    temp = pix.getRed()*1.0/256;
+                    int relative_color = (int)(temp*n_colors) + 1; //1 to n_colors
+                    // how far from the current mask should it be
+                    // high rgb = pale = right after the mask
+                    int a = (phases-relative_color);
+                    a = (a+relative_x+n_colors)%phases;
+                    if(a == phase){
+                        g2.fillRect(i, j, 2, 2);
+                    }
+                }
+            }
+
+            gradient = new GradientPaint(xstart+i_step-gr_size, 0, startColor, xstart+i_step, 0, endColor);
+            g2.setPaint(gradient);
+
+            for (int i = xstart+i_step-gr_size+2; i<xstart+i_step; i = i+3 ){
+                double temp = i*1.0/(w+1);
+                int relative_x = (int)(temp*phases);
+                relative_x = relative_x+1; //1 to phases
+
+                for (int j = 0; j<h; j = j+3 ){
+                    Color pix = new Color(primaryImage.getRGB(i,j));
+
+                    // what degree of grayscale should this pixel be
+                    temp = pix.getRed()*1.0/256;
+                    int relative_color = (int)(temp*n_colors) + 1; //1 to n_colors
+                    // how far from the current mask should it be
+                    // high rgb = pale = right after the mask
+                    int a = (phases-relative_color);
+                    a = (a+relative_x+n_colors)%phases;
+                    if(a == phase){
+                        g2.fillRect(i, j, 2, 2);
+                    }
                 }
             }
         }
 
+
         //mask
-        int i_step = w/phases;
-        int xstart = phase*i_step;
-        g.fillRect(xstart,0,i_step,h);
+//        g.fillRect(xstart,0,i_step,h);
+
+        xstart = phase*i_step;
+        gr_size = i_step/2;
+        gradient = new GradientPaint(xstart, 0, endColor, xstart+gr_size, 0, startColor);
+        g2.setPaint(gradient);
+        g2.fillRect(xstart,0,gr_size,h);
+        gradient = new GradientPaint(xstart+i_step-gr_size, 0, startColor, xstart+i_step, 0, endColor);
+        g2.setPaint(gradient);
+        g2.fillRect(xstart+i_step-gr_size,0,gr_size,h);
+
+//        int gr_size = 15;
+//        GradientPaint gradient = new GradientPaint(xstart, 0, endColor, xstart+gr_size, 0, startColor);
+//        g2.setPaint(gradient);
+//        g2.fillRect(xstart,0,gr_size,h);
+//        g.fillRect(xstart+gr_size,0,i_step-gr_size*2,h);
+//        gradient = new GradientPaint(xstart+i_step-gr_size, 0, startColor, xstart+i_step, 0, endColor);
+//        g2.setPaint(gradient);
+//        g2.fillRect(xstart+i_step-gr_size,0,gr_size,h);
+
+
 
 //        xstart = (phases/2)*i_step;
 //        //dots
@@ -1457,7 +1537,6 @@ public class Generator extends JPanel {
 //        }
 
 
-        mlog.say("phase " + phase);
         if(phase+1>=phases){
 
             //mask

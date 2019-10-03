@@ -7,7 +7,7 @@ public class Starter {
     static JFrame frame;
 
     /** set to true to save image frames*/
-    static  boolean save = false;
+    static  boolean save = true;
 
 //    static int type = Constants.BENHAM_CLASSIC;
 //    static int type = Constants.BENHAM_RED;
