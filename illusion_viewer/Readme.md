@@ -57,4 +57,4 @@ ffmpeg -framerate 20 -i "%04d.png" -pix_fmt yuv420p -vb 20M _out.avi
 ffmpeg -i _out.avi -pix_fmt rgb24 -loop 0 _out.gif
 ```
 
-
+mogrify -path  -resize 160x120 -quality 100 -format png *.png
