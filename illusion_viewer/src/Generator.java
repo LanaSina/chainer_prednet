@@ -1390,16 +1390,18 @@ public class Generator extends JPanel {
         int phases = 4;
         int n_colors = phases - 1;
 
+        int divs = 1; // or divs = phases
 
-        int i_step = BOX_WIDTH/phases;
-        int j_step = BOX_HEIGHT/phases;
+
+        int i_step = BOX_WIDTH/divs;
+        int j_step = BOX_HEIGHT/divs;
         int xstart = phase*i_step;
         Color startColor = Color.black;
         Color endColor = Color.white;
         int gr_size = i_step/2;
         GradientPaint gradient;// = new GradientPaint(xstart, 0, endColor, xstart+gr_size, 0, startColor);
 
-        for(int pseudo_y=0; pseudo_y<phases; pseudo_y++) {
+        for(int pseudo_y=0; pseudo_y<divs; pseudo_y++) {
 
             // pseudo_phase is == to the phase when current row == 0
             // pseudo_phase is shifted by 1 column for every subsequent row
@@ -1476,7 +1478,7 @@ public class Generator extends JPanel {
 
             g.setColor(Color.black);
 
-        for (int pseudo_x = 0; pseudo_x < phases; pseudo_x++) {
+        for (int pseudo_x = 0; pseudo_x < divs; pseudo_x++) {
 
             if(phase==0){
                 //mask
@@ -1495,7 +1497,7 @@ public class Generator extends JPanel {
 
                 for (int i = xstart; i < xstart + i_step; i = i + 3) {
 
-                    if(i>w) break;
+                    if(i>=w) break;
 
                     double temp = i * 1.0 / (w + 1);
                     int relative_x = (int) (temp * phases);
@@ -1503,7 +1505,7 @@ public class Generator extends JPanel {
 
                     for (int j = ystart; j < ystart+j_step; j = j + 3) {
 
-                        if(j>h) break;
+                        if(j>=h) break;
 
                         Color pix = new Color(primaryImage.getRGB(i, j));
 
