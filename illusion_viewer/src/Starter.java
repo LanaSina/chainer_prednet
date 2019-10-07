@@ -7,7 +7,7 @@ public class Starter {
     static JFrame frame;
 
     /** set to true to save image frames*/
-    static  boolean save = false;
+    static  boolean save = true;
 
 //    static int type = Constants.BENHAM_CLASSIC;
 //    static int type = Constants.BENHAM_RED;
@@ -48,7 +48,7 @@ public class Starter {
     /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;
     /** this will be ignored for other types */
-    static String customImageName = "frazer_lines.jpg";
+    static String customImageName = "3d.png";
 
 
     public static void main(String[] args) {

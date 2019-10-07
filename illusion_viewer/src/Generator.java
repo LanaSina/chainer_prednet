@@ -51,6 +51,8 @@ public class Generator extends JPanel {
     int basic_radius;
     int timing = 1;
 
+    boolean run = true;
+
 
     public Generator(int type, JFrame frame, boolean save){
         this.type = type;
@@ -122,7 +124,7 @@ public class Generator extends JPanel {
         Thread gameThread = new Thread() {
             public void run() {
 
-                while (true) {
+                while (run) {
 
                     if (save) {
 
@@ -1253,8 +1255,8 @@ public class Generator extends JPanel {
 
     private void drawDarkBenham(Graphics g){
 
-        Color mainColor = Color.red;//Color.darkGray;
-        Color lineColor = Color.blue;//Color.gray;
+        Color mainColor = Color.BLACK;//Color.darkGray;
+        Color lineColor = Color.WHITE;//Color.gray;
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
@@ -1476,52 +1478,100 @@ public class Generator extends JPanel {
 //                    fractions, colors, MultipleGradientPaint.CycleMethod.NO_CYCLE));
 //            g2.fill(new Rectangle2D.Double(x1-s, y1-s, s, s));
 
-            g.setColor(Color.black);
-
         for (int pseudo_x = 0; pseudo_x < divs; pseudo_x++) {
 
-            if(phase==0){
+            if (phase == 0) {
                 //mask
                 xstart = pseudo_x * i_step;
-                center = new Point2D.Float(xstart+i_step/2, ystart+j_step/2);
+                center = new Point2D.Float(xstart + i_step / 2, ystart + j_step / 2);
                 radius = j_step;
                 p = new RadialGradientPaint(center, radius, dist, colors);
                 g2.setPaint(p);
                 g2.fillRect(xstart, ystart, i_step, j_step);
-            }
+
+                // blue
+//                for (int i = xstart+1; i < xstart + i_step; i = i + 4) {
+//                    for (int j = ystart; j < ystart+j_step; j = j + 4) {
+//                        g2.setColor(Color.blue);
+//                        g2.fillRect(i, j, 3, 3);
+//                    }
+//                }
+            } else {
                 xstart = pseudo_x * i_step;
 
-                center = new Point2D.Float(xstart+i_step/2, ystart+j_step/2);
-                p = new RadialGradientPaint(center, radius, dist, colors);
-                g2.setPaint(p);
+//                p = new RadialGradientPaint(center, radius, dist, colors);
+//                g2.setPaint(p);
 
                 for (int i = xstart; i < xstart + i_step; i = i + 3) {
 
-                    if(i>=w) break;
+                    if (i >= w) break;
 
                     double temp = i * 1.0 / (w + 1);
                     int relative_x = (int) (temp * phases);
                     relative_x = relative_x + 1; //1 to phases
 
-                    for (int j = ystart; j < ystart+j_step; j = j + 3) {
+                    for (int j = ystart; j < ystart + j_step; j = j + 3) {
 
-                        if(j>=h) break;
+                        if (j >= h) break;
 
+                        boolean colored = false;
                         Color pix = new Color(primaryImage.getRGB(i, j));
 
+                        int[] new_rgb = {255, 255, 255};
+
+                        //red
                         // what degree of grayscale should this pixel be
                         temp = pix.getRed() * 1.0 / 256;
-                        int relative_color = (int) (temp * n_colors) + 1; //1 to n_colors
+                        int relative_color = (int) (temp * n_colors + 1); //1 to n_colors
                         // how far from the current mask should it be
                         // high rgb = pale = right after the mask
                         int a = (phases - relative_color);
                         //a = (a + relative_x + n_colors) % phases;
                         if (a == pseudo_phase) {
+//                            g2.setColor(Color.red);
+//                            g2.fillRect(i, j, 2, 2);
+                            colored = true;
+                            new_rgb[0] = 0;
+                        }
+
+                        // green
+                        temp = pix.getGreen() * 1.0 / 256;
+                        relative_color = (int) (temp * n_colors + 1); //1 to n_colors
+                        // how far from the current mask should it be
+                        // high rgb = pale = right after the mask
+                        a = (phases - relative_color);
+                        //a = (a + relative_x + n_colors) % phases;
+                        if (a == pseudo_phase) {
+//                            g2.setColor(Color.green);
+//                            g2.fillRect(i, j, 2, 2);
+                            colored = true;
+                            new_rgb[1] = 0;
+                        }
+
+//                        // blue
+                        temp = pix.getBlue() * 1.0 / 256;
+                        relative_color = (int) (temp * n_colors + 1); //1 to n_colors
+                        // how far from the current mask should it be
+                        // high rgb = pale = right after the mask
+                        a = (phases - relative_color);
+                        //a = (a + relative_x + n_colors) % phases;
+                        if (a == pseudo_phase) {
+//                            g2.setColor(Color.blue);
+//                            g2.fillRect(i, j, 2, 2);
+                            colored = true;
+                            new_rgb[2] = 0;
+                        }
+
+                        if(colored){
+                            Color c = new Color(new_rgb[0], new_rgb[1], new_rgb[2]);
+                            g2.setColor(c);
                             g2.fillRect(i, j, 2, 2);
                         }
+
                     }
                 }
             }
+        }
         }
 
         //mask
@@ -1536,6 +1586,61 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
+
+    private void drawBenhamImageDark(Graphics g){
+
+        int w = primaryImage.getWidth();
+        int h = primaryImage.getHeight();
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+
+        //black bg
+        g.setColor(Color.black);
+        g.fillRect(0,0,BOX_WIDTH,BOX_HEIGHT);
+
+        UPDATE_RATE = 50; //50
+
+        int phases = 4; //4
+        int n_colors = phases - 1;
+        int color_step = 256/n_colors;
+        int max = color_step*(phase+1);
+
+        Point2D center = new Point2D.Float(BOX_WIDTH/2, BOX_HEIGHT/4);
+        float radius = w;
+        float r_max = 0.9f;//j_step*1.0f/i_step;
+        float[] dist = {0.0f,r_max};
+        Color[] colors =  {Color.BLACK, Color.WHITE};
+        RadialGradientPaint p = new RadialGradientPaint(center, radius, dist, colors);
+        //g2.setPaint(p);
+        g2.setColor(Color.white);
+        //more time == darker appearance == small rgb
+        for (int i = 0; i<w; i = i+3 ){
+            for (int j = 0; j<h; j = j+3 ){
+                Color pix = new Color(primaryImage.getRGB(i,j));
+                if(pix.getRed()>=max-color_step && pix.getRed()<max) {
+                    g2.fillRect(i, j, 2, 2);
+                }
+            }
+        }
+
+        if(phase+1>=phases){
+
+            //mask
+//            g.setColor(Color.white);
+//            g.fillRect(0, 0, w, h);
+
+            Color[] colors2 = {Color.WHITE, Color.BLACK};
+            p = new RadialGradientPaint(center, radius, dist, colors2);
+            g2.setPaint(p);
+            g2.fillRect(0, 0, w, h);
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
+    
 
     private void drawBenhamImage_old(Graphics g){
 
@@ -1552,20 +1657,6 @@ public class Generator extends JPanel {
         int n_colors = phases - 1;
         int color_step = 256/n_colors;
         int max = color_step*(n_colors-phase);
-
-        //draw progressive mask
-//        if(phase==phases-2 || phase==0){
-//            //grey
-//            g.setColor(Color.gray);
-//            g.fillRect(0, 0, w, h);
-//        }
-
-//        //draw progressive mask
-//        if(phase==phases-3 || phase==1){
-//            //grey
-//            g.setColor(Color.lightGray);
-//            g.fillRect(0, 0, w, h);
-//        }
 
         g.setColor(Color.black);
         //more time == darker appearance == small rgb
@@ -1593,7 +1684,14 @@ public class Generator extends JPanel {
 
 
     private void readNextImage(){
-        if(step>82) step = 0;
+
+        if(step>82){
+            if(!save) {
+                step = 0;
+            } else {
+                run = false;
+            }
+        }
 
         String path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/kitti/image_00/data/";
         path = path + String.format("%010d", step) + ".png";
@@ -2079,7 +2177,7 @@ public class Generator extends JPanel {
                 }
 
                 case Constants.BENHAM_IMAGE: {
-                    drawBenhamImage(g);
+                    drawBenhamImageDark(g);
                     break;
                 }
             }
