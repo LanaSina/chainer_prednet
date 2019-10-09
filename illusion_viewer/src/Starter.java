@@ -7,7 +7,7 @@ public class Starter {
     static JFrame frame;
 
     /** set to true to save image frames*/
-    static  boolean save = true;
+    static  boolean save = false;
 
 //    static int type = Constants.BENHAM_CLASSIC;
 //    static int type = Constants.BENHAM_RED;
@@ -24,7 +24,7 @@ public class Starter {
 //    static int type = Constants.FRASER;
 
 //    static int type = Constants.CONCENTRIC_0;
-//    static int type = Constants.BENHAM_WEIRD;
+//    static int type = Constants.BENHAM_DOTS;
 //    static int type = Constants.NO_MASK;
 //    static int type = Constants.CONCURRENT;
 //    static int type = Constants.TIME_WARP;
@@ -39,8 +39,8 @@ public class Starter {
 
 //    static int type = Constants.DARK_BENHAM;
 
-//    static int type = Constants.BENHAM_WEIRD;
-    static int type = Constants.BENHAM_IMAGE;
+    static int type = Constants.BENHAM_DOTS;
+//    static int type = Constants.BENHAM_IMAGE;
 
 
 
@@ -48,7 +48,7 @@ public class Starter {
     /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;
     /** this will be ignored for other types */
-    static String customImageName = "3d.png";
+    static String customImageName = "kitaoka_tuto/kitaoka_tuto.png";
 
 
     public static void main(String[] args) {

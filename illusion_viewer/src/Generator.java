@@ -1023,6 +1023,10 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
+    private void draw2Images(Graphics g){
+
+    }
+
     private void drawContrast(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
@@ -1037,8 +1041,9 @@ public class Generator extends JPanel {
         g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
 
 
-        int size_ = 20;
-        int offset = 200;
+        int offset = BOX_WIDTH/5; //200
+        int size_ = offset/10; //20
+
 
         int x = center_x - primaryImage.getWidth()/2;
         int y = center_y - primaryImage.getHeight()/2;
@@ -1055,7 +1060,7 @@ public class Generator extends JPanel {
             contrast = 255;
             c = new Color(contrast,contrast,contrast);
             g.setColor(c);
-            g.fillRect(center_x+150, center_y-size_, size_*2, size_*2);
+            g.fillRect(center_x+offset-2*size_, center_y-size_, size_*2, size_*2);//+150
         } else if (phase == 1){
             contrast = 255;
             phase = -1;
@@ -1067,7 +1072,7 @@ public class Generator extends JPanel {
             contrast = 0;
             c = new Color(contrast,contrast,contrast);
             g.setColor(c);
-            g.fillRect(center_x+150, center_y-size_, size_*2, size_*2);
+            g.fillRect(center_x+offset-2*size_, center_y-size_, size_*2, size_*2);
 
         }
 
@@ -1335,7 +1340,7 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
-    private void drawBenham_weird(Graphics g){
+    private void drawBenhamDots(Graphics g){
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
@@ -1343,10 +1348,11 @@ public class Generator extends JPanel {
         Color c = Color.black; //new Color(0,80,0);
         g.setColor(c);//black
 
+        int step = 2;
         if(phase==0){
             g.setColor(Color.black);
-            for (int i = center_x-100; i<center_x+100; i = i+2 ){
-                for (int j = center_y-50; j<center_y; j = j+2 ){
+            for (int i = center_x-100; i<center_x+100; i = i+step ){
+                for (int j = center_y-50; j<center_y; j = j+step ){
                     g.drawLine(i,j,i+1,j+1);
                 }
             }
@@ -1356,8 +1362,8 @@ public class Generator extends JPanel {
             g.setColor(Color.black);
             //draw outer circles
 
-            for (int i = center_x-100; i<center_x+100; i = i+2 ){
-                for (int j = center_y+1; j<center_y+50; j = j+2 ){
+            for (int i = center_x-100; i<center_x+100; i = i+step ){
+                for (int j = center_y+1; j<center_y+50; j = j+step ){
                     g.drawLine(i,j,i+1,j+1);
                 }
             }
@@ -1640,7 +1646,121 @@ public class Generator extends JPanel {
         phase = phase+1;
     }
 
-    
+    private void drawBenhamImageAllRanges(Graphics g){
+        UPDATE_RATE = 50; //50
+        int half = 255/2;
+
+        int w = primaryImage.getWidth();
+        int h = primaryImage.getHeight();
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+
+        //bg is also 2 colors
+        g.setColor(Color.black);
+        g.fillRect(0,0,BOX_WIDTH,BOX_HEIGHT);
+
+        // dark benham version
+        // use for darkest pixels
+        g.setColor(Color.black);
+        for (int i = 0; i<w; i = i+1 ){
+            for (int j = 0; j<h; j = j+1 ){
+                Color pix = new Color(primaryImage.getRGB(i,j));
+                if(pix.getRed()<half) {
+                    g2.fillRect(i, j, 1, 1);
+                }
+            }
+        }
+
+        // light benham version
+        // use for pale pixels
+        g.setColor(Color.white);
+        for (int i = 0; i<w; i = i+1 ){
+            for (int j = 0; j<h; j = j+1){
+                Color pix = new Color(primaryImage.getRGB(i,j));
+                if(pix.getRed()>=half) {
+                    g2.fillRect(i, j, 1, 1);
+                }
+            }
+        }
+
+
+        int phases = 4; //4
+        int n_colors = phases - 1;
+        int color_step = 256/n_colors;
+        int max = color_step*(phase+1);
+
+        Point2D center = new Point2D.Float(BOX_WIDTH/2, BOX_HEIGHT/4);
+        float radius = w;
+        float r_max = 0.9f;//j_step*1.0f/i_step;
+        float[] dist = {0.0f,r_max};
+        Color[] colors =  {Color.BLACK, Color.WHITE};
+        RadialGradientPaint p;// = new RadialGradientPaint(center, radius, dist, colors);
+        //more time == darker appearance == small rgb
+
+        // draw darkest pixels
+        g2.setColor(Color.white);
+        color_step = half/n_colors;
+        max = color_step*(phase+1);
+        for (int i = 0; i<w; i = i+3 ){
+            for (int j = 0; j<h; j = j+3 ){
+                Color pix = new Color(primaryImage.getRGB(i,j));
+                if(pix.getRed()>=max-color_step && pix.getRed()<max) {
+                    g2.fillRect(i, j, 2, 2);
+                }
+            }
+        }
+
+        // light pixels
+        g2.setColor(Color.black);
+        max = half + 1 + color_step*(phase+1);
+        for (int i = 0; i<w; i = i+3 ){
+            for (int j = 0; j<h; j = j+3 ){
+                Color pix = new Color(primaryImage.getRGB(i,j));
+                if(pix.getRed()>=max-color_step && pix.getRed()<max) {
+                    g2.fillRect(i, j, 2, 2);
+                }
+            }
+        }
+
+        if(phase+1>=phases){
+            // 2 colors for mask
+            // dark benham version
+            // use for darkest pixels
+            Color[] colors2 = {Color.WHITE, Color.BLACK};
+            p = new RadialGradientPaint(center, radius, dist, colors2);
+            g2.setPaint(p);
+
+            for (int i = 0; i<w; i = i+1 ){
+                for (int j = 0; j<h; j = j+1 ){
+                    Color pix = new Color(primaryImage.getRGB(i,j));
+                    if(pix.getRed()<half) {
+                        g2.fillRect(i, j, 1, 1);
+                    }
+                }
+            }
+
+            // light benham version
+            // use for pale pixels
+            p = new RadialGradientPaint(center, radius, dist, colors);
+            g2.setPaint(p);
+
+            for (int i = 0; i<w; i = i+1 ){
+                for (int j = 0; j<h; j = j+1){
+                    Color pix = new Color(primaryImage.getRGB(i,j));
+                    if(pix.getRed()>=half) {
+                        g2.fillRect(i, j, 1, 1);
+                    }
+                }
+            }
+
+            readNextImage();
+            phase = -1;
+        }
+
+        phase = phase+1;
+    }
+
 
     private void drawBenhamImage_old(Graphics g){
 
@@ -1660,8 +1780,8 @@ public class Generator extends JPanel {
 
         g.setColor(Color.black);
         //more time == darker appearance == small rgb
-        for (int i = 0; i<w; i = i+3 ){
-            for (int j = 0; j<h; j = j+3 ){
+        for (int i = 0; i<w; i = i+2 ){
+            for (int j = 0; j<h; j = j+2 ){
                 Color pix = new Color(primaryImage.getRGB(i,j));
                 if(pix.getRed()>=max-color_step && pix.getRed()<max) {
                     g.drawLine(i, j, i + 1, j + 1);
@@ -2063,8 +2183,8 @@ public class Generator extends JPanel {
                     break;
                 }
 
-                case Constants.BENHAM_WEIRD: {
-                    drawBenham_weird(g);
+                case Constants.BENHAM_DOTS: {
+                    drawBenhamDots(g);
                     break;
                 }
 
@@ -2177,7 +2297,7 @@ public class Generator extends JPanel {
                 }
 
                 case Constants.BENHAM_IMAGE: {
-                    drawBenhamImageDark(g);
+                    drawBenhamImage_old(g);
                     break;
                 }
             }
