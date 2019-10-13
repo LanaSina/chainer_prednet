@@ -57,4 +57,15 @@ ffmpeg -framerate 20 -i "%04d.png" -pix_fmt yuv420p -vb 20M _out.avi
 ffmpeg -i _out.avi -pix_fmt rgb24 -loop 0 _out.gif
 ```
 
-mogrify -path  -resize 160x120 -quality 100 -format png *.png
+## Resize images for prednet
+
+resize
+`mogrify -path . -resize 160x400 -quality 100 -format png *.png`
+
+crop: w x h + x offset + y offset
+`mogrify -crop 160x120+50+100 *.png`
+
+
+eg
+
+mogrify -path . -resize 400x120 -quality 100 -format png *.png

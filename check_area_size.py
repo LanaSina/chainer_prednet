@@ -549,6 +549,54 @@ def record_area_changes(real_image_dir, prediction_dir, output_dir, image_count)
 			print("here")
 
 
+## record pixel mean color at t-2 and t-1
+def record_relative_colors(real_image_dir, prediction_dir, output_dir, image_count):
+	real_image_list = sorted(os.listdir(real_image_dir))
+	#prediction_list = sorted(os.listdir(prediction_dir))
+
+
+	if(image_count == -1):
+		image_count =  len(real_image_list)
+
+	save_file = output_dir + "/_temp_fixed_area_change_analysis.csv"
+	print(save_file)
+	fieldnames = ['image_0','area_id','size_t0','size_t1','size_t2','r0','g0','b0','r1','g1','b1','r2','g2','b2']
+
+	with open(save_file, mode='w') as csv_file:
+
+		writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+		writer.writerow(fieldnames)
+		im_index = 0
+		print("all ", real_image_list[2:image_count])
+		for image_file in real_image_list[2:image_count]:
+			path = os.path.join(real_image_dir, image_file)
+			print("read ", path)
+			# predicted_image = np.array(Image.open(prediction_path).convert('RGB'))
+
+			previous_images = []
+			# previous_path = os.path.join(real_image_dir, real_image_list[im_index])
+			# previous_images.append(previous_path)
+			# previous_path = os.path.join(real_image_dir, real_image_list[im_index+1])
+			# previous_images.append(previous_path)
+			# previous_images.append(path)
+			previous_path = os.path.join(real_image_dir, real_image_list[im_index])
+			previous_images.append(previous_path)
+			previous_path = os.path.join(real_image_dir, real_image_list[im_index+1])
+			previous_images.append(previous_path)
+			# last image is the prediction
+			#prediction_dir
+			previous_path = os.path.join(real_image_dir, real_image_list[im_index+2]) #prediction_list[im_index+1])
+			previous_images.append(previous_path)
+
+			print("previous images ------ ")
+			print(previous_images)
+
+			fixed_areas_changes(im_index,previous_images, output_dir, writer)
+			
+			im_index = im_index + 1
+			print("here")
+
+
 parser = argparse.ArgumentParser(description='image_analysis')
 parser.add_argument('prediction_dir', action='store', nargs='?', help='Path to prednet output images')
 parser.add_argument('gs_image_dir', action='store', nargs='?', help='Path to original greyscale images used as input')
@@ -565,3 +613,5 @@ if not os.path.exists(args.output_dir):
 #process_flicker(args.prediction_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
 #process_flicker(args.real_image_dir, args.gs_image_dir, args.real_image_dir, args.output_dir, args.n_images)
 record_area_changes(args.real_image_dir, args.prediction_dir, args.output_dir,  args.n_images)
+record_relative_colors()
+

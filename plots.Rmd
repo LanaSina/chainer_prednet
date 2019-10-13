@@ -459,24 +459,30 @@ Plot color and surrounding colors
 
 ```{r}
 
-filename = "black_white_next/bike_15m_flicker_surround.csv"
+filename = "black_white_next/fpsi_5000.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+```
 
+```{r}
 plot(df$bw_r, col = "red", type = "l",
-     main = "bw, surround", ylim = c(0,255)
+     main = "black->white->...", ylim = c(0,255)
      #,ylab = "Mean value"
     )
+points(df$bw_g, col = "green", type = "l")
 points(df$bw_b, col = "blue", type = "l")
 
 plot(df$wb_r, col = "red", type = "l",
-     main = "wb, surround", ylim = c(0,255)
+     main = "white->black->...", ylim = c(0,255)
      #,ylab = "Mean value"
     )
+points(df$wb_g, col = "green", type = "l")
 points(df$wb_b, col = "blue", type = "l")
 
 print(mean(df$bw_r))
+print(mean(df$bw_g))
 print(mean(df$bw_b))
 print(mean(df$wb_r))
+print(mean(df$wb_g))
 print(mean(df$wb_b))
 
 ```

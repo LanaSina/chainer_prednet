@@ -1344,38 +1344,122 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        //darker
-        Color c = Color.black; //new Color(0,80,0);
-        g.setColor(c);//black
+//        g.setColor(Color.lightGray);
+//        g.fillRect(0, 0, BOX_WIDTH/2, BOX_HEIGHT);
+//
+//        g.setColor(Color.darkGray);
+//        g.fillRect(BOX_WIDTH/2, 0, BOX_WIDTH, BOX_HEIGHT);
 
         int step = 2;
+
+
+        // let s go bicolor/dark/same
+
         if(phase==0){
-            g.setColor(Color.black);
+//            g.setColor(Color.gray);
+//            for (int i = center_x-100; i<center_x; i = i+step ){
+//                for (int j = center_y-50; j<center_y; j = j+step ){
+//                    g.drawLine(i,j,i+1,j+1);
+//                }
+//            }
+//
+//
+//            for (int i = center_x; i<center_x+100; i = i+step ){
+//                for (int j = center_y-50; j<center_y; j = j+step ){
+//                    g.drawLine(i,j,i+1,j+1);
+//                }
+//            }
+
+
+//            g.setColor(Color.white);
+//
+            int r = 150;
+            int x = center_x - r;
+            int y = center_y - r;
+//            g.fillRect(x, y, r*2, r*2);
+
+//            g.setColor(Color.white);
+//            g.fillRect(x, y, r, r*2);
+//
+//            g.setColor(Color.black);//darkgray
+//            g.fillRect(center_x, y, r, r*2);
+
+            g.setColor(Color.gray);
             for (int i = center_x-100; i<center_x+100; i = i+step ){
                 for (int j = center_y-50; j<center_y; j = j+step ){
                     g.drawLine(i,j,i+1,j+1);
                 }
             }
 
-//            g.drawRect(center_x-100, center_y-20, 150, 2);
         } else if(phase==1){
-            g.setColor(Color.black);
-            //draw outer circles
 
+            int r = 150;
+            int x = center_x - r;
+            int y = center_y - r;
+
+            g.setColor(Color.white);
+            g.fillRect(x, y, r*2, r*2);
+
+
+//            g.setColor(Color.lightGray);
+//            g.fillRect(x, y, r, r*2);
+//
+//            g.setColor(Color.darkGray);//darkgray
+//            g.fillRect(center_x, y, r, r*2);
+
+//            g.setColor(Color.black);
+//            for (int i = center_x-100; i<center_x+100; i = i+step ){
+//                for (int j = center_y-50; j<center_y; j = j+step ){
+//                    g.drawLine(i,j,i+1,j+1);
+//                }
+//            }
+//            for (int i = center_x-100; i<center_x+100; i = i+step ){
+//                for (int j = center_y+1; j<center_y+50; j = j+step ){
+//                    g.drawLine(i,j,i+1,j+1);
+//                }
+//            }
+
+            g.setColor(Color.gray);
             for (int i = center_x-100; i<center_x+100; i = i+step ){
                 for (int j = center_y+1; j<center_y+50; j = j+step ){
                     g.drawLine(i,j,i+1,j+1);
                 }
             }
-//            g.drawRect(center_x-20, center_y, 150, 2);
+
         } else if(phase==2){
 
-            g.setColor(Color.black);//black
+            //g.setColor(Color.gray);
 
             int r = 150;
             int x = center_x - r;
             int y = center_y - r;
-            g.fillRect(x, y, r*2, r*2);
+
+
+            g.setColor(Color.black);
+
+            for (int i = center_x-100; i<center_x+100; i = i+step ){
+                for (int j = center_y-50; j<center_y+50; j = j+step ){
+                    g.drawLine(i,j,i+1,j+1);
+                }
+            }
+
+//            for (int i = x; i<x+2*r; i = i+step ){
+//                for (int j = y; j<y+r*2; j = j+step ){
+//                    g.drawLine(i,j,i+1,j+1);
+//                }
+//            }
+
+//            g.setColor(Color.darkGray);
+//            g.fillRect(x, y, r, r*2);
+//            g.fillRect(center_x, y, r, r*2);
+
+
+//            g.setColor(Color.black);
+//
+//            int r = 150;
+//            int x = center_x - r;
+//            int y = center_y - r;
+//            g.fillRect(x, y, r*2, r*2);
 
             phase = -1;
         }
