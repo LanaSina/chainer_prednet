@@ -459,7 +459,7 @@ Plot color and surrounding colors
 
 ```{r}
 
-filename = "black_white_next/fpsi_5000.csv"
+filename = "black_white_next/flickers.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
 ```
 
@@ -485,7 +485,50 @@ print(mean(df$wb_r))
 print(mean(df$wb_g))
 print(mean(df$wb_b))
 
+plot(df$bw_diff_rt1, col = "red", type = "l",
+     main = "black->white->diff_rgb", ylim = c(-255,255)
+    )
+points(df$bw_diff_gt1, col = "green", type = "l")
+points(df$bw_diff_bt1, col = "blue", type = "l")
+
+plot(df$wb_diff_rt1, col = "red", type = "l",
+     main = "white->black->...", ylim = c(-255,255)
+    )
+points(df$wb_diff_gt1, col = "green", type = "l")
+points(df$wb_diff_bt1, col = "blue", type = "l")
+
+print(mean(df$bw_diff_rt1))
+print(mean(df$bw_diff_gt1))
+print(mean(df$bw_diff_bt1))
+print(mean(df$wb_diff_rt1))
+print(mean(df$wb_diff_gt1))
+print(mean(df$wb_diff_bt1))
+
 ```
+```{r}
+
+filename = "black_white_next/random_flickers.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+```
+
+
+```{r}
+plot(df$r_0, col = "black", type = "l",
+     main = "r t0, t1, t2", ylim = c(-255,255)
+    )
+points(df$r_1, col = "blue", type = "l")
+points(df$r_2, col = "red", type = "l")
+
+plot(df$r_diff_t02, col = "red", type = "l",
+     main = "r diff t2-t0, t2-t1", ylim = c(0,255)
+    )
+points(df$r_diff_t12, col = "blue", type = "l")
+
+print(mean(df$r_diff_t02))
+print(mean(df$r_diff_t12))
+
+```
+
 
 
 Plot colors during and after flicker

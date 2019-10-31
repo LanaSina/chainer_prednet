@@ -1356,33 +1356,16 @@ public class Generator extends JPanel {
         // let s go bicolor/dark/same
 
         if(phase==0){
-//            g.setColor(Color.gray);
-//            for (int i = center_x-100; i<center_x; i = i+step ){
-//                for (int j = center_y-50; j<center_y; j = j+step ){
-//                    g.drawLine(i,j,i+1,j+1);
-//                }
-//            }
-//
-//
-//            for (int i = center_x; i<center_x+100; i = i+step ){
-//                for (int j = center_y-50; j<center_y; j = j+step ){
-//                    g.drawLine(i,j,i+1,j+1);
-//                }
-//            }
 
+            g.setColor(Color.white);
 
-//            g.setColor(Color.white);
-//
+//            Color c = new Color(0,0,255);
+//            g.setColor(c);
+
             int r = 150;
             int x = center_x - r;
             int y = center_y - r;
-//            g.fillRect(x, y, r*2, r*2);
-
-//            g.setColor(Color.white);
-//            g.fillRect(x, y, r, r*2);
-//
-//            g.setColor(Color.black);//darkgray
-//            g.fillRect(center_x, y, r, r*2);
+            g.fillRect(x, y, r*2, r*2);
 
             g.setColor(Color.gray);
             for (int i = center_x-100; i<center_x+100; i = i+step ){
@@ -1393,31 +1376,22 @@ public class Generator extends JPanel {
 
         } else if(phase==1){
 
+            g.setColor(Color.red);
+
+            int r = 150;
+            int x = center_x - r;
+            int y = center_y - r;
+            g.fillRect(x, y, r*2, r*2);
+//            g.fillRect(center_x-100, center_y-50, 200, 100);
+
+        } else if(phase==2){
+
             int r = 150;
             int x = center_x - r;
             int y = center_y - r;
 
             g.setColor(Color.white);
             g.fillRect(x, y, r*2, r*2);
-
-
-//            g.setColor(Color.lightGray);
-//            g.fillRect(x, y, r, r*2);
-//
-//            g.setColor(Color.darkGray);//darkgray
-//            g.fillRect(center_x, y, r, r*2);
-
-//            g.setColor(Color.black);
-//            for (int i = center_x-100; i<center_x+100; i = i+step ){
-//                for (int j = center_y-50; j<center_y; j = j+step ){
-//                    g.drawLine(i,j,i+1,j+1);
-//                }
-//            }
-//            for (int i = center_x-100; i<center_x+100; i = i+step ){
-//                for (int j = center_y+1; j<center_y+50; j = j+step ){
-//                    g.drawLine(i,j,i+1,j+1);
-//                }
-//            }
 
             g.setColor(Color.gray);
             for (int i = center_x-100; i<center_x+100; i = i+step ){
@@ -1426,45 +1400,62 @@ public class Generator extends JPanel {
                 }
             }
 
-        } else if(phase==2){
-
-            //g.setColor(Color.gray);
+            //phase = -1;
+        } else if(phase==3){
+            g.setColor(Color.blue);
 
             int r = 150;
             int x = center_x - r;
             int y = center_y - r;
-
-
-            g.setColor(Color.black);
-
-            for (int i = center_x-100; i<center_x+100; i = i+step ){
-                for (int j = center_y-50; j<center_y+50; j = j+step ){
-                    g.drawLine(i,j,i+1,j+1);
-                }
-            }
-
-//            for (int i = x; i<x+2*r; i = i+step ){
-//                for (int j = y; j<y+r*2; j = j+step ){
-//                    g.drawLine(i,j,i+1,j+1);
-//                }
-//            }
-
-//            g.setColor(Color.darkGray);
-//            g.fillRect(x, y, r, r*2);
-//            g.fillRect(center_x, y, r, r*2);
-
-
-//            g.setColor(Color.black);
-//
-//            int r = 150;
-//            int x = center_x - r;
-//            int y = center_y - r;
-//            g.fillRect(x, y, r*2, r*2);
-
+            g.fillRect(x, y, r*2, r*2);
+//            g.fillRect(center_x-100, center_y-50, 200, 100);
             phase = -1;
         }
 
         phase = phase+1;
+    }
+
+    private void drawStepIllusion(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        g.setColor(Color.black);
+
+        //draw background
+        int step = 15;
+
+        for (int i = 0; i<BOX_WIDTH; i+=step*2){
+            g2.fillRect(i, 0, step, BOX_HEIGHT);
+        }
+
+        int w = BOX_WIDTH;
+        boolean isBlack = true;
+        while (w>0){
+
+            if(isBlack){
+                g.setColor(Color.black);
+            } else {
+                g.setColor(Color.white);
+            }
+
+            g2.fillRect(center_x-w/2, center_y-w/2, w, w);
+            w = w - step;
+            isBlack = !isBlack;
+        }
+
+        //rectangles
+        g.setColor(Color.blue);
+        int size = phase*step;
+        g2.fillRect(center_x-(size/2), center_y-100 - size/2, size, size);
+
+        g.setColor(Color.yellow);
+        g2.fillRect(center_x-(size/2), center_y+100 - size/2, size, size);
+
+
+        phase++;
+        if(size>=BOX_WIDTH){
+            phase = 1;
+        }
+
     }
 
 
@@ -1904,6 +1895,81 @@ public class Generator extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void movingContrastBh(Graphics g){
+
+        UPDATE_RATE = 70;
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+        //darker
+        Color c = Color.black;
+        g.setColor(c);
+
+
+        //draw gradients
+        int startX = 0, startY = 0, endX = 0, endY = BOX_HEIGHT;
+        Color startColor = Color.black;
+        Color endColor = Color.white;
+        int height = BOX_HEIGHT/4;
+        //int speed = 2; //how fast the gradient moves
+
+
+        //true for 2 steps
+        boolean even =  true;
+        if(phase==2){
+            even=false;
+        }
+
+        if(phase==1){
+            g.setColor(Color.gray);
+            g.fillRect(0,0,BOX_WIDTH,BOX_HEIGHT);
+//
+//            g.setColor(Color.BLACK);
+//            g.fillRect(0,BOX_HEIGHT/2,BOX_WIDTH,BOX_HEIGHT);
+        } else {
+            int start = 0;
+            for (int step = start; step < BOX_HEIGHT + height; step = step + height) {
+
+                startY = step;
+                endY = step + height;
+
+                if (even) {
+                    endColor = Color.black;
+                    startColor = Color.white;
+                } else {
+                    startColor = Color.black;
+                    endColor = Color.white;
+                }
+
+                GradientPaint gradient = new GradientPaint(startX, startY, startColor, endX, endY, endColor);
+                g2.setPaint(gradient);
+
+                g2.fill(new Rectangle2D.Double(startX, startY, BOX_WIDTH, endY));
+
+                even = !even;
+            }
+        }
+
+        if(phase==1){
+            phase = -1;
+        }
+
+
+        //draw inner arcs
+        g.setColor(Color.gray);
+        int r = basic_radius/2;
+        for(int i = 0; i<cirles; i++) {
+            r = r + separation;
+            g.drawLine(300,300+r, 400, 300+r);
+        }
+        for(int i = 0; i<cirles; i++) {
+            r = r + separation;
+            g.drawLine(300,400+r, 400, 400+r);
+        }
+
+        phase = phase+1;
     }
 
     private void drawBenham(Graphics g){
@@ -2382,6 +2448,16 @@ public class Generator extends JPanel {
 
                 case Constants.BENHAM_IMAGE: {
                     drawBenhamImage_old(g);
+                    break;
+                }
+
+                case Constants.STEPS: {
+                    drawStepIllusion(g);
+                    break;
+                }
+
+                case Constants.MOVING_CONTRAST_BH: {
+                    movingContrastBh(g);
                     break;
                 }
             }

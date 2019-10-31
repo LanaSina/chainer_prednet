@@ -28,7 +28,7 @@ public class Constants {
 	public final static String IMAGE_INPUT_PATH = "example_images/";
 
 	/** set to false to save prednet-sized images */
-	public final static boolean BIG_SCALE = true;
+	public final static boolean BIG_SCALE = false;
 
 	public final static int BENHAM_CLASSIC = 0;
 	public final static int BENHAM_VAR = 1;
@@ -65,4 +65,7 @@ public class Constants {
 	public final static int COLOR_BANDS = 32;
 	public final static int DARK_BENHAM = 33;
 	public final static int BENHAM_IMAGE = 34;
+	public final static int STEPS = 35;
+    public final static int MOVING_CONTRAST_BH = 36;
+
 }

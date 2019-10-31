@@ -198,7 +198,7 @@ def black_white_next(image_dir, output_dir, n):
   coordinates[:,0] = numpy.random.randint(h, size=pixels_count) 
   coordinates[:,1] = numpy.random.randint(w, size=pixels_count) 
 
-  t = 4
+  t = 2 + 1
   previous_images = []
   for i in range(0,t):
     previous_images.append(numpy.zeros((h,w,3)))
@@ -214,8 +214,9 @@ def black_white_next(image_dir, output_dir, n):
   variation = 0.0
 
   #better to open several files... but how
-  output_file = "fpsi_5000.csv"
-  fieldnames = ['bw_r','bw_g','bw_b','wb_r','wb_g','wb_b']
+  output_file = "flickers.csv"
+  fieldnames = ['bw_r','bw_g','bw_b','wb_r','wb_g','wb_b', \
+  'bw_diff_rt1', 'bw_diff_gt1', 'bw_diff_bt1', 'wb_diff_rt1', 'wb_diff_gt1', 'wb_diff_bt1']
 
   started = False
   with open(output_dir+output_file, mode='w') as csv_file:
@@ -245,11 +246,12 @@ def black_white_next(image_dir, output_dir, n):
       color_tracks = numpy.zeros((2,3,3))
       # sums
       rgb_s = numpy.zeros((2,3))
-
+      # differences in rbg, bw / wb
+      diff_rgb = numpy.zeros((2,3))
 
       for time_index in range(0,t-1):
         previous_images[time_index] = previous_images[time_index+1]
-      previous_images[2] = current_image
+      previous_images[t-1] = current_image
 
       for pixel in coordinates:
       
@@ -274,18 +276,11 @@ def black_white_next(image_dir, output_dir, n):
         col_mean[pixel_index][t-1] = (r + g + b)/3.0
 
         # is it dark
-        if (col_mean[pixel_index][t-1] < b_t ):
-          black[pixel_index][t-1] = 1
-        else:
-          if (col_mean[pixel_index][t-1] > w_t):
+        if (col_mean[pixel_index][t-1] > w_t):
             white[pixel_index][t-1] = 1
-
-        # blue
-        # blue_plus = 0.0
-        # red_plus = 0.0
-        # green_plus = 0.0
-
-        # col_offset = col_mean[pixel_index][t-1] - col_mean[pixel_index][t-2]
+        else:
+          if ( col_mean[pixel_index][t-1] < b_t ):
+            black[pixel_index][t-1] = 1
 
         global_rgb_s = rgb_surround(i,j,2,current_image) #previous_images[t-2]
         surround_rgb_mean = sum(global_rgb_s)/3.0
@@ -303,104 +298,120 @@ def black_white_next(image_dir, output_dir, n):
           red_sum[0] = red_sum[0] + r
           blue_sum[0] = blue_sum[0] + b
           green_sum[0] = green_sum[0] + g
+          diff_rgb[0] = 1.0*previous_images[1][i,j] - current_image[i,j]
 
         # white black
         if (white[pixel_index][0] == 1 and black[pixel_index][1] == 1):
           wb_sum = wb_sum + 1
           red_sum[1] = red_sum[1] + r
           blue_sum[1] = blue_sum[1] + b
+          green_sum[1] = green_sum[1] + g
+          diff_rgb[1] = 1.0*previous_images[1][i,j] - current_image[i,j]
 
         pixel_index = pixel_index + 1
 
       # (black->white , white->black)
       # ['bw_r','bw_g','bw_b','wb_r','wb_g','wb_b']
-      row = [red_sum[0]/bw_sum, green_sum[0]/bw_sum, blue_sum[0]/bw_sum, red_sum[1]/wb_sum, green_sum[1]/wb_sum, blue_sum[1]/wb_sum]
-
+      # 'diff_rt1', 'diff_gt1', 'diff_bt1'
+      row = [red_sum[0]/bw_sum, green_sum[0]/bw_sum, blue_sum[0]/bw_sum, \
+      red_sum[1]/wb_sum, green_sum[1]/wb_sum, blue_sum[1]/wb_sum]
+      row.extend(diff_rgb[0])
+      row.extend(diff_rgb[1])
       writer.writerow(row)
 
       started = True
 
 
-# with open(output_dir+'motion_half.csv', mode='w') as csv_file:
-#   fieldnames = ['red_left', 'red_right', 'blue_left', 'blue_right']
-#   writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-#   writer.writerow(fieldnames)
 
-#   for image_file in image_list[:image_count]:
-#     image_path = os.path.join(image_dir, image_file)
-#     print("read ", image_path)
+# count the ratio of blue and red after black-white alternation in a pixel
+def random_flicker(image_dir, output_dir, n):
+  image_list = sorted(os.listdir(image_dir))
+  image_count =  n
 
-#     # Beware: numpy ordering is b, g, r
-#     current_image = numpy.array(Image.open(image_path).convert('RGB'))
+  if(n == -1):
+    image_count =  len(image_list)
 
-#     middle = current_image.shape[1]/2
-#     red, blue = motion_half(current_image, middle)
+  # choose some random pixels
+  w = 160
+  h = 90
+  pixels_count = 100
+  coordinates = numpy.zeros((pixels_count,2))
+  coordinates[:,0] = numpy.random.randint(h, size=pixels_count) 
+  coordinates[:,1] = numpy.random.randint(w, size=pixels_count) 
 
-#     n = n + 1
+  t = 3
+  previous_images = []
+  for i in range(0,t):
+    previous_images.append(numpy.zeros((h,w,3)))
 
-#     writer.writerow([red[0], red[1], blue[0], blue[1]])
+  diff_threshold = 70
 
+  #better to open several files... but how
+  output_file = "random_flickers.csv"
+  fieldnames = ['r_0','g_0','b_0','r_1','g_1','b_1', \
+  'r_2','g_2','b_2', 'r_diff_t02', 'g_diff_t02', 'b_diff_t02',\
+  'r_diff_t12', 'g_diff_t12', 'b_diff_t12']
 
+  with open(output_dir+output_file, mode='w') as csv_file:
+    writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(fieldnames)
 
-# with open(output_dir+'reds_blues.csv', mode='w') as csv_file:
-#   fieldnames = ['red', 'blue']
-#   writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-#   writer.writerow(fieldnames)
+    for image_file in image_list[2:image_count]:
+      image_path = os.path.join(image_dir, image_file)
+      print("read ", image_path)
 
-#   for image_file in image_list[:image_count]:
-#     image_path = os.path.join(image_dir, image_file)
-#     print("read ", image_path)
+      # h, w, color
+      current_image = numpy.array(Image.open(image_path).convert('RGB'))
 
-#     # Beware: numpy ordering is b, g, r
-#     current_image = numpy.array(Image.open(image_path).convert('RGB'))
+      pixel_index = 0
 
-#     middle = current_image.shape[0]/2
-#     result = red_blue(current_image)
+      for time_index in range(0,t-1):
+        previous_images[time_index] = previous_images[time_index+1]
+      previous_images[t-1] = current_image
 
-#     n = n + 1
+      for pixel in coordinates:  
+        i = int(pixel[0])
+        j = int(pixel[1])
 
-#     writer.writerow(result)
+        # !!!!! avoid weird typing
+        r = 1.0*current_image[i, j, 0]
+        g = 1.0*current_image[i, j, 1]
+        b = 1.0*current_image[i, j, 2]
+      
+    
+        col_mean  = numpy.mean(current_image[i, j])
 
+        # has it flickered?
+        flicker_value = numpy.mean(previous_images[0][i,j]) - numpy.mean(previous_images[1][i,j])
+        if (abs(flicker_value) < diff_threshold):
+          continue
 
-# with open(output_dir+'top_bottom_diff.csv', mode='w') as csv_file:
-#   fieldnames = ['red_top', 'red_bottom', 'blue_top', 'blue_bottom']
-#   writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-#   writer.writerow(fieldnames)
+        # is the current pixel isolated?
+        global_rgb_s = rgb_surround(i,j,2,current_image) 
+        surround_rgb_mean = sum(global_rgb_s)/3.0
+        current_rgb_mean = sum(current_image[i,j])/3.0
+        rgb_difference = abs(surround_rgb_mean-current_rgb_mean)
 
-#   for image_file in image_list[:image_count]:
-#     image_path = os.path.join(image_dir, image_file)
-#     print("read ", image_path)
+        #ignore pixels that are not contrasted compared to bg
+        if(rgb_difference<diff_threshold):
+          continue
 
-#     # Beware: numpy ordering is b, g, r
-#     current_image = numpy.array(Image.open(image_path).convert('RGB'))
+        pixel_index = pixel_index + 1
 
-#     middle = current_image.shape[0]/2
-#     # print(current_image.shape)
-#     # print(middle)
-#     red, blue = top_bottom_diff(current_image, middle)
+        # r g b  at t=0, t=1, t  = 2
+        row = []
+        row.extend(previous_images[0][i,j])
+        row.extend(previous_images[1][i,j])
+        row.extend(current_image[i, j])
 
-#     n = n + 1
+        # differences
+        rgb_diff = 1.0*current_image[i, j] - previous_images[0][i,j]
+        row.extend(rgb_diff)
+        rgb_diff = 1.0*current_image[i, j] - previous_images[1][i,j]
+        row.extend(rgb_diff)
 
-#     writer.writerow([red[0], red[1], blue[0], blue[1]])
+        writer.writerow(row)
 
-# read all images but last one
-# for image_file in image_list[:image_count]:
-#   image_path = os.path.join(image_dir, image_file)
-#   print("read ", image_path)
-
-#   # Beware: numpy ordering is b, g, r
-# # or is it
-#   current_image = numpy.array(Image.open(image_path).convert('RGB'))
-#   image_path = os.path.join(image_dir, image_list[n+1])
-#   next_image = numpy.array(Image.open(image_path).convert('RGB'))
-
-#   new_image = red_blue_diff(current_image, next_image)
-#   image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
-#   name = output_dir + "______" + str(n).zfill(3) + ".png"
-#   image_array.save(name)
-#   print("saved image ", name)
-
-#   n = n + 1
 
 
 output_dir = "image_analysis/black_white_next/"
@@ -419,7 +430,9 @@ args = parser.parse_args()
 # result = red_blue_green(current_image, 'colors_average_20.csv')
 
 # # flickers
-black_white_next(args.image_dir, output_dir, args.n_images)
+random_flicker(args.image_dir, output_dir, args.n_images)
+# black_white_next(args.image_dir, output_dir, args.n_images)
+
 
 # average colors on sample square
 #sample_average_color(args.image_dir, output_dir)
