@@ -11,22 +11,22 @@ library(rgl)
 
 # dataFolder = "results/greyscale_analysis/"
 # dataFolder = "image_analysis/bike_15m/"
-dataFolder = "image_analysis/fpsi_100/"
+dataFolder = "image_analysis/averages/"
 # dataFolder = "image_analysis/flipbook_results/"
+
+```
+```{r}
+ filename = "30_255_mit.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 
 ```
 
 
 ```{r}
- filename = "area_change_analysis_20.csv"
-# filename = "benham/flicker_analysis.csv"
-# filename = "fixed_area_change_analysis.csv"
-
-df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
-
-df$mean_rgb0 = (df$r0+df$g0+df$b0)/3
-df$mean_rgb1 = (df$r1+df$g1+df$b1)/3
-df$mean_rgb2 = (df$r2+df$g2+df$b2)/3
+plot(df$r, type="l", ylim = c(0,80), col = "red"
+     , main = "rgb Averages", ylab = "rgb", xlab = "frame")
+points(df$g, type = "l", col = "green")
+points(df$b, type = "l", col = "blue")
 ```
 
 ```{r}
@@ -514,19 +514,48 @@ df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
 
 ```{r}
 plot(df$r_0, col = "black", type = "l",
-     main = "r t0, t1, t2", ylim = c(-255,255)
+     main = "r t0, t1, t2", ylim = c(0,255)
     )
 points(df$r_1, col = "blue", type = "l")
 points(df$r_2, col = "red", type = "l")
 
 plot(df$r_diff_t02, col = "red", type = "l",
-     main = "r diff t2-t0, t2-t1", ylim = c(0,255)
+     main = "r diff t2-t0, t2-t1", ylim = c(-255,255)
     )
 points(df$r_diff_t12, col = "blue", type = "l")
 
 print(mean(df$r_diff_t02))
 print(mean(df$r_diff_t12))
 
+
+plot(df$g_0, col = "black", type = "l",
+     main = "r t0, t1, t2", ylim = c(0,255)
+    )
+points(df$g_1, col = "blue", type = "l")
+points(df$g_2, col = "red", type = "l")
+
+plot(df$g_diff_t02, col = "red", type = "l",
+     main = "r diff t2-t0, t2-t1", ylim = c(-255,255)
+    )
+points(df$g_diff_t12, col = "blue", type = "l")
+
+print(mean(df$g_diff_t02))
+print(mean(df$g_diff_t12))
+
+
+plot(df$b_0, col = "black", type = "l",
+     main = "r t0, t1, t2", ylim = c(0,255)
+    )
+points(df$b_1, col = "blue", type = "l")
+points(df$b_2, col = "red", type = "l")
+
+plot(df$b_diff_t02, col = "red", type = "l",
+     main = "r diff t2-t0, t2-t1", ylim = c(-255,255)
+    )
+points(df$b_diff_t12, col = "blue", type = "l")
+
+print(mean(df$b_diff_t02))
+print(mean(df$b_diff_t12))
 ```
 
 
