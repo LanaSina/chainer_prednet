@@ -23,27 +23,13 @@ public class Starter {
 //    static int type = Constants.SNAKES_BW;
 //    static int type = Constants.FRASER;
 
-//    static int type = Constants.CONCENTRIC_0;
-//    static int type = Constants.BENHAM_DOTS;
-//    static int type = Constants.NO_MASK;
-//    static int type = Constants.CONCURRENT;
-//    static int type = Constants.TIME_WARP;
-
-//    static int type = Constants.STATIC;
-//    static int type = Constants.TRAIN;
-//    static int type = Constants.GENERALIZED_BENHAM;
-//    static int type = Constants.CONTRAST;
-//    static int type = Constants.FIRE;
-//    static int type = Constants.ARROW;
-//    static int type = Constants.COLOR_BANDS;
-
 //    static int type = Constants.DARK_BENHAM;
 
 //    static int type = Constants.BENHAM_DOTS;
 //    static int type = Constants.BENHAM_IMAGE;
 //    static int type = Constants.STEPS;
 
-    static int type = Constants.MOVING_CONTRAST_BH;
+    static int type = Constants.COLORS;
 
 
 

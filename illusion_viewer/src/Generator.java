@@ -2210,6 +2210,71 @@ public class Generator extends JPanel {
         drawBands(r, g2, 30, h);
     }
 
+    private void directedColors(Graphics g){
+        UPDATE_RATE = 70;
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+
+        Color c = new Color(128,128,128);
+        g.setColor(c);
+
+        g.fillRect(0,0, BOX_WIDTH, BOX_HEIGHT);
+
+
+        if(phase==2){
+            int x = center_x - primaryImage.getWidth()/2;
+            int y = center_y - primaryImage.getHeight()/2;
+
+            int size = BOX_HEIGHT/5;
+
+            int value = 93;
+            Color startColor = new Color(value,value,value);
+            value = 17;
+            Color endColor = new Color(value,value,value);
+
+            GradientPaint gradient = new GradientPaint(0, 0, startColor, 0, BOX_HEIGHT/2, endColor);
+            g2.setPaint(gradient);
+
+            g2.fill(new Rectangle2D.Double(0,0,BOX_WIDTH,BOX_HEIGHT/2));
+
+            value = 17;
+            startColor = new Color(value,value,value);
+            value = 101;
+            endColor = new Color(value,value,value);
+
+            gradient = new GradientPaint(0, BOX_HEIGHT/2, startColor, 0, BOX_HEIGHT, endColor);
+            g2.setPaint(gradient);
+            g2.fill(new Rectangle2D.Double(0,BOX_HEIGHT/2,BOX_WIDTH,BOX_HEIGHT));
+
+
+//            //red circle
+//            int value = 50;
+//            c = new Color(value,value,value);
+//            g.setColor(c);
+////            g.fillOval(BOX_WIDTH/3, BOX_HEIGHT/3, size, size);
+//            g.drawLine(BOX_WIDTH/3, BOX_HEIGHT/4, size, BOX_HEIGHT/4);
+//
+//            //blue rectangle
+//            value = 32;
+//            c = new Color(value,value,value);
+//            g.setColor(c);
+////            g.fillRect(2*BOX_WIDTH/3, 2*BOX_HEIGHT/3, size, size);
+//            g.drawLine(BOX_WIDTH/3, 2*BOX_HEIGHT/4, size, 2*BOX_HEIGHT/4);
+//
+//            //unknown color
+//            value = 28;
+//            c = new Color(value,value,value);
+//            g.setColor(c);
+////            g.fillOval(BOX_WIDTH/3, 2*BOX_HEIGHT/3, size, size/2);
+//            g.drawLine(BOX_WIDTH/3, 3*BOX_HEIGHT/4, size, 3*BOX_HEIGHT/4);
+
+            phase = -1;
+        }
+        
+        phase = phase+1;
+    }
+
 
     /**
      *
@@ -2458,6 +2523,11 @@ public class Generator extends JPanel {
 
                 case Constants.MOVING_CONTRAST_BH: {
                     movingContrastBh(g);
+                    break;
+                }
+
+                case Constants.COLORS: {
+                    directedColors(g);
                     break;
                 }
             }

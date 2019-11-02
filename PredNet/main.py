@@ -159,7 +159,9 @@ if args.test == True:
             loss = 0
             if args.gpu >= 0:model.to_cpu()
             #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
-            write_image(model.y.data[0].copy(), 'result/test_' + str(i) + 'y_0.png')
+            num = i.zfill(10)
+            new_filename = 'result/' + num + '.png'
+            write_image(model.y.data[0].copy(), new_filename)
             if args.gpu >= 0:model.to_gpu()
 
             if i == 0 or (args.input_len > 0 and i % args.input_len != 0):

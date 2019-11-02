@@ -16,17 +16,51 @@ dataFolder = "image_analysis/averages/"
 
 ```
 ```{r}
- filename = "30_255_mit.csv"
+ filename = "graded_lines5_mit.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 
 ```
 
 
 ```{r}
-plot(df$r, type="l", ylim = c(0,80), col = "red"
-     , main = "rgb Averages", ylab = "rgb", xlab = "frame")
-points(df$g, type = "l", col = "green")
+plot(df$r, type="l", ylim = c(100,250), col = "red"
+     , main = "rgb averages", ylab = "rgb", xlab = "frame")
+#points(df$g, type = "l", col = "green")
 points(df$b, type = "l", col = "blue")
+
+# points(dfi$r, type = "l", col = "red")
+# #points(dfi$g, type = "l", col = "green")
+# points(dfi$b, type = "l", col = "blue")
+
+
+# plot(dfi$r-df$r, type="l", col = "red",ylim = c(-20,50) 
+#      , main = "rgb diff", ylab = "rgb", xlab = "frame")
+# points(dfi$g - df$g, type = "l", col = "green")
+# points(dfi$b - df$b, type = "l", col = "blue")
+
+
+plot(df$b-df$r, type="l", col = "purple", ylim = c(-10,10) 
+     , main = "(blue-red)", ylab = "rgb", xlab = "frame")
+points(dfi$b - dfi$r, type = "l", col = "grey")
+legend(0,10,c("frame 5", "frame 6"), col = c("purple","grey"), lty=c(1,1))
+
+
+# h = 120
+# abline(v=h/5+1)
+# abline(v=2*h/5+1)
+# abline(v=3*h/5+1)
+# 
+# abline(h=255)
+# abline(h=70)
+# abline(h=0)
+
+# points(dfi$r, type = "l", col = "black")
+# abline(h=128)
+
+# plot(dfi$r, type="l", ylim = c(0,255), col = "red"
+#      , main = "rgb averages input", ylab = "rgb", xlab = "frame")
+# points(dfi$g, type = "l", col = "green")
+# points(dfi$b, type = "l", col = "blue")
 ```
 
 ```{r}

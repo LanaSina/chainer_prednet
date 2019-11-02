@@ -23,7 +23,7 @@ public class Constants {
 		return b;
 	}
 
-	public final static String IMAGE_OUTPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/images/";
+	public final static String IMAGE_OUTPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/generator/input_images/";
 	// public final static String IMAGE_INPUT_PATH = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/";
 	public final static String IMAGE_INPUT_PATH = "example_images/";
 
@@ -67,5 +67,5 @@ public class Constants {
 	public final static int BENHAM_IMAGE = 34;
 	public final static int STEPS = 35;
     public final static int MOVING_CONTRAST_BH = 36;
-
+    public final static int COLORS = 37;
 }
