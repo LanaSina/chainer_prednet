@@ -34,7 +34,7 @@ parser.add_argument('--offset', '-o', default='0,0',
                     help='Center offset of clipping input image (pixels)')
 parser.add_argument('--input_len', '-l', default=50, type=int,
                     help='Input frame length fo extended prediction on test (frames)')
-parser.add_argument('--ext', '-e', default=10, type=int,
+parser.add_argument('--ext', '-e', default=0, type=int,
                     help='Extended prediction on test (frames)')
 parser.add_argument('--bprop', default=20, type=int,
                     help='Back propagation length (frames)')
@@ -169,7 +169,7 @@ if args.test == True:
             if args.gpu >= 0:model.to_cpu()
             x_batch[0] = model.y.data[0].copy()
             if args.gpu >= 0:model.to_gpu()
-            for j in range(args.ext):
+            for j in range(0,args.ext):
                 print('extended frameNo:' + str(j + 1))
                 loss += model(chainer.Variable(xp.asarray(x_batch)),
                               chainer.Variable(xp.asarray(y_batch)))
