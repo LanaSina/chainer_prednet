@@ -16,32 +16,68 @@ dataFolder = "image_analysis/averages/"
 
 ```
 ```{r}
- filename = "graded_lines5_mit.csv"
+filename = "fpsi_50/gradient_5.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
+Gradient
+
+
+```{r}
+
+filename = "gradient_strong_input.csv"
+dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+plot(df$r, type="l", ylim = c(0,255), col = "red"
+     , main = "rgb averages", ylab = "rgb", xlab = "row")
+points(df$g, type = "l", col = "green")
+points(df$b, type = "l", col = "blue")
+
+#gradient basis
+points(dfi$r, type = "l", col = "black")
+abline(h=128)
+
+
+plot(df$b-df$r, type="l", col = "purple", ylim = c(-10,10)
+     , main = "y = blue-red", ylab = "rgb", xlab = "row")
+points(dfi$b - dfi$r, type = "l", col = "grey")
+abline(h=0)
+abline(v=15)
+abline(v=45)
+abline(v=75)
+abline(v=105)
+# legend(0,10,c("frame 5", "frame 6"), col = c("purple","grey"), lty=c(1,1))
+
+#points(dfi$r-128, type = "l", col = "black")
 
 ```
 
 
 ```{r}
-plot(df$r, type="l", ylim = c(100,250), col = "red"
-     , main = "rgb averages", ylab = "rgb", xlab = "frame")
-#points(df$g, type = "l", col = "green")
+filename = "fpsi_50/graded_lines5.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+filename = "fpsi_50/graded_lines6.csv"
+dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+
+plot(df$r, type="l", ylim = c(0,255), col = "red"
+     , main = "rgb averages", ylab = "rgb", xlab = "row")
+points(df$g, type = "l", col = "green")
 points(df$b, type = "l", col = "blue")
 
-# points(dfi$r, type = "l", col = "red")
-# #points(dfi$g, type = "l", col = "green")
-# points(dfi$b, type = "l", col = "blue")
+
+# second dataset
+plot(dfi$r, type="l", ylim = c(0,255), col = "red"
+     , main = "rgb averages", ylab = "rgb", xlab = "row")
+points(dfi$b, type = "l", col = "blue")
 
 
-# plot(dfi$r-df$r, type="l", col = "red",ylim = c(-20,50) 
-#      , main = "rgb diff", ylab = "rgb", xlab = "frame")
-# points(dfi$g - df$g, type = "l", col = "green")
-# points(dfi$b - df$b, type = "l", col = "blue")
-
-
-plot(df$b-df$r, type="l", col = "purple", ylim = c(-10,10) 
-     , main = "(blue-red)", ylab = "rgb", xlab = "frame")
+# rbg differences juxtaposed
+plot(df$b-df$r, type="l", col = "purple", ylim = c(-10,10)
+     , main = "(blue-red)", ylab = "rgb", xlab = "row")
 points(dfi$b - dfi$r, type = "l", col = "grey")
+abline(h=0)
 legend(0,10,c("frame 5", "frame 6"), col = c("purple","grey"), lty=c(1,1))
 
 
@@ -53,9 +89,6 @@ legend(0,10,c("frame 5", "frame 6"), col = c("purple","grey"), lty=c(1,1))
 # abline(h=255)
 # abline(h=70)
 # abline(h=0)
-
-# points(dfi$r, type = "l", col = "black")
-# abline(h=128)
 
 # plot(dfi$r, type="l", ylim = c(0,255), col = "red"
 #      , main = "rgb averages input", ylab = "rgb", xlab = "frame")

@@ -1204,34 +1204,39 @@ public class Generator extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1));
-        g.setColor(Color.blue);
+        g.setColor(Color.gray);
+        g.fillRect(0, 0, BOX_WIDTH, BOX_HEIGHT);
 
         if(phase==0){
             //draw inner arcs
+            g.setColor(Color.white);
             int r = basic_radius;
             for(int i = 0; i<cirles; i++) {
                 g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
                 r = r + separation;
             }
             //r = basic_radius + 4*separation;
+            int cc = 70;
+            Color c = new Color(cc,cc,cc);
+            g.setColor(c);
             for(int i = 0; i<cirles; i++) {
                 g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
                 r = r + separation;
             }
         } else if(phase==1){
-            //draw outer circles
-            int r = basic_radius + 6*separation;
-            for(int i = 0; i<cirles; i++) {
-                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
-                r = r + separation;
-            }
-            for(int i = 0; i<cirles; i++) {
-                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
-                r = r + separation;
-            }
-        } else if(phase==2){
+//            //draw outer circles
+//            int r = basic_radius + 6*separation;
+//            for(int i = 0; i<cirles; i++) {
+//                g.drawArc(center_x-r, center_y-r, r*2, r*2, 0, 45);
+//                r = r + separation;
+//            }
+//            for(int i = 0; i<cirles; i++) {
+//                g.drawArc(center_x-r, center_y-r, r*2, r*2, 45, 90);
+//                r = r + separation;
+//            }
+//        } else if(phase==2){
             //draw a big square
-            g.setColor(Color.black);
+            g.setColor(Color.gray);
             int r = basic_radius + 12*separation;
             int x = center_x - r;
             int y = center_y - r;
@@ -2247,31 +2252,9 @@ public class Generator extends JPanel {
             g2.setPaint(gradient);
             g2.fill(new Rectangle2D.Double(0,BOX_HEIGHT/2,BOX_WIDTH,BOX_HEIGHT));
 
-
-//            //red circle
-//            int value = 50;
-//            c = new Color(value,value,value);
-//            g.setColor(c);
-////            g.fillOval(BOX_WIDTH/3, BOX_HEIGHT/3, size, size);
-//            g.drawLine(BOX_WIDTH/3, BOX_HEIGHT/4, size, BOX_HEIGHT/4);
-//
-//            //blue rectangle
-//            value = 32;
-//            c = new Color(value,value,value);
-//            g.setColor(c);
-////            g.fillRect(2*BOX_WIDTH/3, 2*BOX_HEIGHT/3, size, size);
-//            g.drawLine(BOX_WIDTH/3, 2*BOX_HEIGHT/4, size, 2*BOX_HEIGHT/4);
-//
-//            //unknown color
-//            value = 28;
-//            c = new Color(value,value,value);
-//            g.setColor(c);
-////            g.fillOval(BOX_WIDTH/3, 2*BOX_HEIGHT/3, size, size/2);
-//            g.drawLine(BOX_WIDTH/3, 3*BOX_HEIGHT/4, size, 3*BOX_HEIGHT/4);
-
             phase = -1;
         }
-        
+
         phase = phase+1;
     }
 
