@@ -91,4 +91,5 @@ output_dir = args.output_dir #"image_analysis/averages/"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-save_errors(args.input, args.prediction, output_dir,)
+save_errors(args.input, args.prediction, output_dir)
+
