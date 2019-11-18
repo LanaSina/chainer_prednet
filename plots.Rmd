@@ -54,31 +54,43 @@ abline(v=105)
 
 
 ```{r}
-filename = "fpsi_50/graded_lines5.csv"
+filename = "fpsi_50/vertical_snake_8.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 
-filename = "fpsi_50/graded_lines6.csv"
-dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
-
-
 plot(df$r, type="l", ylim = c(0,255), col = "red"
-     , main = "rgb averages", ylab = "rgb", xlab = "row")
+     , main = paste("rgb averages", filename), ylab = "rgb", xlab = "row")
 points(df$g, type = "l", col = "green")
 points(df$b, type = "l", col = "blue")
 
+filename = "vertical_snake_input.csv"
+input = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+plot(input$r, type="l", ylim = c(0,255), col = "red"
+     , main = "rgb averages (input)", ylab = "rgb", xlab = "row")
+points(input$g, type = "l", col = "green")
+points(input$b, type = "l", col = "blue")
+
+plot(input$r-df$r, type="l", ylim = c(-255,255), col = "red"
+     , main = "rgb error", ylab = "rgb", xlab = "row")
+points(input$g-df$g, type = "l", col = "green")
+points(input$b-df$b, type = "l", col = "blue")
+abline(h=0)
+
 
 # second dataset
+filename = "fpsi_50/vertical_snake_9.csv"
+dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
 plot(dfi$r, type="l", ylim = c(0,255), col = "red"
-     , main = "rgb averages", ylab = "rgb", xlab = "row")
+     , main = paste("rgb averages", filename), ylab = "rgb", xlab = "row")
 points(dfi$b, type = "l", col = "blue")
 
-
 # rbg differences juxtaposed
-plot(df$b-df$r, type="l", col = "purple", ylim = c(-10,10)
+plot(df$b-df$r, type="l", col = "purple", ylim = c(-20,20)
      , main = "(blue-red)", ylab = "rgb", xlab = "row")
 points(dfi$b - dfi$r, type = "l", col = "grey")
 abline(h=0)
-legend(0,10,c("frame 5", "frame 6"), col = c("purple","grey"), lty=c(1,1))
+legend(10,20,c("frame 8", "frame 9"), col = c("purple","grey"), lty=c(1,1))
 
 
 # h = 120

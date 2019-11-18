@@ -7,12 +7,6 @@ from PIL import Image
 import random
 
 
-
-output_dir = "image_analysis/averages/"
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-
 def averages(image_dir, output_dir, n, output_file):
   image_list = sorted(os.listdir(image_dir))
   image_count =  n
@@ -40,10 +34,10 @@ def averages(image_dir, output_dir, n, output_file):
       b = 0.0
 
       for x in range(80-55,80+55):
-      	for y in range(60-15,60+15):
-      		r = r + current_image[y, x, 0]
-      		g = g + current_image[y, x, 1]
-      		b = b + current_image[y, x, 2]
+        for y in range(60-15,60+15):
+            r = r + current_image[y, x, 0]
+            g = g + current_image[y, x, 1]
+            b = b + current_image[y, x, 2]
 
       total = (55*2)*(15*2)
       r = r / total
@@ -52,7 +46,7 @@ def averages(image_dir, output_dir, n, output_file):
       row = [r,g,b]
       writer.writerow(row)
 
-def row_averages(image_dir, output_dir, n, start, output_file):
+def row_averages(image_dir, output_dir, n, start, output_file, x_start, x_end):
   image_list = sorted(os.listdir(image_dir))
   image_count =  n
 
@@ -74,15 +68,16 @@ def row_averages(image_dir, output_dir, n, start, output_file):
 
       # h, w, color
       current_image = numpy.array(Image.open(image_path).convert('RGB'))
+      
       r = numpy.zeros(h)
       g = numpy.zeros(h)
       b = numpy.zeros(h)
 
-      for x in range(0,w):
-      	for y in range(0,h):
-      		r[y] = r[y] + current_image[y, x, 0]
-      		g[y] = g[y] + current_image[y, x, 1]
-      		b[y] = b[y] + current_image[y, x, 2]
+      for x in range(x_start,x_end):
+        for y in range(0,h):
+          r[y] = r[y] + current_image[y, x, 0]
+          g[y] = g[y] + current_image[y, x, 1]
+          b[y] = b[y] + current_image[y, x, 2]
 
       r = r / w
       g = g / w
@@ -96,11 +91,19 @@ def row_averages(image_dir, output_dir, n, start, output_file):
 parser = argparse.ArgumentParser(description='image_analysis')
 parser.add_argument('--image_dir', '-i', default='', help='Path to images folder')
 parser.add_argument('--n_images', '-n', default=-1, type=int, help='number of images to process')
+parser.add_argument('--output_dir', '-d', default='', help='path of output diectory')
 parser.add_argument('--output_file', '-o', default='', help='name of output csv')
 parser.add_argument('--start', '-s', default=0, type=int, help='start')
 
 
 
 args = parser.parse_args()
+output_dir = args.output_dir #"image_analysis/averages/"
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
-row_averages(args.image_dir, output_dir, args.n_images, args.start, args.output_file)
+w = 160
+row_averages(args.image_dir, output_dir, args.n_images, args.start, args.output_file, 0, w)
+
+# row_averages(args.image_dir, output_dir, args.n_images, args.start, "left_" + args.output_file, 0, int(w/2))
+# row_averages(args.image_dir, output_dir, args.n_images, args.start, "right_" + args.output_file, int(w/2), w)
