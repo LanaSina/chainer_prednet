@@ -141,6 +141,7 @@ def save_model(count):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
+print(args.ext)
 
 if args.test == True:
     for seq in range(len(sequencelist)):
