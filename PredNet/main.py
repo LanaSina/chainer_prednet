@@ -167,7 +167,7 @@ if args.test == True:
 
             # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
             #     continue
-            if (i%args.ext_t>0 and i>0) or (args.ext==0):
+            if i == 0  or (i%args.ext_t>0) or (args.ext==0):
                 continue
 
             if args.gpu >= 0: model.to_cpu()
