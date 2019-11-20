@@ -141,8 +141,6 @@ def save_model(count):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
-print(args.ext)
-
 if args.test == True:
     for seq in range(len(sequencelist)):
         imagelist = load_list(sequencelist[seq], args.root)
@@ -165,8 +163,8 @@ if args.test == True:
             write_image(model.y.data[0].copy(), new_filename)
             if args.gpu >= 0: model.to_gpu()
 
-            if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
-                continue
+            # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
+            #     continue
             if args.gpu >= 0: model.to_cpu()
             x_batch[0] = model.y.data[0].copy()
             if args.gpu >= 0: model.to_gpu()
