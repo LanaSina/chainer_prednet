@@ -162,13 +162,14 @@ if args.test == True:
             num = str(i).zfill(10)
             new_filename = 'result/' + num + '.png'
             write_image(model.y.data[0].copy(), new_filename)
-            if args.gpu >= 0:model.to_gpu()
+            if args.gpu >= 0: model.to_gpu()
 
             if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
                 continue
-            if args.gpu >= 0:model.to_cpu()
+            if args.gpu >= 0: model.to_cpu()
             x_batch[0] = model.y.data[0].copy()
-            if args.gpu >= 0:model.to_gpu()
+            if args.gpu >= 0: model.to_gpu()
+            print(args.ext)
             for j in range(0,args.ext):
                 print('extended frameNo:' + str(j + 1))
                 loss += model(chainer.Variable(xp.asarray(x_batch)),

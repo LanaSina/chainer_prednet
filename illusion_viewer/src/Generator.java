@@ -8,6 +8,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -163,6 +164,7 @@ public class Generator extends JPanel {
         if(imageName.length()>0) {
             try {
                 image = resize(ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, imageName)), BOX_HEIGHT );
+                //image = ImageIO.read(new File(Constants.IMAGE_INPUT_PATH, imageName));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -856,6 +858,27 @@ public class Generator extends JPanel {
         }
 
         phase = phase+1;
+    }
+
+    private void rotate_image(Graphics g){
+        UPDATE_RATE = 30;
+        double radial_speed = Math.PI/3;
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
+//        g.setColor(Color.black);
+//        g2.rotate(Math.toRadians(rad_angle));
+
+        double locationX = image.getWidth() / 2;
+        double locationY = image.getHeight() / 2;
+        AffineTransform tx = AffineTransform.getRotateInstance(rad_angle, locationX, locationY);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+// Drawing the rotated image at the required drawing locations
+        g2.drawImage(op.filter(image, null), 0, 0, null);
+        //g.drawImage(image, 0, 0, null);
+
+        rad_angle += radial_speed;
     }
 
     private void draw_plus(Graphics g, int timing){
@@ -2363,9 +2386,9 @@ public class Generator extends JPanel {
 
         // draw on paintImage using Graphics
 
-        if(image!=null){
+        /*if(image!=null){
             showDephasedImage(g, timing, image);
-        } else {
+        } else {*/
 
             switch (type) {
                 case Constants.BENHAM_CLASSIC: {
@@ -2513,8 +2536,13 @@ public class Generator extends JPanel {
                     directedColors(g);
                     break;
                 }
+
+                case Constants.ROTATE: {
+                    rotate_image(g);
+                    break;
+                }
             }
-        }
+        //}
 
         do_update = false;
 

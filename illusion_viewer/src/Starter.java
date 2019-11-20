@@ -10,7 +10,7 @@ public class Starter {
     static  boolean save = false;
 
 //    static int type = Constants.BENHAM_CLASSIC;
-    static int type = Constants.BENHAM_RED;
+    static int type = Constants.ROTATE;
 //    static int type = Constants.SIMPLE_SHAPES_0;
 //    static int type = Constants.DRAW_X_0;
 //    static int type = Constants.DRAW_X_1;
@@ -36,7 +36,7 @@ public class Starter {
     /** if you want to input your own image*/
 //    static int type = Constants.CUSTOM_IMAGE;
     /** this will be ignored for other types */
-    static String customImageName = "kitaoka_tuto/kitaoka_tuto.png";
+    static String customImageName = "top_2.jpg";
 
 
     public static void main(String[] args) {
@@ -85,6 +85,11 @@ public class Starter {
                         break;
                     }
                     case Constants.CUSTOM_IMAGE: {
+                        customImage = customImageName;
+                        phase = 0;
+                        break;
+                    }
+                    case Constants.ROTATE: {
                         customImage = customImageName;
                         phase = 0;
                         break;

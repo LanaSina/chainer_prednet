@@ -80,6 +80,53 @@ def save_errors(input_path, prediction_path, output_dir):
         image_array.save(name)
         print("saved image ", name)
 
+
+# save places where right error is < left error
+# ie the illusion-learning model is correct
+def save_errors_left(input_path, prediction_path, output_dir):
+    input_list = sorted(os.listdir(input_path))
+    prediction_list = sorted(os.listdir(prediction_path))
+    n = len(input_list)
+    w = 160
+
+    for i in range(0,n):
+        input_image_path = input_path + "/" + input_list[i]
+        # create image with only the strongest predicted in r,g and b
+        input_image = np.array(Image.open(input_image_path).convert('RGB'))
+        prediction_image_path = prediction_path + "/" + prediction_list[i]
+        prediction = np.array(Image.open(prediction_image_path).convert('RGB'))
+
+        #error
+        diff = 1.0*input_image - prediction
+        # left - right error
+        lr_diff = np.zeros(prediction.shape)
+        lr_diff[:,0:int(w/2),:] = diff[:,0:int(w/2),:] - diff[:,int(w/2):w,:]
+
+        combined = np.ones(prediction.shape)
+        combined = combined*128
+
+        combined = combined + diff
+        image_array = Image.fromarray(combined.astype('uint8'), 'RGB')
+        name = output_dir + "/" + prediction_list[i]
+        image_array.save(name)
+        print("saved image ", name)
+
+        # enhanced = np.zeros(prediction.shape)
+
+        # for k in range(0,combined.shape[0]):
+        #     for l in range(0,int(w/2)): 
+        #         for c in range(0,3):
+        #             if lr_diff[k,l,c] > 0:
+        #                 #combined[k,l,c] = combined[k,l,c] + lr_diff[k,l,c]*10
+        #                 #enhanced[k,l,c] = lr_diff[k,l,c]
+        #             else:
+        #                 #enhanced[k,l,c] = input_image [k,l,c]
+
+        # image_array = Image.fromarray(enhanced.astype('uint8'), 'RGB')
+        # name = output_dir + "/" + prediction_list[i]
+        # image_array.save(name)
+        # print("saved image ", name)
+
 parser = argparse.ArgumentParser(description='image_analysis')
 parser.add_argument('--input', '-i', default='', help='Path to input image or directory')
 parser.add_argument('--prediction', '-p', default='', help='Path to predicted image or diectory')
@@ -91,5 +138,5 @@ output_dir = args.output_dir #"image_analysis/averages/"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-save_errors(args.input, args.prediction, output_dir)
+save_errors_left(args.input, args.prediction, output_dir)
 

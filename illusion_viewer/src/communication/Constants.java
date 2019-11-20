@@ -68,4 +68,6 @@ public class Constants {
 	public final static int STEPS = 35;
     public final static int MOVING_CONTRAST_BH = 36;
     public final static int COLORS = 37;
+	public final static int ROTATE = 38;
+
 }
