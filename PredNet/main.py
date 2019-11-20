@@ -36,6 +36,8 @@ parser.add_argument('--input_len', '-l', default=50, type=int,
                     help='Input frame length fo extended prediction on test (frames)')
 parser.add_argument('--ext', '-e', default=0, type=int,
                     help='Extended prediction on test (frames)')
+parser.add_argument('--ext_t', default=20, type=int,
+                    help='When to start extended prediction')
 parser.add_argument('--bprop', default=20, type=int,
                     help='Back propagation length (frames)')
 parser.add_argument('--save', default=10000, type=int,
@@ -165,6 +167,9 @@ if args.test == True:
 
             # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
             #     continue
+            if (i%args.ext_t>0) || (args.ext==0):
+                continue
+
             if args.gpu >= 0: model.to_cpu()
             x_batch[0] = model.y.data[0].copy()
             if args.gpu >= 0: model.to_gpu()
