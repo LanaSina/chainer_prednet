@@ -19,31 +19,56 @@ dataFolder = "image_analysis/averages/"
 Grays
 
 ```{r}
-filename = "fpsi_50/throat_rgb.csv"
+filename = "mit_rgb_5/throat_luminance.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 ```
 
 ```{r}
+
+
 h = 120
 w = 80
-f = 0.5
+f = 5
 offset = 50
-for(i in c(h:0)){
+for(i in c(h:1)){
   start = (i*w)+1
-  y = df$lum[start:(start+w)]*f
+  y = df$lum[start:(start+w-1)]*f
   if(i==h){
-    plot(y, type = "l", ylim = c(0,offset*h))
+    #plot(y, type = "l", xlim = c(xr-5,xr+15), ylim=c(0,offset*h)) #ylim =c(yr+5*offset,yr-15*offset))
+    plot(y, type = "l", ylim=c(0,offset*h)) 
   } else {
     points(y+i*offset, type = "l")
   }
 }
 
-x = 59
-y = 49*offset
-rect(x, y, x*10, y+10, density = NULL, angle = 0, border = "red")
-x = 60
-y = 75*offset
-rect(x, y, x+8, y+8, density = NULL, angle = 0, border = "red")
+
+xr = 59
+yr = 49 + 1 
+start = (yr*w)+1
+ox = 10
+oy = 10
+for(i in c(yr:(yr+oy-1))){
+  start = i*w + xr
+  y = df$lum[start:(start+ox-1)]*f
+  points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "red")
+}
+
+xr = 60
+yr = 75 + 1 #(h-49)*offset
+start = (yr*w)+1
+ox = 8
+oy = 8
+for(i in c(yr:(yr+oy-1))){
+  start = i*w + xr
+  y = df$lum[start:(start+ox-1)]*f
+  points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "red")
+}
+
+
+# rect(xr, yr, xr+10, yr-10*offset, density = NULL, angle = 0, border = "red")
+# xr = 60
+# yr = (h-75)*offset
+# rect(xr, yr, xr+8, yr-8*offset, density = NULL, angle = 0, border = "red")
 ```
 
 
