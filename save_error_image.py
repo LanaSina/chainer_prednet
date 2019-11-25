@@ -105,7 +105,7 @@ def save_errors_left(input_path, prediction_path, output_dir):
         combined = np.ones(prediction.shape)
         combined = combined*128
 
-        combined = combined + diff
+        combined = combined + lr_diff
         image_array = Image.fromarray(combined.astype('uint8'), 'RGB')
         name = output_dir + "/" + prediction_list[i]
         image_array.save(name)
@@ -130,7 +130,7 @@ def save_errors_left(input_path, prediction_path, output_dir):
 parser = argparse.ArgumentParser(description='image_analysis')
 parser.add_argument('--input', '-i', default='', help='Path to input image or directory')
 parser.add_argument('--prediction', '-p', default='', help='Path to predicted image or diectory')
-parser.add_argument('--output_dir', '-d', default='', help='path of output diectory')
+parser.add_argument('--output_dir', '-o', default='', help='path of output diectory')
 
 
 args = parser.parse_args()

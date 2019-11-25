@@ -15,6 +15,39 @@ dataFolder = "image_analysis/averages/"
 # dataFolder = "image_analysis/flipbook_results/"
 
 ```
+
+Grays
+
+```{r}
+filename = "fpsi_50/throat_rgb.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
+```{r}
+h = 120
+w = 80
+f = 0.5
+offset = 50
+for(i in c(h:0)){
+  start = (i*w)+1
+  y = df$lum[start:(start+w)]*f
+  if(i==h){
+    plot(y, type = "l", ylim = c(0,offset*h))
+  } else {
+    points(y+i*offset, type = "l")
+  }
+}
+
+x = 59
+y = 49*offset
+rect(x, y, x*10, y+10, density = NULL, angle = 0, border = "red")
+x = 60
+y = 75*offset
+rect(x, y, x+8, y+8, density = NULL, angle = 0, border = "red")
+```
+
+
+
 ```{r}
 filename = "fpsi_50/gradient_5.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
