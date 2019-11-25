@@ -19,50 +19,103 @@ dataFolder = "image_analysis/averages/"
 Grays
 
 ```{r}
-filename = "mit_rgb_5/throat_luminance.csv"
+# df dataframe (luminance, or channel)
+# w, h width, height
+# xr, yr coordinates of rectangles to highlight (vector)
+# ox,oy sizes of rectangles (vector)
+displayPeaks = function(data,w,h, xr,yr,ox,oy){
+
+  f = 5
+  # distance between the lines
+  offset = 50
+
+  for(i in c(h:1)){
+    start = (i*w)+1
+    y = data[start:(start+w-1)]*f
+    if(i==h){
+      plot(y, type = "l", ylim=c(0,offset*h), main = "Red") 
+    } else {
+      points(y+i*offset, type = "l", col = "red")
+    }
+  }
+  
+for(x in c(1:length(xr))){
+  for(i in c(yr:(yr[i]+oy[i]-1))){
+    start = i*w + xr[x]
+    y = data[start:(start+ox[x]-1)]*f
+    points(c(xr[x]:(xr[x]+ox[x]-1)), y+i*offset, type = "l", col = "black")
+  }
+}
+
+}
+```
+
+
+```{r}
+filename = "mit_rgb_5/arm_luminance.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
+
+```{r}
+
+h = 120
+w = 80
+
+#arm
+xr = c(61)
+yr = c(49) + 1 
+ox = c(10)
+oy = c(10)
+
+displayPeaks(df$r, w, h, xr, yr, ox, oy)
+displayPeaks(df$g, w, h, xr, yr, ox, oy)
+displayPeaks(df$b, w, h, xr, yr, ox, oy)
 ```
 
 ```{r}
 
 
-h = 120
-w = 80
-f = 5
-offset = 50
+# r
 for(i in c(h:1)){
   start = (i*w)+1
-  y = df$lum[start:(start+w-1)]*f
+  y = df$r[start:(start+w-1)]*f
   if(i==h){
     #plot(y, type = "l", xlim = c(xr-5,xr+15), ylim=c(0,offset*h)) #ylim =c(yr+5*offset,yr-15*offset))
-    plot(y, type = "l", ylim=c(0,offset*h)) 
+    plot(y, type = "l", ylim=c(0,offset*h), main = "Red") 
   } else {
-    points(y+i*offset, type = "l")
+    points(y+i*offset, type = "l", col = "red")
   }
 }
 
 
-xr = 59
+#throat
+# xr = 59
+# yr = 49 + 1 
+
+#arm
+xr = 61
 yr = 49 + 1 
 start = (yr*w)+1
 ox = 10
 oy = 10
 for(i in c(yr:(yr+oy-1))){
   start = i*w + xr
-  y = df$lum[start:(start+ox-1)]*f
-  points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "red")
+  y = df$r[start:(start+ox-1)]*f
+  points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "black")
 }
 
-xr = 60
-yr = 75 + 1 #(h-49)*offset
-start = (yr*w)+1
-ox = 8
-oy = 8
-for(i in c(yr:(yr+oy-1))){
-  start = i*w + xr
-  y = df$lum[start:(start+ox-1)]*f
-  points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "red")
-}
+# throat
+# xr = 60
+# yr = 75 + 1 #(h-49)*offset
+# start = (yr*w)+1
+# ox = 8
+# oy = 8
+# for(i in c(yr:(yr+oy-1))){
+#   start = i*w + xr
+#   y = df$lum[start:(start+ox-1)]*f
+#   points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "red")
+# }
 
 
 # rect(xr, yr, xr+10, yr-10*offset, density = NULL, angle = 0, border = "red")

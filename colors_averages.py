@@ -49,7 +49,7 @@ def averages(image_dir, output_dir, n, output_file):
 
 def singular_rows(image_path, output_dir, output_file, x_start, y_start, w, h):
 
-  fieldnames = ['lum']
+  fieldnames = ['r','g','b']
   save_file = output_dir + "/" + output_file
   print("save in " + save_file)
 
@@ -61,7 +61,7 @@ def singular_rows(image_path, output_dir, output_file, x_start, y_start, w, h):
 
     # h, w, color
     current_image = numpy.array(Image.open(image_path).convert('RGB'))
-    
+    print(current_image.shape)
     #lum = numpy.zeros(h*w)
     # g = numpy.zeros(h)
     # b = numpy.zeros(h)
@@ -71,8 +71,8 @@ def singular_rows(image_path, output_dir, output_file, x_start, y_start, w, h):
       y = yy + y_start
       for xx in range(0,w):
         x = xx + x_start
-        lum = numpy.mean(current_image[y, x])
-        row = [lum]
+        row = current_image[y,x]
+        #row = [lum]
         writer.writerow(row)
 
     # r = r / w
