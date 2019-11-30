@@ -23,36 +23,40 @@ Grays
 # w, h width, height
 # xr, yr coordinates of rectangles to highlight (vector)
 # ox,oy sizes of rectangles (vector)
-displayPeaks = function(data,w,h, xr,yr,ox,oy){
+displayPeaks = function(data,w,h, xr,yr,ox,oy, color1 ="grey", color2 = "black"){
 
   f = 5
   # distance between the lines
   offset = 50
 
-  for(i in c(h:1)){
+  for(i in c(1:h)){
     start = (i*w)+1
     y = data[start:(start+w-1)]*f
-    if(i==h){
-      plot(y, type = "l", ylim=c(0,offset*h), main = "Red") 
+    if(i==1){
+      plot(y, type = "l", ylim=c(0,(offset+20)*h), main = color1) 
     } else {
-      points(y+i*offset, type = "l", col = "red")
+      points(y-i*offset+h*offset, type = "l", col = color1)
     }
   }
   
-for(x in c(1:length(xr))){
-  for(i in c(yr:(yr[i]+oy[i]-1))){
-    start = i*w + xr[x]
-    y = data[start:(start+ox[x]-1)]*f
-    points(c(xr[x]:(xr[x]+ox[x]-1)), y+i*offset, type = "l", col = "black")
+  x = 1
+  if(length(xr)==0){
+    return()
   }
-}
-
+  
+  for(x in c(1:length(xr))){
+    for(i in c(yr[x]:(yr[x]+oy[x]-1)) ){
+      start = i*w + xr[x]
+      y = data[start:(start+ox[x]-1)]*f
+      points(c(xr[x]:(xr[x]+ox[x]-1)), y-i*offset+h*offset, type = "l", col = color2)
+    }
+  }
 }
 ```
 
 
 ```{r}
-filename = "mit_rgb_5/arm_luminance.csv"
+filename = "mit_rgb_5/finger_lrdiff_rgb.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 ```
 
@@ -63,15 +67,71 @@ h = 120
 w = 80
 
 #arm
-xr = c(61)
-yr = c(49) + 1 
-ox = c(10)
-oy = c(10)
+# xr = c(61)
+# yr = c(49) + 1 
+# ox = c(10)
+# oy = c(10)
 
-displayPeaks(df$r, w, h, xr, yr, ox, oy)
-displayPeaks(df$g, w, h, xr, yr, ox, oy)
-displayPeaks(df$b, w, h, xr, yr, ox, oy)
+#throat
+# xr = c(59,60)
+# yr = c(49,75) + 1
+# ox = c(10,8)
+# oy = c(10,8)
+
+xr = c()
+yr = c()
+ox = c()
+oy = c()
+
+displayPeaks(df$r, w, h, xr, yr, ox, oy, "red")
+displayPeaks(df$b, w, h, xr, yr, ox, oy, "blue")
+displayPeaks(df$g, w, h, xr, yr, ox, oy, "green")
+
+data = df$r + df$g + df$b
+data = data/3
+displayPeaks(data, w, h, xr, yr, ox, oy, "black", "red")
+
 ```
+
+```{r}
+f = 5
+# distance between the lines
+offset = 50
+
+data = df$g
+color1 = "green"
+
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = data[start:(start+w-1)]*f
+  if(i==h){
+    plot(y, type = "l",main = color1, xlim = c(50,70), ylim=c(2000,6000)) 
+  } else {
+    points(y+i*offset, type = "l", col = color1)
+  }
+}
+
+data = df$r
+color1 = "red"
+
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = data[start:(start+w-1)]*f
+  points(y+i*offset, type = "l", col = color1)
+}
+
+data = df$b
+color1 = "blue"
+
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = data[start:(start+w-1)]*f
+  points(y+i*offset, type = "l", col = color1)
+}
+  
+```
+
+-------
 
 ```{r}
 
