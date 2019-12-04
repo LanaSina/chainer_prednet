@@ -78,10 +78,11 @@ w = 80
 # ox = c(10,8)
 # oy = c(10,8)
 
-xr = c()
-yr = c()
-ox = c()
-oy = c()
+#finger
+xr = c(22)
+yr = c(22)
+ox = c(15)
+oy = c(15)
 
 displayPeaks(df$r, w, h, xr, yr, ox, oy, "red")
 displayPeaks(df$b, w, h, xr, yr, ox, oy, "blue")

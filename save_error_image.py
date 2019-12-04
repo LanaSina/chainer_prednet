@@ -90,11 +90,11 @@ def save_errors_left(input_path, prediction_path, output_dir):
     w = 160
 
     for i in range(0,n):
-        input_image_path = input_path + "/" + input_list[i]
+        input_image_path = input_path + "/" + input_list[i+1]
         # print(input_image_path)
         # create image with only the strongest predicted in r,g and b
         input_image = np.array(Image.open(input_image_path).convert('RGB'))
-        prediction_image_path = prediction_path + "/" + prediction_list[i+1]
+        prediction_image_path = prediction_path + "/" + prediction_list[i]
         prediction = np.array(Image.open(prediction_image_path).convert('RGB'))
 
         #error
