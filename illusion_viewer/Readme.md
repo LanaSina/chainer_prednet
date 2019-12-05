@@ -57,6 +57,9 @@ ffmpeg -framerate 20 -i "%04d.png" -pix_fmt yuv420p -vb 20M _out.avi
 ffmpeg -i _out.avi -pix_fmt rgb24 -loop 0 _out.gif
 ```
 
+select all files for ffmpeg
+`ffmpeg -framerate 10 -pattern_type glob -i '*.png' -pix_fmt yuv420p -vb 20M _out.avi`
+
 ## Resize images for prednet
 
 resize

@@ -12,6 +12,8 @@ parser.add_argument('data_dir', action='store', nargs=None,
 parser.add_argument('n_images', action='store', nargs='?', default=-1,
                     type=int, help='optional: total number of images to use.')
 parser.add_argument('--rep', '-r', type=int, default=1, help='number of times to repeat each image in test set')
+parser.add_argument('--total_rep', '-tr', type=int, default=1, help='number of times to repeat the entire dataset')
+
 args = parser.parse_args()
 
 split_ratio = np.array([0,1])
@@ -45,7 +47,9 @@ print('Save %s' % test_list_file)
 # save with repetitions
 lst = list(itertools.chain.from_iterable(itertools.repeat(x, args.rep) for x in image_list[int(limits[0]):]))
 with open(test_list_file, 'w') as f:
-    f.write(input_images_dir)
-    tmp = "\n" + input_images_dir
-    f.write(tmp.join(lst))
+    for x in range(0,args.total_rep):
+        f.write(input_images_dir)
+        tmp = "\n" + input_images_dir
+        f.write(tmp.join(lst))
+        f.write("\n")
 print("Done.")
