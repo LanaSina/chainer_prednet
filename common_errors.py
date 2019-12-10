@@ -18,7 +18,7 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit):
         input_image_1 = np.array(Image.open(input_image_path_1).convert('RGB'))
 
         combined = np.ones(input_image_0.shape)
-        combined = combined*128
+        #combined = combined*128
 
         # take the mse for each channel and keep the mean
         mse = np.square(input_image_0 - input_image_1)/2
@@ -29,11 +29,11 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit):
 
         # result = cv2.bitwise_and(mean, mean, mask=mask)
         # no faster way
-        for i in range(0,input_image_0.shape[0]):
+        for index in range(0,input_image_0.shape[0]):
             for j in range(0,input_image_0.shape[1]):
                 for c in range(0,3):
-                    if mask[i,j,c]:
-                        combined[i,j,c] = combined[i,j,c] + mean[i,j,c]
+                    if mask[index,j,c]:
+                        combined[index,j,c] = combined[index,j,c] + mean[index,j,c]
 
         image_array = Image.fromarray(combined.astype('uint8'), 'RGB')
         name = output_dir + "/" + str(i).zfill(10) + ".png"
