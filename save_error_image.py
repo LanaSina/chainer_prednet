@@ -64,12 +64,13 @@ def save_errors(input_path, prediction_path, output_dir):
 
     for i in range(0,n-1):
         input_image_path = input_path + "/" + input_list[i+1]#next input!!
-        # create image with only the strongest predicted in r,g and b
         input_image = np.array(Image.open(input_image_path).convert('RGB'))
         prediction_image_path = prediction_path + "/" + prediction_list[i]
         prediction = np.array(Image.open(prediction_image_path).convert('RGB'))
 
         diff = 1.0*input_image - prediction
+        mse = (np.square(input_image - prediction)).mean(axis=None)
+        print("mse ", mse)
 
         combined = np.ones(prediction.shape)
         combined = combined*128 
@@ -80,6 +81,24 @@ def save_errors(input_path, prediction_path, output_dir):
         image_array.save(name)
         print("saved image ", name)
 
+def save_error(input_path, prediction_path, output_dir):
+    input_image_path = input_path
+    input_image = np.array(Image.open(input_image_path).convert('RGB'))
+    prediction_image_path = prediction_path
+    prediction = np.array(Image.open(prediction_image_path).convert('RGB'))
+
+    diff = 1.0*input_image - prediction
+    mse = (np.square(input_image - prediction)).mean(axis=None)
+    print("mse ", mse)
+
+    combined = np.ones(prediction.shape)
+    combined = combined*128 
+
+    combined = combined + diff
+    image_array = Image.fromarray(combined.astype('uint8'), 'RGB')
+    name = output_dir + "/error.png"
+    image_array.save(name)
+    print("saved image ", name)
 
 # save places where right error is < left error
 # ie the illusion-learning model is correct
@@ -149,5 +168,6 @@ output_dir = args.output_dir #"image_analysis/averages/"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-save_errors_left(args.input, args.prediction, output_dir, args.rep)
+#save_errors_left(args.input, args.prediction, output_dir, args.rep)
+save_error(args.input, args.prediction, output_dir)
 
