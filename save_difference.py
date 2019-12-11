@@ -37,12 +37,15 @@ def save_difference(input_path_0, input_path_1, output_dir, limit, h0, h1, rep, 
         else:
             input_image_1 = input_image_1[:,int(w/2):w,:] 
 
-        mse = np.square(input_image_0 - input_image_1)/2
+        # mse = np.square(input_image_0 - input_image_1)/2
+        mse = (np.square(input_image_0 - input_image_1)).mean(axis=2)
+        mask = (mse>limit).astype(np.int8)
+        #differences = cv2.bitwise_and(input_image_0, input_image_0, mask=mask)
 
         for index in range(0,input_image_0.shape[0]):
             for j in range(0,input_image_0.shape[1]):
-                for c in range(0,3):
-                    if mse[index,j,c]>limit:
+                if mask[index,j] and sum(input_image_1[index,j])>0:
+                    for c in range(0,3):
                         differences[index,j,c] = input_image_0[index,j,c]
 
         image_array = Image.fromarray(differences.astype('uint8'), 'RGB')
