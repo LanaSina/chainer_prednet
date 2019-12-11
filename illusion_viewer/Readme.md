@@ -58,7 +58,7 @@ ffmpeg -i _out.avi -pix_fmt rgb24 -loop 0 _out.gif
 ```
 
 select all files for ffmpeg
-`ffmpeg -framerate 10 -pattern_type glob -i '*.png' -pix_fmt yuv420p -vb 20M _out.avi`
+`ffmpeg -framerate 10 -pattern_type glob -i '*.png' -pix_fmt yuv420p -vb 20M _out.mp4`
 
 ## Resize images for prednet
 
@@ -71,4 +71,8 @@ crop: w x h + x offset + y offset
 
 eg
 
-mogrify -path . -resize 400x120 -quality 100 -format png *.png
+`mogrify -path . -resize 400x120 -quality 100 -format png *.png`
+
+## Useful commands
+python common_errors.py -i0 path -i1 path -o /Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/path -t 1 -l 20 -h0 0 -h1 0 -r 5
+
