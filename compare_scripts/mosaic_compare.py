@@ -48,6 +48,8 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
                 # part of input 0
                 p_0 = input_image_0[ystart:yend,xstart:xend:]
                 mean = p_0*1.0
+                # avoid empty pixels
+                count = (p_0.mean(axis=2)>0).astype(np.int8)
                 mse = np.zeros(p_0.shape)
 
                 for xx in range(0,dw):
@@ -61,10 +63,13 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
                         # compare both
                         # take the mse for all channels and keep the mean
                         mean = mean + p_1*1.0
+                        count = count + (p_1.mean(axis=2)>0).astype(np.int8)
                         mse = mse + 1.0*np.square(p_0 - p_1)
                         
                 mse = (mse/(dh*dw)).mean(axis=2)
-                mean = mean/(dh*dw)
+                mean[:,:,0] = mean[:,:,0]/count
+                mean[:,:,1] = mean[:,:,1]/count
+                mean[:,:,2] = mean[:,:,2]/count
                 mean = mean.astype(int)
 
                 mask = (mse<limit).astype(np.int8)
