@@ -44,7 +44,7 @@ def save_difference(input_path_0, input_path_1, output_dir, limit, h0, h1, rep, 
 
         for index in range(0,input_image_0.shape[0]):
             for j in range(0,input_image_0.shape[1]):
-                if mask[index,j] and sum(input_image_1[index,j])>0:
+                if sum(input_image_1[index,j])==0: #mask[index,j] or 
                     for c in range(0,3):
                         differences[index,j,c] = input_image_0[index,j,c]
 

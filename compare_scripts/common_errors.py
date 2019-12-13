@@ -57,7 +57,7 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, h0, h1, re
         if enhance:
             combined = combined + result*0.5
         else:
-            combined = result
+            combined[:,0:int(w/2),:] = result
 
         # no faster way
         # for index in range(0,input_image_0.shape[0]):
@@ -126,7 +126,7 @@ def save_differences(input_path_0, input_path_1, output_dir, limit, h0, h1, rep,
         if enhance:
             combined = combined + result*0.5
         else:
-            combined = result
+            combined[:,0:int(w/2),:] = result
 
         # no faster way
         # for index in range(0,input_image_0.shape[0]):

@@ -4,6 +4,30 @@ output:
   pdf_document: default
   html_notebook: default
 ---
+```{r}
+library("rjson")
+
+cont <- fromJSON(file = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_100/results_2cont.json")
+proc <- fromJSON(file = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_100/results_2proc.json")
+```
+
+```{r}
+cont_data = c()
+for(l in cont$results){
+  cont_data = c(cont_data, l$score)
+}
+
+proc_data = c()
+for(l in proc$results){
+  proc_data = c(proc_data, l$score)
+}
+
+plot(proc_data, type = "l")
+points(cont_data, type = "l", col = "red")
+```
+
+
+
 
 
 ```{r}
@@ -56,7 +80,7 @@ displayPeaks = function(data,w,h, xr,yr,ox,oy, color1 ="grey", color2 = "black")
 
 
 ```{r}
-filename = "mit_rgb_5/finger_lrdiff_rgb.csv"
+filename = "mit_rgb_5/throat_rgb.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
 ```
 
@@ -73,22 +97,27 @@ w = 80
 # oy = c(10)
 
 #throat
-# xr = c(59,60)
-# yr = c(49,75) + 1
-# ox = c(10,8)
-# oy = c(10,8)
+xr = c(59,60)
+yr = c(49,75) + 1
+ox = c(10,8)
+oy = c(10,8)
 
 #finger
-xr = c(22)
-yr = c(22)
-ox = c(15)
-oy = c(15)
+# xr = c(22)
+# yr = c(22)
+# ox = c(15)
+# oy = c(15)
+# 
+# xr = c()
+# yr = c()
+# ox = c()
+# oy = c()
 
 displayPeaks(df$r, w, h, xr, yr, ox, oy, "red")
 displayPeaks(df$b, w, h, xr, yr, ox, oy, "blue")
 displayPeaks(df$g, w, h, xr, yr, ox, oy, "green")
 
-data = df$r + df$g + df$b
+data = df$b + df$g + df$b
 data = data/3
 displayPeaks(data, w, h, xr, yr, ox, oy, "black", "red")
 
