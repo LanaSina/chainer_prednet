@@ -92,6 +92,12 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
 
 def save_differences(input_path_0, input_path_1, output_dir, limit, rep, off, enhance):
     w = 160
+    h = 120
+    dw = 5
+    dh = 4
+
+    x_div = int(w/dw)
+    y_div = 1*int(h/dh)
 
     input_list_0 = sorted(os.listdir(input_path_0))
     input_list_1 = sorted(os.listdir(input_path_1))
@@ -117,33 +123,41 @@ def save_differences(input_path_0, input_path_1, output_dir, limit, rep, off, en
         else:
             combined = np.zeros(input_image_0.shape)
 
-        #take halves
-        if (h0==0):
-            input_image_0 = input_image_0[:,0:int(w/2),:] 
-        else:
-            input_image_0 = input_image_0[:,int(w/2):w,:] 
-        if (h1==0):
-            input_image_1 = input_image_1[:,0:int(w/2),:] 
-        else:
-            input_image_1 = input_image_1[:,int(w/2):w,:] 
+        # compare each section of the input_0 mosaic with each section of the input_1 mosaic
+        for x in range(0,dw):
+            xstart = x*x_div
+            xend = (x+1)*x_div
+            for y in range(0,dh):
+                ystart = y*y_div
+                yend = (y+1)*y_div
+                # part of input 0
+                p_0 = input_image_0[ystart:yend,xstart:xend:]
+                mse = np.zeros(p_0.shape)
 
-        # take the mse for each channel and keep the mean
-        # mse = np.square(input_image_0 - input_image_1)/2
-        # mask = (mse>limit).astype(np.int8)
-        mean = (input_image_0*1.0 + input_image_1*1.0)/2
-        mean = mean.astype(int)
+                for xx in range(0,dw):
+                    xxstart = xx*x_div
+                    xxend = (xx+1)*x_div
+                    for yy in range(0,dh):
+                        yystart = yy*y_div
+                        yyend = (yy+1)*y_div
+                        # part of input 1
+                        p_1 = input_image_1[yystart:yyend,xxstart:xxend:]
+                        # compare both
+                        # take the mse for all channels and keep the mean
+                        mse = mse + 1.0*np.square(p_0 - p_1)
 
-        mse = (np.square(input_image_0 - input_image_1)).mean(axis=2)
-        mask = (mse>limit).astype(np.int8)
-        # print(mask)
-        # mask = cv2.inRange(mse, 0, limit)
-        result = cv2.bitwise_and(input_image_0, input_image_0, mask=mask)
-        if enhance:
-            combined = combined + result*0.5
-        else:
-            combined[:,0:int(w/2),:] = result
+                mse = (mse/(dh*dw)).mean(axis=2)
+                mask = (mse>limit).astype(np.int8)
+                result = cv2.bitwise_and(p_0, p_0, mask=mask)
+                if enhance:
+                    combined[ystart:yend,xstart:xend:] = combined[ystart:yend,xstart:xend:] + result*0.5
+                else:
+                    combined[ystart:yend,xstart:xend:] = result
+                        
+                mse = (np.square(input_image_0 - input_image_1)).mean(axis=2)
+                mask = (mse>limit).astype(np.int8)
 
-        # no faster way
+        # rgb
         # for index in range(0,input_image_0.shape[0]):
         #     for j in range(0,input_image_0.shape[1]):
         #         for c in range(0,3):
