@@ -4,6 +4,30 @@ output:
   pdf_document: default
   html_notebook: default
 ---
+
+
+Read interesting pixels
+```{r}
+dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_mosaic_0_2K/"
+filename = "pixels.csv"
+```
+
+```{r}
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+m_rgb = c(mean(df$r), mean(df$g), mean(df$b))
+print(m_rgb)
+
+plot(df$r)
+plot(df$g)
+plot(df$b)
+```
+
+
+
+
+Plot blur data from json file
+
 ```{r}
 library("rjson")
 
