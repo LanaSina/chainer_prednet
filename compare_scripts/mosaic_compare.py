@@ -24,12 +24,12 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
         temp = input_list_0[0]
         input_list_0 = [temp]*n
 
-    for i in range(off,n-off):
+    for i in range(0,n):
         if((i+1)%rep!=0):
             continue
         input_image_path_0 = input_path_0 + "/" + input_list_0[i]
         input_image_0 = np.array(Image.open(input_image_path_0).convert('RGB'))
-        input_image_path_1 = input_path_1 + "/" + input_list_1[i]
+        input_image_path_1 = input_path_1 + "/" + input_list_1[i+off]
         input_image_1 = np.array(Image.open(input_image_path_1).convert('RGB'))
 
         if enhance:

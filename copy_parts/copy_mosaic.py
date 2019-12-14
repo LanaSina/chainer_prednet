@@ -5,10 +5,13 @@ from PIL import Image
 
 # cuts the images into w*h 5*4 parts
 # copies the 1:1 space into all slots (avoiding black lines at the top of image and boundary conditions)
-def copy(input_path, output_dir):
+def copy(input_path, output_dir, limit):
 
   input_list = sorted(os.listdir(input_path))
-  n = len(input_list)
+  if limit==0:
+    n = len(input_list)
+  else:
+    n = limit
   w = 160
   h = 120
   dw = 5
@@ -36,14 +39,16 @@ def copy(input_path, output_dir):
     image_array.save(name)
     print("saved image ", name)
 
+
+
 parser = argparse.ArgumentParser(description='image_copy')
 parser.add_argument('--input', '-i', default='', help='Path to input directory')
 parser.add_argument('--output_dir', '-o', default='', help='path of output diectory')
-
+parser.add_argument('--limit', '-l', type=int, default=0, help='max number of images')
 
 args = parser.parse_args()
 output_dir = args.output_dir 
 if not os.path.exists(output_dir):
   os.makedirs(output_dir)
 
-copy(args.input, output_dir)
+copy(args.input, output_dir, args.limit)
