@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import os
 from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 # keep only the common (resp different) points between 2 images
@@ -45,6 +47,7 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
             for y in range(0,dh):
                 ystart = y*y_div
                 yend = (y+1)*y_div
+                print(xstart, xend, ystart, yend)
                 # part of input 0
                 p_0 = input_image_0[ystart:yend,xstart:xend:]
                 mean = p_0*1.0
@@ -58,8 +61,23 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
                     for yy in range(0,dh):
                         yystart = yy*y_div
                         yyend = (yy+1)*y_div
+                        print(xxstart, xxend, yystart, yyend)
                         # part of input 1
                         p_1 = input_image_1[yystart:yyend,xxstart:xxend:]
+                        # test = abs(p_0-p_1)
+                        # fig=plt.figure(figsize=(8, 8))
+                        # columns = 1
+                        # rows = 3
+                        # fig.add_subplot(rows, columns, 1)
+                        # plt.imshow(p_0)
+                        # fig.add_subplot(rows, columns, 2)
+                        # plt.imshow(p_1)
+                        # fig.add_subplot(rows, columns, 3)
+                        # plt.imshow(test)
+                        # plt.show()
+
+                        # plt.imshow(test)
+                        # plt.show()
                         # compare both
                         # take the mse for all channels and keep the mean
                         mean = mean + p_1*1.0

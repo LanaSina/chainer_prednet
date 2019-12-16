@@ -9,19 +9,46 @@ output:
 Read interesting pixels
 ```{r}
 dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_mosaic_0_2K/"
-filename = "pixels.csv"
 ```
 
 ```{r}
+filename = "pixels.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+pix = df
 
 m_rgb = c(mean(df$r), mean(df$g), mean(df$b))
 print(m_rgb)
 
-plot(df$r)
-plot(df$g)
-plot(df$b)
+plot(df$r, col = "red")
+points(df$g, col = "green")
+points(df$b, col = "blue")
 ```
+
+```{r}
+filename = "previous_pixels.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+```
+
+
+```{r}
+m_rgb = c(mean(df$r), mean(df$g), mean(df$b))
+print(m_rgb)
+
+plot(df$r, col = "red", type = "l")
+points(pix$r, type = "l")
+
+plot(df$g, col = "green", type = "l")
+points(pix$g, type = "l")
+
+plot(df$b, col = "blue", type = "l")
+points(pix$b, type = "l")
+
+plot(pix$r-df$r, col = "red", type = "l")
+plot(pix$g-df$g, col = "green", type = "l")
+plot(pix$b-df$b, col = "blue", type = "l")
+```
+
 
 
 

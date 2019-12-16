@@ -7,7 +7,7 @@ from PIL import Image
 # save the position and values of >0 pixels
 def record(input_path, output_dir, limit):
     write_file = output_dir + "/pixels.csv"
-    print("Writing in", csv_file)
+    print("Writing in", write_file)
     w = 160
     h = 120
 
@@ -34,6 +34,7 @@ def record(input_path, output_dir, limit):
                         writer.writerow(row)
 
 # record the previous value of the pixels
+# also record the pixel in a 3px radius
 def record_previous(input_path, output_dir):
     input_list = sorted(os.listdir(input_path))
 
@@ -56,9 +57,9 @@ def record_previous(input_path, output_dir):
                 input_image = np.array(Image.open(input_image_path).convert('RGB'))
                 pixel = input_image[int(row[2]), int(row[1])]
                 # write in file
-                row2 = row[0:2]
-                row.extend(pixel)
-                writer.writerow(row)
+                row2 = row[0:3]
+                row2.extend(pixel)
+                writer.writerow(row2)
 
 
 parser = argparse.ArgumentParser(description='image_copy')
