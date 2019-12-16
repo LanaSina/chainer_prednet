@@ -26,19 +26,17 @@ def copy(input_path, output_dir, copy_x, copy_y, limit):
     input_image = Image.open(input_image_path).copy()
     copied = Image.open(input_image_path).copy()
     copied = copied.crop((copy_x*x_div, copy_y*y_div, (copy_x+1)*x_div, (copy_y+1)*y_div))    
-    
+
     for x in range(0,dw):
       xstart = x*x_div
       for y in range(0,dh):
         ystart = y*y_div
         input_image.paste(copied, (xstart, ystart))
-
-    name = output_dir + "/" + input_list[i]
-    input_image.save(name, quality = 100)
-
+     
+    num = str(i).zfill(10)
+    name = output_dir + "/" + num + ".png"
+    input_image.save(name, "PNG")
     print("saved image ", name)
-
-
 
 parser = argparse.ArgumentParser(description='image_copy')
 parser.add_argument('--input', '-i', default='', help='Path to input directory')

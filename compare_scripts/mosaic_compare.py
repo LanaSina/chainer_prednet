@@ -33,6 +33,7 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
         input_image_0 = np.array(Image.open(input_image_path_0).convert('RGB'))
         input_image_path_1 = input_path_1 + "/" + input_list_1[i+off]
         input_image_1 = np.array(Image.open(input_image_path_1).convert('RGB'))
+        print(input_image_path_0, input_image_path_1)
 
         if enhance:
             combined = np.ones(input_image_0.shape)
@@ -47,7 +48,6 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
             for y in range(0,dh):
                 ystart = y*y_div
                 yend = (y+1)*y_div
-                print(xstart, xend, ystart, yend)
                 # part of input 0
                 p_0 = input_image_0[ystart:yend,xstart:xend:]
                 mean = p_0*1.0
@@ -55,15 +55,14 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
                 count = (p_0.mean(axis=2)>0).astype(np.int8)
                 mse = np.zeros(p_0.shape)
 
-                for xx in range(0,dw):
+                for xx in range(0,2):#dw
                     xxstart = xx*x_div
                     xxend = (xx+1)*x_div
-                    for yy in range(0,dh):
+                    for yy in range(0,2):
                         yystart = yy*y_div
                         yyend = (yy+1)*y_div
-                        print(xxstart, xxend, yystart, yyend)
                         # part of input 1
-                        p_1 = input_image_1[yystart:yyend,xxstart:xxend:]
+                        p_1 = input_image_0[yystart:yyend,xxstart:xxend:] #input_image_1
                         # test = abs(p_0-p_1)
                         # fig=plt.figure(figsize=(8, 8))
                         # columns = 1
