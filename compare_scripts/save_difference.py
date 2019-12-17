@@ -25,7 +25,7 @@ def save_difference(input_path_0, input_path_1, output_dir, rep, off):
         input_image_0 = np.array(Image.open(input_image_path_0).convert('RGB'))
         input_image_path_1 = input_path_1 + "/" + input_list_1[i]
         input_image_1 = np.array(Image.open(input_image_path_1).convert('RGB'))
-        differences = np.zeros(input_image_0.shape)
+        differences = np.zeros(input_image_0.shape).astype('uint8')
 
         for index in range(0,input_image_0.shape[0]):
             for j in range(0,input_image_0.shape[1]):
