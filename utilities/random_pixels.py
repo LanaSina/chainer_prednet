@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import os
 from PIL import Image
@@ -6,19 +7,18 @@ import random
 
 # counts non-null pixels in an image
 def count(input_image_path):
-	input_image = np.array(Image.open(input_image_path).convert('RGB'))
-	sum_ = (input_image).mean(axis=2)          
-    mask = (mse<limit).astype(np.int8)
-    print("non null pixles", np.count_nonzero(mask))
+    input_image = np.array(Image.open(input_image_path).convert('RGB'))
+    sum_ = (input_image).mean(axis=2)          
+    print("non null pixels", np.count_nonzero(sum_))
 
 # select random pixels in an image.
 def save(input_image_path, output_dir, n):
-	input_image = np.array(Image.open(input_image_path).convert('RGB'))
+    input_image = np.array(Image.open(input_image_path).convert('RGB'))
     new_image = np.zeros(input_image.shape).astype('uint8')
 
     for index in range(0,n):
-    	i = random.randint(0, input_image_0.shape[0]-1)
-    	j = random.randint(0, input_image_0.shape[1]-1)
+        i = random.randint(0, input_image_0.shape[0]-1)
+        j = random.randint(0, input_image_0.shape[1]-1)
         new_image[i,j] = input_image[i,j]
 
     image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
@@ -34,11 +34,11 @@ parser.add_argument('--n', '-n', type=int, default=100, help='number of pixels t
 
 
 args = parser.parse_args()
-output_dir = args.output_dir #"image_analysis/averages/"
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-    
+
 if args.type == 0:
-	count(args.input)
+    count(args.input)
 else:
-	save(args.input, output_dir, args.n)
+    output_dir = args.output_dir #"image_analysis/averages/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    save(args.input, output_dir, args.n)
