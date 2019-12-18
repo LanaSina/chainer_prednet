@@ -11,18 +11,19 @@ def count(input_image_path):
     sum_ = (input_image).mean(axis=2)          
     print("non null pixels", np.count_nonzero(sum_))
 
-# select random pixels in an image.
+# select random pixels in an image, fills the rest with random values
 def save(input_image_path, output_dir, n):
     input_image = np.array(Image.open(input_image_path).convert('RGB'))
-    new_image = np.zeros(input_image.shape).astype('uint8')
+    new_image = np.random.rand(input_image.shape[0], input_image.shape[1], input_image.shape[2])*256 #np.zeros(input_image.shape).astype('uint8')
+    new_image =  new_image.astype('uint8')
 
     for index in range(0,n):
-        i = random.randint(0, input_image_0.shape[0]-1)
-        j = random.randint(0, input_image_0.shape[1]-1)
+        i = random.randint(0, input_image.shape[0]-1)
+        j = random.randint(0, input_image.shape[1]-1)
         new_image[i,j] = input_image[i,j]
 
     image_array = Image.fromarray(new_image.astype('uint8'), 'RGB')
-    name = output_dir + "/pixels_" + n + ".png"
+    name = output_dir + "/pixels_" + str(n) + ".png"
     image_array.save(name)
     print("saved image ", name)
 

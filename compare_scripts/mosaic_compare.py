@@ -35,11 +35,15 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
         input_image_1 = np.array(Image.open(input_image_path_1).convert('RGB'))
         print(input_image_path_0, input_image_path_1)
 
-        if enhance:
+        if enhance == 1:
             combined = np.ones(input_image_0.shape)
             combined = combined*128
-        else :
+        elif enhance == 0:
             combined = np.zeros(input_image_0.shape)
+        else:
+            combined = np.random.rand(input_image_0.shape[0], input_image_0.shape[1], input_image_0.shape[2])*256 #np.zeros(input_image.shape).astype('uint8')
+            combined = combined.astype('uint8')
+
 
         # compare each section of the input_0 mosaic with each section of the input_1 mosaic
         for x in range(0,dw):
@@ -91,7 +95,7 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
 
                 mask = (mse<limit).astype(np.int8)
                 result = cv2.bitwise_and(mean, mean, mask=mask)
-                if enhance:
+                if enhance == 1 :
                     combined[ystart:yend,xstart:xend:] = combined[ystart:yend,xstart:xend:] + result*0.5
                 else:
                     combined[ystart:yend,xstart:xend:] = result
@@ -139,11 +143,14 @@ def save_differences(input_path_0, input_path_1, output_dir, limit, rep, off, en
         input_image_path_1 = input_path_1 + "/" + input_list_1[i]
         input_image_1 = np.array(Image.open(input_image_path_1).convert('RGB'))
 
-        if enhance:
+        if enhance==1:
             combined = np.ones(input_image_0.shape)
             combined = combined*128
-        else:
+        elif enhance ==0:
             combined = np.zeros(input_image_0.shape)
+        else:
+            combined = np.random.rand(input_image_0.shape[0], input_image_0.shape[1], input_image_0.shape[2])*256 #np.zeros(input_image.shape).astype('uint8')
+            combined = combined.astype('uint8')
 
         # compare each section of the input_0 mosaic with each section of the input_1 mosaic
         for x in range(0,dw):
@@ -171,7 +178,7 @@ def save_differences(input_path_0, input_path_1, output_dir, limit, rep, off, en
                 mse = (mse/(dh*dw)).mean(axis=2)
                 mask = (mse>limit).astype(np.int8)
                 result = cv2.bitwise_and(p_0, p_0, mask=mask)
-                if enhance:
+                if enhance == 1:
                     combined[ystart:yend,xstart:xend:] = combined[ystart:yend,xstart:xend:] + result*0.5
                 else:
                     combined[ystart:yend,xstart:xend:] = result
@@ -203,7 +210,7 @@ parser.add_argument('--output_dir', '-o', default='', help='path of output diect
 parser.add_argument('--type', '-t', type=int, default=0, help='0 for common points, 1 for differences')
 parser.add_argument('--limit', '-l', type=int, default=10, help='error tolerance threshold')
 parser.add_argument('--rep', '-r', type=int, default=1, help='number of images to skip (eg 5 to skip 0..3, 5..8')
-parser.add_argument('--enhance', '-e', type=int, default=0, help='1 save images on a grey baseline')
+parser.add_argument('--enhance', '-e', type=int, default=0, help='0 for blac bg, 1 save images on rbg>128 baseline, 2 fills bg with random pixels')
 parser.add_argument('--offset', '-off', type=int, default=0, help='where to start on the input_0 list (eg 1 to skip 1st image)')
 
 
