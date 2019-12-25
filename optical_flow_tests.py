@@ -3,7 +3,7 @@ import sys
 #sys.path.insert(1, '/PredNet')
 #import main as prednet_main
 from PredNet.main import call_prednet
-from generate_imagelist import generate as generate_imagelist
+from generate_imagelist import generate_img_func as generate_imagelist
 
 
 
@@ -12,12 +12,13 @@ def predict_static(input_path, model_name, limit):
 	# how many times to repeat each image
 	repeat = 10
 
-	# create image list
+	print("create image list")
 	# 'chainer_prednet/generate_imagelist.py' 'imported/' '1' -tr 10
 	imagelist_args = {"data_dir": input_path, "n_images": limit, "r": repeat}
 	generate_imagelist(imagelist_args)
 
-	# run prednet, only save last image
+	print("run prednet")
+	# only save last image
 	# %run 'chainer_prednet/PredNet/main.py' --images 'imported' --initmodel 'fpsi_500000_20v.model' --input_len 10 --test 
 	l = limit*10
 	prednet_args = {"images":input_path, "initmodel":model_name, "input_len":l, "test":0, "skip":repeat}
