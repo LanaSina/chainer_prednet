@@ -245,8 +245,7 @@ parser.add_argument('--save', default=10000, type=int,
 parser.add_argument('--period', default=1000000, type=int,
                     help='Period of training (frames)')
 parser.add_argument('--test', dest='test', action='store_true')
-parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, 
-    help='predictions will be saved every x steps', action='store_true')
+parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, help='predictions will be saved every x steps')
 
 parser.set_defaults(test=False)
 args = parser.parse_args()
