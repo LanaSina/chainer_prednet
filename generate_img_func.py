@@ -19,6 +19,7 @@ def generate_imagelist(args):
     	image_list = image_list[:n_images]
 
     limits = split_ratio*n_images
+     print("im_dir 2 ", im_dir)
     print(n_images, " images")
     print(limits)
 
