@@ -2,7 +2,7 @@ import sys
 
 #sys.path.insert(1, '/PredNet')
 #import main as prednet_main
-from PredNet.main import call_prednet
+from PredNet.call_prednet import call_prednet
 from generate_imagelist import generate_img_func as generate_imagelist
 
 
