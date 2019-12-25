@@ -10,6 +10,7 @@ def generate_imagelist(args):
     data_dir = args.data_dir
     input_images_dir = "input_images/"
     im_dir = data_dir + "/" + input_images_dir
+    print("im_dir", im_dir)
     image_list = sorted(os.listdir(im_dir))
 
     if n_images==-1:
