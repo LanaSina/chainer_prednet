@@ -20,15 +20,36 @@ def predict_static(input_path, model_name, limit):
 		data_dir = input_path
 		n_images = limit
 		rep = repeat
+		total_rep = 1
 
 	imagelist_args = ImglistArgs()
 	generate_imagelist(imagelist_args)
 
 	print("run prednet")
+	l = limit*10
+	class PrednetArgs:
+		images = input_path
+		initmodel = model_name
+		input_len = l
+		ext = 0
+		ext_t = -1
+		bprop = 20
+		save = 10000
+		period = 1000000
+		test = True
+		skip_save_frames = repeat
+
+		sequences = ''
+		gpu = 0 # -1
+		root = "."
+		resume = ''
+		size = '160,120'
+		channels = '3,48,96,192'
+		offset = "0,0"
+
 	# only save last image
 	# %run 'chainer_prednet/PredNet/main.py' --images 'imported' --initmodel 'fpsi_500000_20v.model' --input_len 10 --test 
-	l = limit*10
-	prednet_args = {"images":input_path, "initmodel":model_name, "input_len":l, "test":0, "skip":repeat}
+	prednet_args = PrednetArgs()
 	call_prednet(prednet_args)
 
 	# calculate optical flow compared to input
