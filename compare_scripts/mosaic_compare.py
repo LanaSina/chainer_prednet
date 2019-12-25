@@ -67,21 +67,6 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
                         yyend = (yy+1)*y_div
                         # part of input 1
                         p_1 = input_image_0[yystart:yyend,xxstart:xxend:] #input_image_1
-                        # test = abs(p_0-p_1)
-                        # fig=plt.figure(figsize=(8, 8))
-                        # columns = 1
-                        # rows = 3
-                        # fig.add_subplot(rows, columns, 1)
-                        # plt.imshow(p_0)
-                        # fig.add_subplot(rows, columns, 2)
-                        # plt.imshow(p_1)
-                        # fig.add_subplot(rows, columns, 3)
-                        # plt.imshow(test)
-                        # plt.show()
-
-                        # plt.imshow(test)
-                        # plt.show()
-                        # compare both
                         # take the mse for all channels and keep the mean
                         mean = mean + p_1*1.0
                         count = count + (p_1.mean(axis=2)>0).astype(np.int8)
@@ -92,9 +77,15 @@ def save_common_points(input_path_0, input_path_1, output_dir, limit, rep, off, 
                 mean[:,:,1] = mean[:,:,1]/count
                 mean[:,:,2] = mean[:,:,2]/count
                 mean = mean.astype(int)
+                # print(mean.shape)
+                # print(combined[ystart:yend,xstart:xend:].shape)
 
                 mask = (mse<limit).astype(np.int8)
+
                 result = cv2.bitwise_and(mean, mean, mask=mask)
+                # result = cv2.bitwise_and(combined[ystart:yend,xstart:xend:], mean, mask=mask)
+                
+
                 if enhance == 1 :
                     combined[ystart:yend,xstart:xend:] = combined[ystart:yend,xstart:xend:] + result*0.5
                 else:
@@ -146,7 +137,7 @@ def save_differences(input_path_0, input_path_1, output_dir, limit, rep, off, en
         if enhance==1:
             combined = np.ones(input_image_0.shape)
             combined = combined*128
-        elif enhance ==0:
+        elif enhance ==0 :
             combined = np.zeros(input_image_0.shape)
         else:
             combined = np.random.rand(input_image_0.shape[0], input_image_0.shape[1], input_image_0.shape[2])*256 #np.zeros(input_image.shape).astype('uint8')
