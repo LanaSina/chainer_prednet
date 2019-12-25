@@ -16,10 +16,10 @@ def generate_imagelist(args):
     if n_images==-1:
         n_images = len(image_list)
     else:
-    	image_list = image_list[:n_images]
+        image_list = image_list[:n_images]
 
     limits = split_ratio*n_images
-     print("im_dir 2 ", im_dir)
+    print("im_dir 2 ", im_dir)
     print(n_images, " images")
     print(limits)
 
