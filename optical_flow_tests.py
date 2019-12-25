@@ -15,7 +15,13 @@ def predict_static(input_path, model_name, limit):
 
 	print("create image list")
 	# 'chainer_prednet/generate_imagelist.py' 'imported/' '1' -tr 10
-	imagelist_args = {"data_dir": input_path, "n_images": limit, "r": repeat}
+	parser = argparse.ArgumentParser(description='generate_imagelist args')
+	class ImglistArgs:
+		data_dir = input_path
+		n_images = limit
+		rep = repeat
+
+	imagelist_args = ImglistArgs()
 	generate_imagelist(imagelist_args)
 
 	print("run prednet")
