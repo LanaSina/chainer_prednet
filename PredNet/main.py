@@ -124,11 +124,13 @@ def call_prednet(args):
                               chainer.Variable(xp.asarray(y_batch)))
                 loss.unchain_backward()
                 loss = 0
-                if args.gpu >= 0:model.to_cpu()
+                if args.gpu >= 0: model.to_cpu()
                 #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
-                num = str(i).zfill(10)
-                new_filename = 'result/' + num + '.png'
-                write_image(model.y.data[0].copy(), new_filename)
+                if ((i+1)%skip == 0):
+                    num = str(i/skip).zfill(10)
+                    new_filename = 'result/' + num + '.png'
+                    write_image(model.y.data[0].copy(), new_filename)
+
                 if args.gpu >= 0: model.to_gpu()
 
                 # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
@@ -243,6 +245,9 @@ parser.add_argument('--save', default=10000, type=int,
 parser.add_argument('--period', default=1000000, type=int,
                     help='Period of training (frames)')
 parser.add_argument('--test', dest='test', action='store_true')
+parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, 
+    help='predictions will be saved every x steps', action='store_true')
+
 parser.set_defaults(test=False)
 args = parser.parse_args()
 

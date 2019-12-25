@@ -17,14 +17,13 @@ def predict_static(input_path, model_name, limit):
 	imagelist_args = {"data_dir": input_path, "n_images": limit, "r": repeat}
 	generate_imagelist(imagelist_args)
 
-
+	# run prednet, only save last image
 	# %run 'chainer_prednet/PredNet/main.py' --images 'imported' --initmodel 'fpsi_500000_20v.model' --input_len 10 --test 
 	l = limit*10
-	prednet_args = {"images":input_path, "initmodel":model_name, "input_len":l, "test":0}
+	prednet_args = {"images":input_path, "initmodel":model_name, "input_len":l, "test":0, "skip":repeat}
 	call_prednet(prednet_args)
-	
 
-# calculate optical flow compared to input
+	# calculate optical flow compared to input
 
 
 # do the mirror test
