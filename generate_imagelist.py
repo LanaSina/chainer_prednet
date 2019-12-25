@@ -1,6 +1,6 @@
 import argparse
 import os
-import generate_img_func
+from generate_img_func import generate_imagelist
 
 usage = 'Usage: python {} DATA_DIR [N_IMAGES] [--help]'.format(__file__)
 parser = argparse.ArgumentParser(description='This script is to generate text list files image datasets',

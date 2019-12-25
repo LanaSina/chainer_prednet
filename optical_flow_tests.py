@@ -9,7 +9,7 @@ from generate_img_func import generate_imagelist
 
 
 # process images as static images
-def predict_static(input_path, model_name, limit):
+def predict_static(input_path, output_path, model_name, limit):
 	# how many times to repeat each image
 	repeat = 10
 
@@ -60,14 +60,13 @@ def predict_static(input_path, model_name, limit):
 
 parser = argparse.ArgumentParser(description='optical flow tests')
 parser.add_argument('--input', '-i', default='', help='Path to input directory')
-parser.add_argument('--model', '-m', default='', help='.model file')
+parser.add_argument('--model', '-m', default='output', help='.model file')
 parser.add_argument('--output_dir', '-o', default='', help='path of output diectory')
 parser.add_argument('--limit', '-l', type=int, default=0, help='max number of images')
-
 
 args = parser.parse_args()
 output_dir = args.output_dir 
 if not os.path.exists(output_dir):
   os.makedirs(output_dir)
 
-predict_static(args.input, args.model, args.limit)
+predict_static(args.input,output_dir, args.model, args.limit)
