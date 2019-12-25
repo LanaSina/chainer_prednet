@@ -126,8 +126,8 @@ def call_prednet(args):
                 loss = 0
                 if args.gpu >= 0: model.to_cpu()
                 #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
-                if ((i+1)%skip == 0):
-                    num = str(i/skip).zfill(10)
+                if ((i+1)%args.skip_save_frames == 0):
+                    num = str(i/args.skip_save_frames).zfill(10)
                     new_filename = 'result/' + num + '.png'
                     write_image(model.y.data[0].copy(), new_filename)
 

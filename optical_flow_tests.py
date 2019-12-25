@@ -62,7 +62,7 @@ parser = argparse.ArgumentParser(description='optical flow tests')
 parser.add_argument('--input', '-i', default='', help='Path to input directory')
 parser.add_argument('--model', '-m', default='output', help='.model file')
 parser.add_argument('--output_dir', '-o', default='', help='path of output diectory')
-parser.add_argument('--limit', '-l', type=int, default=0, help='max number of images')
+parser.add_argument('--limit', '-l', type=int, default=-1, help='max number of images')
 
 args = parser.parse_args()
 output_dir = args.output_dir 
