@@ -1,4 +1,5 @@
 import argparse
+import csv
 import cv2
 import os
 from PredNet.call_prednet import call_prednet
@@ -55,21 +56,21 @@ def strong_vectors(vectors):
     # to be affined
     threshold = 0.02
     # data is rows of [x, y, dx, dy]
-    if (sum(abs(vectors[2]))>threshold):
+    if (sum(np.abs(vectors[2]))>threshold):
         return True
-    if (sum(abs(vectors[3]))>threshold):
+    if (sum(np.abs(vectors[3]))>threshold):
         return True  
     return False
 
-def save(results, mirrored_results, filename, output_path):
+def save(results, mirrored_results, filename, output_path="."):
     name = filename.split("/")
     name = name[len(name)-1]
     temp = name.split(".")
 
-    output_file = output_path + "flow/original/" + temp[0] + ".png"
+    output_file = output_path + "/original/" + temp[0] + ".png"
     print("saving", output_file)
     cv2.imwrite(output_file, results["image"])    
-    output_file = output_path + "flow/mirrored/" + temp[0] + ".png"
+    output_file = output_path + "/mirrored/" + temp[0] + ".png"
     cv2.imwrite(output_file, mirrored_results["image"])    
     output_file = output_path + "/csv/" + temp[0] +".csv"
     with open(output_file, 'w') as f:
@@ -82,37 +83,56 @@ def mirror_test(vectors, mirrored_vectors):
     # sum quarter by quarter
     w = 160
     h = 120
-    step = 10 #px
+    step = 30 #px
     x = 0
     while x<w :
+        xx = x
+        x = x + step
         y = 0
-        subset_cond = (vectors[0] >= x and vectors[0] < x + step)
+        subset_cond = ((vectors[:,0] >= xx) & (vectors[:,0] < xx +step))
         subset_x = vectors[subset_cond]
-        subset_cond = (mirrored_vectors[0] >= (w-x) and mirrored_vectors[0] < (w-x-step))
+        if(len(subset_x) == 0):
+            continue
+
+        subset_cond = ((mirrored_vectors[:,0] <= w - xx) & (mirrored_vectors[:,0] > (w-xx-step)))
         subset_xm = mirrored_vectors[subset_cond]
+        if(len(subset_xm) == 0):
+            continue
 
         while y<h :
-            subset_cond = (subset_x[1] >= y and subset_x[1] < y + step)
+            yy = y
+            y = y + step
+            subset_cond = ((subset_x[:,1] >= yy) & (subset_x[:,1] < yy + step))
             subset_y = subset_x[subset_cond]
-            subset_cond = (mirrored_vectors[0] >= (h-y) and mirrored_vectors[0] < (h-y-step))
-            subset_ym = mirrored_vectors[subset_cond]
+            # print("subset_y", subset_y)
+            if(len(subset_y) == 0):
+                continue
+
+            subset_cond = ((subset_xm[:,1] <= (h-yy)) & (subset_xm[:,1] > (h-yy-step)))
+            subset_ym = subset_xm[subset_cond]
+            # print("subset_ym", subset_ym)
+            if(len(subset_ym) == 0):
+                continue
 
             # check x and y separately because of model bias
-            dx_mean = np.mean(subset_y[2])
+            dx_mean = np.mean(np.abs(subset_y[:,2]))
+            # print("dx_mean", dx_mean)
             if dx_mean > threshold :
-                vmean = np.mean(subset_y[2]) + np.mean(subset_ym[2])
-                if vmean<threshold :
+                vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
+                if np.abs(vmean)<threshold :
+                    #print("vmean",vmean)
                     return True
+            dy_mean = np.mean(np.abs(subset_y[:,3]))
+            #print("dy_mean", dy_mean)
 
-            dy_mean = np.mean(subset_y[3])
-            if dy_mean > threshold :
-                vmean = np.mean(subset_y[3]) + np.mean(subset_ym[3])
-                if vmean<threshold :
+            if np.abs(dy_mean) > threshold :
+                vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
+                if np.abs(vmean)<threshold :
+                    #print("vmean", vmean)
                     return True
+            
+
         
-            y = y + step
-
-        x = x + step
 
     return False
 
@@ -120,13 +140,14 @@ def mirror_test(vectors, mirrored_vectors):
 def compare_flow(input_image_dir, output_dir, limit):
     # calculate optical flow compared to input
     print("calculate optical flow")
-    if not os.path.exists(output_dir+"/flow/original/"):
-        os.makedirs(output_dir+"/flow/original/")
-    if not os.path.exists(output_dir+"/flow/mirrored/"):
-        os.makedirs(output_dir+"/flow/mirrored/")
+    if not os.path.exists(output_dir+"/original/"):
+        os.makedirs(output_dir+"/original/")
+    if not os.path.exists(output_dir+"/mirrored/"):
+        os.makedirs(output_dir+"/mirrored/")
     if not os.path.exists(output_dir+"/csv"):
         os.makedirs(output_dir+"/csv")
 
+    input_image_list = sorted(os.listdir(input_image_dir))
     prediction_image_dir = "result"
     prediction_image_list = sorted(os.listdir(prediction_image_dir))
     mirrored_image_dir = "mirrored/input_images"
@@ -144,9 +165,10 @@ def compare_flow(input_image_dir, output_dir, limit):
         # prediction
         prediction_image_path = prediction_image_dir + "/" + prediction_image_list[i] 
         results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=False)
+        results["vectors"] = np.asarray(results["vectors"])
 
         # reject too small vectors
-        if (not strong_vectors(results.vectors)):
+        if (not strong_vectors(results["vectors"])):
             print("no strong vectors in original image", i)
             continue
         
@@ -157,15 +179,16 @@ def compare_flow(input_image_dir, output_dir, limit):
         # prediction
         mirrored_prediction_image_path = mirrored_prediction_image_dir + "/" + mirrored_prediction_image_list[i] 
         mirrored_results = lucas_kanade(mirrored_prediction_image_path, mirrored_prediction_image_path, output_dir, save=False)
-        
-        if (not strong_vectors(mirrored_results.vectors)):
+        mirrored_results["vectors"] = np.asarray(mirrored_results["vectors"])
+
+        if (not strong_vectors(mirrored_results["vectors"])):
             print("no strong vectors in mirrored image", i)
             continue
 
         # analyse the vectors
         if (mirror_test(results["vectors"], mirrored_results["vectors"])):
             # save files and images
-            save(results, mirrored_results, original_image)
+            save(results, mirrored_results, original_image, output_dir)
         else:
             print("mirror_test failed ", original_image)
 
