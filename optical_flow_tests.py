@@ -50,6 +50,7 @@ def predict_static(input_path, output_dir, model_name, limit):
 	call_prednet(prednet_args)
 
 	# calculate optical flow compared to input
+	print("calculate optical flow")
     input_image_dir = input_path + "/input_images/"
     input_image_list = sorted(os.listdir(input_image_dir))
     output_image_list = sorted(os.listdir("results"))
