@@ -6,9 +6,7 @@ from optical_flow.optical_flow import lucas_kanade
 
 
 # process images as static images
-def predict_static(input_path, output_dir, model_name, limit):
-    # how many times to repeat each image
-    repeat = 10
+def predict_static(input_path, output_dir, model_name, limit, repeat=10):
 
     print("create image list")
     # 'chainer_prednet/generate_imagelist.py' 'imported/' '1' -tr 10
@@ -74,6 +72,8 @@ parser.add_argument('--input', '-i', default='', help='Path to the directory whi
 parser.add_argument('--model', '-m', default='output', help='.model file')
 parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
 parser.add_argument('--limit', '-l', type=int, default=-1, help='max number of images')
+parser.add_argument('--repeat', '-r', type=int, default=10, help='number of times to repeat image before calculating flow')
+
 
 args = parser.parse_args()
 output_dir = args.output_dir 
