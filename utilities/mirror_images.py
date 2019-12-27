@@ -15,7 +15,7 @@ def mirror(input_path, output_dir, limit):
         image_name = output_dir + "/" + input_image_list[i]
         print("saving", image_name)
         # !!! jpg
-        im_flip.save(image_name, quality=100)
+        im_mirror.save(image_name, quality=100)
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')

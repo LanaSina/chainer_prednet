@@ -8,8 +8,14 @@ output:
 
 Read interesting pixels
 ```{r}
-dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_mosaic_0_2K/"
+dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/mirrored_flow/mirrored/"
 ```
+
+```{r}
+filename = "mosaic_original.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
 
 ```{r}
 filename = "pixels.csv"

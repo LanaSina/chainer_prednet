@@ -1,6 +1,6 @@
 import argparse
 import os
-import call_prednet
+from call_prednet import call_prednet
 
 
 parser = argparse.ArgumentParser(
