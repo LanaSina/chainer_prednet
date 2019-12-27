@@ -64,12 +64,10 @@ def predict_static(input_path, output_dir, model_name, limit):
         original_image = input_image_list[i]
         # original input
         original_image_path = os.path.join(input_image_dir, original_image)
-        # prediction 
-        lucas_kanade(output_image_list[i], output_image_list[i], output_dir)
-
-        # h, w, color
-        current_image = numpy.array(Image.open(image_path).convert('RGB'))
-
+        # prediction
+        prediction_image_path = prediction_image_dir + "/" + output_image_list[i] 
+        print(original_image_path, prediction_image_path)
+        lucas_kanade(original_image_path, prediction_image_path, output_dir)
 
 parser = argparse.ArgumentParser(description='optical flow tests')
 parser.add_argument('--input', '-i', default='', help='Path to the directory which countains the input_images directory')
