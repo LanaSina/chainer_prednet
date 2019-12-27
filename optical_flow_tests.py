@@ -53,7 +53,8 @@ def predict_static(input_path, output_dir, model_name, limit):
     print("calculate optical flow")
     input_image_dir = input_path + "/input_images/"
     input_image_list = sorted(os.listdir(input_image_dir))
-    output_image_list = sorted(os.listdir("result"))
+    prediction_image_dir = "result"
+    output_image_list = sorted(os.listdir(prediction_image_dir))
 
     if limit==-1:
         limit = len(input_image_list)
@@ -62,9 +63,9 @@ def predict_static(input_path, output_dir, model_name, limit):
     for i in range(0,limit):
         original_image = input_image_list[i]
         # original input
-        original_image_path = os.path.join(image_dir, original_image)
+        original_image_path = os.path.join(input_image_dir, original_image)
         # prediction 
-        lucas_kanade(image_path, output_image_list[i], output_dir)
+        lucas_kanade(output_image_list[i], output_image_list[i], output_dir)
 
         # h, w, color
         current_image = numpy.array(Image.open(image_path).convert('RGB'))
