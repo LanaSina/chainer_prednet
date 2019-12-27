@@ -2,7 +2,7 @@ import argparse
 import os
 from PredNet.call_prednet import call_prednet
 from generate_img_func import generate_imagelist
-from optical_flow import lucas_kanade
+from optical_flow.optical_flow import lucas_kanade
 
 
 # process images as static images
@@ -67,8 +67,8 @@ def predict_static(input_path, output_dir, model_name, limit):
         # prediction 
         lucas_kanade(image_path, output_image_list[i], output_dir)
 
-      # h, w, color
-      current_image = numpy.array(Image.open(image_path).convert('RGB'))
+        # h, w, color
+        current_image = numpy.array(Image.open(image_path).convert('RGB'))
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')
