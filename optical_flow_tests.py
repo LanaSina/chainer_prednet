@@ -9,7 +9,7 @@ from utilities.mirror_images import mirror
 
 # This file runs a mirrored flow analysis to find which images contain illusions
 
-def run_prednet(input_path, model_name, limit, repeat):
+def run_prednet(input_path, model_name, limit, repeat, output_dir):
     print("run prednet")
     l = limit*10
     class PrednetArgs:
@@ -35,7 +35,7 @@ def run_prednet(input_path, model_name, limit, repeat):
     # only save last image
     # %run 'chainer_prednet/PredNet/main.py' --images 'imported' --initmodel 'fpsi_500000_20v.model' --input_len 10 --test 
     prednet_args = PrednetArgs()
-    call_prednet(prednet_args)
+    call_prednet(prednet_args, output_dir)
 
 def make_img_list(input_path, limit, repeat):
     print("create image list")
@@ -117,7 +117,7 @@ def mirror_test(vectors, mirrored_vectors):
     return False
 
 
-def compare_flow(input_image_dir, prediction_image_dir, output_dir, limit):
+def compare_flow(input_image_dir, output_dir, limit):
     # calculate optical flow compared to input
     print("calculate optical flow")
     if not os.path.exists(output_dir+"/flow/original/"):
@@ -128,7 +128,11 @@ def compare_flow(input_image_dir, prediction_image_dir, output_dir, limit):
         os.makedirs(output_dir+"/csv")
 
     prediction_image_dir = "result"
-    output_image_list = sorted(os.listdir(prediction_image_dir))
+    prediction_image_list = sorted(os.listdir(prediction_image_dir))
+    mirrored_image_dir = "mirrored/input_images"
+    mirrored_image_list = sorted(os.listdir(mirrored_image_dir))
+    mirrored_prediction_image_dir = "mirrored_result"
+    mirrored_prediction_image_list = sorted(os.listdir(prediction_image_dir))
 
     # python optical_flow.py test_20y_0.jpg test_20y_1.jpg -s 0 -l 1 -cc yellow -lc red -s 2 -l 2 -vs 60.0
     for i in range(0,limit):
@@ -138,7 +142,7 @@ def compare_flow(input_image_dir, prediction_image_dir, output_dir, limit):
         # original input
         original_image_path = os.path.join(input_image_dir, original_image)
         # prediction
-        prediction_image_path = prediction_image_dir + "/" + output_image_list[i] 
+        prediction_image_path = prediction_image_dir + "/" + prediction_image_list[i] 
         results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=False)
 
         # reject too small vectors
@@ -147,12 +151,12 @@ def compare_flow(input_image_dir, prediction_image_dir, output_dir, limit):
             continue
         
         # results for mirrored image 
-        original_image = input_image_list[i]
+        mirrored_image = mirrored_image_list[i]
         # original input
-        original_image_path = os.path.join(input_image_dir, original_image)
+        mirrored_image_path = os.path.join(mirrored_image_dir, mirrored_image)
         # prediction
-        prediction_image_path = prediction_image_dir + "/" + output_image_list[i] 
-        mirrored_results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=False)
+        mirrored_prediction_image_path = mirrored_prediction_image_dir + "/" + mirrored_prediction_image_list[i] 
+        mirrored_results = lucas_kanade(mirrored_prediction_image_path, mirrored_prediction_image_path, output_dir, save=False)
         
         if (not strong_vectors(mirrored_results.vectors)):
             print("no strong vectors in mirrored image", i)
@@ -174,17 +178,19 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10):
 
     # predict original images
     make_img_list(input_path, limit, repeat)
-    run_prednet(input_path, model_name, limit, repeat)
+    run_prednet(input_path, model_name, limit, repeat, "result")
     # predict mirrored images
     # "chainer_prednet/utilities/mirror_images.py" -i "imported/input_images" -o "mirrored"
     mirror_images_path = "mirrored"
-    mirror(input_image_dir, mirror_images_path)
     mirror_images_dir = "mirrored/input_images"
+    if not os.path.exists(mirror_images_dir):
+        os.makedirs(mirror_images_dir)
+    mirror(input_image_dir, mirror_images_dir, limit)
     make_img_list(mirror_images_path, limit, repeat)
-    run_prednet(mirror_images_path, model_name, limit, repeat)
+    run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
     # now compare image by image
-    compare_flow(input_image_dir, prediction_image_dir, output_dir, limit)
+    compare_flow(input_image_dir, output_dir, limit)
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')

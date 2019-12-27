@@ -14,7 +14,7 @@ import chainer.computational_graph as c
 from tb_chainer import SummaryWriter, NodeName, utils
 import net
 
-def call_prednet(args):
+def call_prednet(args, output_dir = "result"):
     if (not args.images) and (not args.sequences):
         print('Please specify images or sequences')
         exit()
@@ -64,8 +64,8 @@ def call_prednet(args):
         os.makedirs('models')
     if not os.path.exists('images'):
         os.makedirs('images')
-    if not os.path.exists('result'):
-        os.makedirs('result')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     def load_list(path, root):
         tuples = []
@@ -128,7 +128,7 @@ def call_prednet(args):
                 #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
                 if ((i+1)%args.skip_save_frames == 0):
                     num = str(i/args.skip_save_frames).zfill(10)
-                    new_filename = 'result/' + num + '.png'
+                    new_filename = output_dir + '/' + num + '.png'
                     write_image(model.y.data[0].copy(), new_filename)
 
                 if args.gpu >= 0: model.to_gpu()
@@ -157,7 +157,7 @@ def call_prednet(args):
                     loss.unchain_backward()
                     loss = 0
                     if args.gpu >= 0:model.to_cpu()
-                    write_image(model.y.data[0].copy(), 'result/test_' + str(i) + 'y_' + str(j + 1) + '.png')
+                    write_image(model.y.data[0].copy(), output_dir + '/test_' + str(i) + 'y_' + str(j + 1) + '.png')
                     x_batch[0] = model.y.data[0].copy()
                     if args.gpu >= 0:model.to_gpu()
                 prednet.reset_state()
