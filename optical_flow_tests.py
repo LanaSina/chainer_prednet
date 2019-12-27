@@ -55,9 +55,9 @@ def strong_vectors(vectors):
     # to be affined
     threshold = 0.02
     # data is rows of [x, y, dx, dy]
-    if (sum(abs(vectors[2]))>threshold);
+    if (sum(abs(vectors[2]))>threshold):
         return True
-    if (sum(abs(vectors[3]))>threshold);
+    if (sum(abs(vectors[3]))>threshold):
         return True  
     return False
 
@@ -142,7 +142,8 @@ def compare_flow(input_image_dir, prediction_image_dir, output_dir, limit):
         results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=False)
 
         # reject too small vectors
-        if (!strong_vectors(results.vectors)):
+        if (not strong_vectors(results.vectors)):
+            print("no strong vectors in original image", i)
             continue
         
         # results for mirrored image 
@@ -153,13 +154,16 @@ def compare_flow(input_image_dir, prediction_image_dir, output_dir, limit):
         prediction_image_path = prediction_image_dir + "/" + output_image_list[i] 
         mirrored_results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=False)
         
-        if (!strong_vectors(mirrored_results.vectors)):
+        if (not strong_vectors(mirrored_results.vectors)):
+            print("no strong vectors in mirrored image", i)
             continue
 
         # analyse the vectors
         if (mirror_test(results["vectors"], mirrored_results["vectors"])):
             # save files and images
             save(results, mirrored_results, original_image)
+        else:
+            print("mirror_test failed ", original_image)
 
 # process images as static images
 def predict_static(input_path, output_dir, model_name, limit, repeat=10):
