@@ -130,10 +130,6 @@ def mirror_test(vectors, mirrored_vectors):
                 if np.abs(vmean)<threshold :
                     #print("vmean", vmean)
                     return True
-            
-
-        
-
     return False
 
 
@@ -193,7 +189,7 @@ def compare_flow(input_image_dir, output_dir, limit):
             print("mirror_test failed ", original_image)
 
 # process images as static images
-def predict_static(input_path, output_dir, model_name, limit, repeat=10):
+def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype):
     input_image_dir = input_path + "/input_images/"
     input_image_list = sorted(os.listdir(input_image_dir))
     if limit==-1:
@@ -208,7 +204,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10):
     mirror_images_dir = "mirrored/input_images"
     if not os.path.exists(mirror_images_dir):
         os.makedirs(mirror_images_dir)
-    mirror(input_image_dir, mirror_images_dir, limit)
+    mirror(input_image_dir, mirror_images_dir, limit, mtype)
     make_img_list(mirror_images_path, limit, repeat)
     run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
@@ -222,6 +218,7 @@ parser.add_argument('--model', '-m', default='output', help='.model file')
 parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
 parser.add_argument('--limit', '-l', type=int, default=-1, help='max number of images')
 parser.add_argument('--repeat', '-r', type=int, default=10, help='number of times to repeat image before calculating flow')
+parser.add_argument('--mtype', '-mt', type=int, default=0, help='0 for mirroring, 1 for flipping, 2 for mirrored and flipped')
 
 
 args = parser.parse_args()
@@ -229,4 +226,4 @@ output_dir = args.output_dir
 if not os.path.exists(output_dir):
   os.makedirs(output_dir)
 
-predict_static(args.input,output_dir, args.model, args.limit, args.repeat)
+predict_static(args.input,output_dir, args.model, args.limit, args.repeat, args.mtype)
