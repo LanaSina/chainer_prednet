@@ -5,8 +5,8 @@ import os
 from PredNet.call_prednet import call_prednet
 from generate_img_func import generate_imagelist
 import numpy as np
-from optical_flow.optical_flow import lucas_kanade
-from utilities.mirror_images import mirror
+from optical_flow.optical_flow import lucas_kanade, draw_tracks
+from utilities.mirror_images import mirror, TransformationType
 
 # This file runs a mirrored flow analysis to find which images contain illusions
 
@@ -62,24 +62,46 @@ def strong_vectors(vectors):
         return True  
     return False
 
-def save(results, mirrored_results, filename, output_path="."):
+def  save(img, mirror_img, good_vectors, filename, output_path=".")#save(results, mirrored_results, filename, output_path="."):
+
+
+    v = good_vectors["original"]
+    for i in range(0,len(v)):
+        draw_tracks(img, v[i][0], v[i][1], v[i][2], v[i][3])
+
+    v = good_vectors["mirrored"]
+    for i in range(0,len(v)):
+        draw_tracks(mirror_img, v[i][0], v[i][1], v[i][2], v[i][3])
+
     name = filename.split("/")
     name = name[len(name)-1]
     temp = name.split(".")
 
-    output_file = output_path + "/original/" + temp[0] + ".png"
+
+    output_path_long = output_path + "/original/" 
+    output_file = output_path_long+ temp[0] + ".png"
     print("saving", output_file)
-    cv2.imwrite(output_file, results["image"])    
-    output_file = output_path + "/mirrored/" + temp[0] + ".png"
-    cv2.imwrite(output_file, mirrored_results["image"])    
-    output_file = output_path + "/csv/" + temp[0] +".csv"
+    cv2.imwrite(output_file, img)   
+    output_file = output_path_long + "/csv/" + temp[0] +".csv" 
     with open(output_file, 'w') as f:
         writer = csv.writer(f, lineterminator='\n')
-        writer.writerows(results["vectors"])
+        writer.writerows(good_vectors["original"])
+
+    output_path_long = output_path + "/mirrored/"
+    output_file = output_path_long + temp[0] + ".png"
+    cv2.imwrite(output_file, mirror_img)  
+    output_file = output_path_long + "/csv/" + temp[0] +".csv" 
+    with open(output_file, 'w') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerows(good_vectors["mirrored"])
+   
 
 # returns true if one direction seems to have a motion illusion
-def mirror_test(vectors, mirrored_vectors):
-    threshold = 0.02
+def mirror_test(vectors, mirrored_vectors, mtype):
+    threshold = 0.05
+    v = []
+    v_m = []
+
     # sum quarter by quarter
     w = 160
     h = 120
@@ -116,21 +138,32 @@ def mirror_test(vectors, mirrored_vectors):
 
             # take the mean direction on original image
             # check x and y separately because of model bias
-            dx_mean = np.mean(np.abs(subset_y[:,2]))
-            if dx_mean > threshold :
-                vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
-                if np.abs(vmean)<threshold :
-                    return True
-            dy_mean = np.mean(np.abs(subset_y[:,3]))
+            if(TransformationType(mtype) == TransformationType.Mirror or TransformationType(mtype) == TransformationType.MirrorAndFlip):
+                dx_mean = np.mean(np.abs(subset_y[:,2]))
+                if dx_mean > threshold :
+                    vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
+                    if np.abs(vmean)<threshold :
+                        print("mirror_test passed on x ")
+                        v.append(subset_y)
+                        v_m.append(subset_ym)
+                        continue
+                        #return True
 
-            if np.abs(dy_mean) > threshold :
-                vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
-                if np.abs(vmean)<threshold :
-                    return True
-    return False
+            if(TransformationType(mtype) == TransformationType.Flip or TransformationType(mtype) == TransformationType.MirrorAndFlip):
+                dy_mean = np.mean(np.abs(subset_y[:,3]))
+                if np.abs(dy_mean) > threshold :
+                    vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
+                    if np.abs(vmean)<threshold :
+                        print("mirror_test passed on y ")
+                        v.append(subset_y)
+                        v_m.append(subset_ym)
+                        #return True
+
+    results = ["original":v, "mirrored":vm]
+    return results
 
 # stype is boolean
-def compare_flow(input_image_dir, output_dir, limit, stype):
+def compare_flow(input_image_dir, output_dir, limit, stype, mtype):
     # calculate optical flow compared to input
     print("calculate optical flow")
     if not os.path.exists(output_dir+"/original/"):
@@ -179,13 +212,15 @@ def compare_flow(input_image_dir, output_dir, limit, stype):
             continue
 
         # analyse the vectors
-        if (mirror_test(results["vectors"], mirrored_results["vectors"])):
+        good_vectors = mirror_test(results["vectors"], mirrored_results["vectors"], mtype)
+        if (len(good_vectors["original"])>0):
             # save files and images
             if (not stype):
-                save(results, mirrored_results, original_image, output_dir)
-            print("mirror_test passed ", original_image)
-        else:
-            print("mirror_test failed ", original_image)
+                #save(results, mirrored_results, original_image, output_dir)
+                save(good_vectors, original_image, output_dir)
+            
+        # else:
+        #     print("mirror_test failed ", original_image)
 
 # process images as static images
 def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0, stype=0):
@@ -211,7 +246,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0
     save_type = True
     if (stype == 1):
         save_type = False
-    compare_flow(input_image_dir, output_dir, limit, save_type)
+    compare_flow(input_image_dir, output_dir, limit, save_type, mtype)
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')
