@@ -102,33 +102,30 @@ def mirror_test(vectors, mirrored_vectors):
         while y<h :
             yy = y
             y = y + step
+
+            # select vecotrs on a cell
             subset_cond = ((subset_x[:,1] >= yy) & (subset_x[:,1] < yy + step))
             subset_y = subset_x[subset_cond]
-            # print("subset_y", subset_y)
             if(len(subset_y) == 0):
                 continue
 
             subset_cond = ((subset_xm[:,1] <= (h-yy)) & (subset_xm[:,1] > (h-yy-step)))
             subset_ym = subset_xm[subset_cond]
-            # print("subset_ym", subset_ym)
             if(len(subset_ym) == 0):
                 continue
 
+            # take the mean direction on original image
             # check x and y separately because of model bias
             dx_mean = np.mean(np.abs(subset_y[:,2]))
-            # print("dx_mean", dx_mean)
             if dx_mean > threshold :
                 vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
                 if np.abs(vmean)<threshold :
-                    #print("vmean",vmean)
                     return True
             dy_mean = np.mean(np.abs(subset_y[:,3]))
-            #print("dy_mean", dy_mean)
 
             if np.abs(dy_mean) > threshold :
                 vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
                 if np.abs(vmean)<threshold :
-                    #print("vmean", vmean)
                     return True
     return False
 
@@ -160,7 +157,7 @@ def compare_flow(input_image_dir, output_dir, limit, stype):
         original_image_path = os.path.join(input_image_dir, original_image)
         # prediction
         prediction_image_path = prediction_image_dir + "/" + prediction_image_list[i] 
-        results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=stype)
+        results = lucas_kanade(original_image_path, prediction_image_path, output_dir+"/original/", save=stype)
         results["vectors"] = np.asarray(results["vectors"])
 
         # reject too small vectors
@@ -174,7 +171,7 @@ def compare_flow(input_image_dir, output_dir, limit, stype):
         mirrored_image_path = os.path.join(mirrored_image_dir, mirrored_image)
         # prediction
         mirrored_prediction_image_path = mirrored_prediction_image_dir + "/" + mirrored_prediction_image_list[i] 
-        mirrored_results = lucas_kanade(mirrored_image_dir, mirrored_prediction_image_path, output_dir, save=False)
+        mirrored_results = lucas_kanade(mirrored_image_path, mirrored_prediction_image_path, output_dir+"/mirrored/", save=stype)
         mirrored_results["vectors"] = np.asarray(mirrored_results["vectors"])
 
         if (not strong_vectors(mirrored_results["vectors"])):

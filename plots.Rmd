@@ -8,12 +8,30 @@ output:
 
 Read interesting pixels
 ```{r}
-dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/mirrored_flow/mirrored/"
+dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/snake_mirrored/"
 ```
 
 ```{r}
-filename = "mosaic_original.csv"
+filename = "original/csv/00.csv"
 df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+colnames(df) = c("x","y","dx","dy")
+original = df
+
+filename = "mirrored/csv/00.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+colnames(df) = c("x","y","dx","dy")
+mirrored = df
+
+s = data.frame(original$dx+mirrored$dx, original$dy+mirrored$dy)
+colnames(s) = c("dx", "dy")
+mean(abs(df$dx))
+
+t = 0.02
+cond = original$dx > t & s$dx < t
+
+
+pass = original$dx[cond]
+
 ```
 
 
