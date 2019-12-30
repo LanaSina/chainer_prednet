@@ -62,7 +62,8 @@ def strong_vectors(vectors):
         return True  
     return False
 
-def  save(img, mirror_img, good_vectors, filename, output_path=".")#save(results, mirrored_results, filename, output_path="."):
+#save(results, mirrored_results, filename, output_path="."):
+def  save(img, mirror_img, good_vectors, filename, output_path="."):
 
 
     v = good_vectors["original"]
@@ -159,7 +160,7 @@ def mirror_test(vectors, mirrored_vectors, mtype):
                         v_m.append(subset_ym)
                         #return True
 
-    results = ["original":v, "mirrored":vm]
+    results = {"original":v, "mirrored":vm}
     return results
 
 # stype is boolean
