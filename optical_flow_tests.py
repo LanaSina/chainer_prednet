@@ -132,7 +132,7 @@ def mirror_test(vectors, mirrored_vectors):
                     return True
     return False
 
-
+# stype is boolean
 def compare_flow(input_image_dir, output_dir, limit, stype):
     # calculate optical flow compared to input
     print("calculate optical flow")
@@ -184,7 +184,9 @@ def compare_flow(input_image_dir, output_dir, limit, stype):
         # analyse the vectors
         if (mirror_test(results["vectors"], mirrored_results["vectors"])):
             # save files and images
-            save(results, mirrored_results, original_image, output_dir)
+            if (stype):
+                save(results, mirrored_results, original_image, output_dir)
+            print("mirror_test passed ", original_image)
         else:
             print("mirror_test failed ", original_image)
 
@@ -209,7 +211,10 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype, 
     run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
     # now compare image by image
-    compare_flow(input_image_dir, output_dir, limit, stype)
+    save_type = True
+    if (stype == 1)
+        save_type = False
+    compare_flow(input_image_dir, output_dir, limit, save_type)
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')
