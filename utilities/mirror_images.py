@@ -19,7 +19,7 @@ def mirror(input_path, output_dir, limit=-1, mtype = TransformationType.Mirror):
         current_image = Image.open(input_path+"/"+input_image_list[i]).convert('RGB')
         if (mtype == TransformationType.Mirror or mtype == TransformationType.MirrorAndFlip):
             current_image = ImageOps.mirror(current_image)
-        if (mtype == TransformationType.Flip or mtype == TransformationType.MirrorAndFlip)
+        if (mtype == TransformationType.Flip or mtype == TransformationType.MirrorAndFlip):
             current_image = ImageOps.flip(current_image)
         
         image_name = output_dir + "/" + input_image_list[i]

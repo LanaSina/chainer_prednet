@@ -174,7 +174,7 @@ def compare_flow(input_image_dir, output_dir, limit, stype):
         mirrored_image_path = os.path.join(mirrored_image_dir, mirrored_image)
         # prediction
         mirrored_prediction_image_path = mirrored_prediction_image_dir + "/" + mirrored_prediction_image_list[i] 
-        mirrored_results = lucas_kanade(mirrored_prediction_image_path, mirrored_prediction_image_path, output_dir, save=False)
+        mirrored_results = lucas_kanade(mirrored_image_dir, mirrored_prediction_image_path, output_dir, save=False)
         mirrored_results["vectors"] = np.asarray(mirrored_results["vectors"])
 
         if (not strong_vectors(mirrored_results["vectors"])):
@@ -184,14 +184,14 @@ def compare_flow(input_image_dir, output_dir, limit, stype):
         # analyse the vectors
         if (mirror_test(results["vectors"], mirrored_results["vectors"])):
             # save files and images
-            if (stype):
+            if (not stype):
                 save(results, mirrored_results, original_image, output_dir)
             print("mirror_test passed ", original_image)
         else:
             print("mirror_test failed ", original_image)
 
 # process images as static images
-def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype, stype):
+def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0, stype=0):
     input_image_dir = input_path + "/input_images/"
     input_image_list = sorted(os.listdir(input_image_dir))
     if limit==-1:
@@ -212,7 +212,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype, 
 
     # now compare image by image
     save_type = True
-    if (stype == 1)
+    if (stype == 1):
         save_type = False
     compare_flow(input_image_dir, output_dir, limit, save_type)
 
