@@ -133,7 +133,7 @@ def mirror_test(vectors, mirrored_vectors):
     return False
 
 
-def compare_flow(input_image_dir, output_dir, limit):
+def compare_flow(input_image_dir, output_dir, limit, stype):
     # calculate optical flow compared to input
     print("calculate optical flow")
     if not os.path.exists(output_dir+"/original/"):
@@ -160,7 +160,7 @@ def compare_flow(input_image_dir, output_dir, limit):
         original_image_path = os.path.join(input_image_dir, original_image)
         # prediction
         prediction_image_path = prediction_image_dir + "/" + prediction_image_list[i] 
-        results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=False)
+        results = lucas_kanade(original_image_path, prediction_image_path, output_dir, save=stype)
         results["vectors"] = np.asarray(results["vectors"])
 
         # reject too small vectors
@@ -189,7 +189,7 @@ def compare_flow(input_image_dir, output_dir, limit):
             print("mirror_test failed ", original_image)
 
 # process images as static images
-def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype):
+def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype, stype):
     input_image_dir = input_path + "/input_images/"
     input_image_list = sorted(os.listdir(input_image_dir))
     if limit==-1:
@@ -209,7 +209,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype):
     run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
     # now compare image by image
-    compare_flow(input_image_dir, output_dir, limit)
+    compare_flow(input_image_dir, output_dir, limit, stype)
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')
@@ -218,12 +218,12 @@ parser.add_argument('--model', '-m', default='output', help='.model file')
 parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
 parser.add_argument('--limit', '-l', type=int, default=-1, help='max number of images')
 parser.add_argument('--repeat', '-r', type=int, default=10, help='number of times to repeat image before calculating flow')
-parser.add_argument('--mtype', '-mt', type=int, default=0, help='0 for mirroring, 1 for flipping, 2 for mirrored and flipped')
-
+parser.add_argument('--mirror_type', '-mt', type=int, default=0, help='0 for mirroring, 1 for flipping, 2 for mirrored and flipped')
+parser.add_argument('--save_type', '-st', type=int, default=0, help='0 for saving all images, 1 for saving only detected illusions')
 
 args = parser.parse_args()
 output_dir = args.output_dir 
 if not os.path.exists(output_dir):
   os.makedirs(output_dir)
 
-predict_static(args.input,output_dir, args.model, args.limit, args.repeat, args.mtype)
+predict_static(args.input,output_dir, args.model, args.limit, args.repeat, args.mirror_type, args.save_type)
