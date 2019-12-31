@@ -53,6 +53,8 @@ def make_img_list(input_path, limit, repeat):
 
 # return true if there are some strong vectors in there
 def strong_vectors(vectors):
+    if(len(vectors)==0):
+        return False
     # to be affined
     threshold = 0.02
     # data is rows of [x, y, dx, dy]
@@ -64,8 +66,6 @@ def strong_vectors(vectors):
 
 #save(results, mirrored_results, filename, output_path="."):
 def  save(img, mirror_img, good_vectors, filename, output_path="."):
-
-
     v = good_vectors["original"]
     for i in range(0,len(v)):
         draw_tracks(img, v[i][0], v[i][1], v[i][2], v[i][3])
@@ -90,6 +90,7 @@ def  save(img, mirror_img, good_vectors, filename, output_path="."):
 
     output_path_long = output_path + "/mirrored/"
     output_file = output_path_long + temp[0] + ".png"
+    print("saving", output_file)
     cv2.imwrite(output_file, mirror_img)  
     output_file = output_path_long + "/csv/" + temp[0] +".csv" 
     with open(output_file, 'w') as f:
@@ -99,14 +100,14 @@ def  save(img, mirror_img, good_vectors, filename, output_path="."):
 
 # returns true if one direction seems to have a motion illusion
 def mirror_test(vectors, mirrored_vectors, mtype):
-    threshold = 0.05
+    threshold = 0.02
     v = []
     v_m = []
 
     # sum quarter by quarter
     w = 160
     h = 120
-    step = 30 #px
+    step = 40 #px
     x = 0
     while x<w :
         xx = x
@@ -145,8 +146,8 @@ def mirror_test(vectors, mirrored_vectors, mtype):
                     vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
                     if np.abs(vmean)<threshold :
                         print("mirror_test passed on x ")
-                        v.append(subset_y)
-                        v_m.append(subset_ym)
+                        v.extend(subset_y)
+                        v_m.extend(subset_ym)
                         continue
                         #return True
 
@@ -156,11 +157,11 @@ def mirror_test(vectors, mirrored_vectors, mtype):
                     vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
                     if np.abs(vmean)<threshold :
                         print("mirror_test passed on y ")
-                        v.append(subset_y)
-                        v_m.append(subset_ym)
+                        v.extend(subset_y)
+                        v_m.extend(subset_ym)
                         #return True
 
-    results = {"original":v, "mirrored":vm}
+    results = {"original":v, "mirrored":v_m}
     return results
 
 # stype is boolean
@@ -218,7 +219,7 @@ def compare_flow(input_image_dir, output_dir, limit, stype, mtype):
             # save files and images
             if (not stype):
                 #save(results, mirrored_results, original_image, output_dir)
-                save(good_vectors, original_image, output_dir)
+                save(results["image"], mirrored_results["image"], good_vectors, original_image, output_dir)
             
         # else:
         #     print("mirror_test failed ", original_image)
