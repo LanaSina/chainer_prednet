@@ -53,14 +53,15 @@ def make_img_list(input_path, limit, repeat):
 
 # return true if there are some strong vectors in there
 def strong_vectors(vectors):
+
     if(len(vectors)==0):
         return False
     # to be affined
     threshold = 0.02
     # data is rows of [x, y, dx, dy]
-    if (sum(np.abs(vectors[2]))>threshold):
+    if (sum(np.abs(vectors[:,2]))>threshold):
         return True
-    if (sum(np.abs(vectors[3]))>threshold):
+    if (sum(np.abs(vectors[:,3]))>threshold):
         return True  
     return False
 
