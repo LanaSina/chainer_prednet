@@ -138,9 +138,9 @@ def mirror_test(vectors, mirrored_vectors, mtype, threshold):
 
             if (TransformationType(mtype) == TransformationType.Flip or TransformationType(mtype) == TransformationType.MirrorAndFlip):
                 subset_cond = ((subset_xm[:,1] <= (h-yy)) & (subset_xm[:,1] > (h-yy-step)))
-            else
+            else:
                 subset_cond = ((subset_xm[:,1] >= yy) & (subset_xm[:,1] < yy + step))
-                
+
             subset_ym = subset_xm[subset_cond]
             if(len(subset_ym) == 0):
                 continue
@@ -148,7 +148,7 @@ def mirror_test(vectors, mirrored_vectors, mtype, threshold):
             # take the mean direction on original image
             # check x and y separately because of model bias
             if(TransformationType(mtype) == TransformationType.Mirror or TransformationType(mtype) == TransformationType.MirrorAndFlip):
-                print("dx means", np.mean(np.abs(subset_y[:,2])), np.mean(np.abs(subset_ym[:,2])))
+                #print("dx means", np.mean(np.abs(subset_y[:,2])), np.mean(np.abs(subset_ym[:,2])))
                 if np.mean(np.abs(subset_y[:,2])) > threshold or np.mean(np.abs(subset_ym[:,2])) > threshold:
                     # vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
                     # if np.abs(vmean)<threshold :
@@ -160,7 +160,7 @@ def mirror_test(vectors, mirrored_vectors, mtype, threshold):
                         continue
 
             if(TransformationType(mtype) == TransformationType.Flip or TransformationType(mtype) == TransformationType.MirrorAndFlip):
-                print("dy means", np.mean(subset_y[:,3]), np.mean(subset_ym[:,3]))
+                # print("dy means", np.mean(subset_y[:,3]), np.mean(subset_ym[:,3]))
                 if np.mean(np.abs(subset_y[:,3])) > threshold or np.mean(np.abs(subset_ym[:,3])) > threshold:
                     # vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
                     # if np.abs(vmean)<threshold :
@@ -241,18 +241,18 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0
     if limit==-1:
         limit = len(input_image_list)
 
-    # # predict original images
-    # make_img_list(input_path, limit, repeat)
-    # run_prednet(input_path, model_name, limit, repeat, "result")
-    # # predict mirrored images
-    # # "chainer_prednet/utilities/mirror_images.py" -i "imported/input_images" -o "mirrored"
-    # mirror_images_path = "mirrored"
-    # mirror_images_dir = "mirrored/input_images"
-    # if not os.path.exists(mirror_images_dir):
-    #     os.makedirs(mirror_images_dir)
-    # mirror(input_image_dir, mirror_images_dir, limit, mtype)
-    # make_img_list(mirror_images_path, limit, repeat)
-    # run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
+    # predict original images
+    make_img_list(input_path, limit, repeat)
+    run_prednet(input_path, model_name, limit, repeat, "result")
+    # predict mirrored images
+    # "chainer_prednet/utilities/mirror_images.py" -i "imported/input_images" -o "mirrored"
+    mirror_images_path = "mirrored"
+    mirror_images_dir = "mirrored/input_images"
+    if not os.path.exists(mirror_images_dir):
+        os.makedirs(mirror_images_dir)
+    mirror(input_image_dir, mirror_images_dir, limit, mtype)
+    make_img_list(mirror_images_path, limit, repeat)
+    run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
     # now compare image by image
     save_type = True
