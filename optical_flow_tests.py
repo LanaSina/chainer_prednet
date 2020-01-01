@@ -144,19 +144,22 @@ def mirror_test(vectors, mirrored_vectors, mtype):
             if(TransformationType(mtype) == TransformationType.Mirror or TransformationType(mtype) == TransformationType.MirrorAndFlip):
                 dx_mean = np.mean(np.abs(subset_y[:,2]))
                 if dx_mean > threshold :
-                    vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
-                    if np.abs(vmean)<threshold :
+                    # vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
+                    # if np.abs(vmean)<threshold :
+                    sign = np.mean(subset_y[:,2]) * np.mean(subset_ym[:,2])
+                    if sign>0 :
                         print("mirror_test passed on x ")
                         v.extend(subset_y)
                         v_m.extend(subset_ym)
                         continue
-                        #return True
 
             if(TransformationType(mtype) == TransformationType.Flip or TransformationType(mtype) == TransformationType.MirrorAndFlip):
                 dy_mean = np.mean(np.abs(subset_y[:,3]))
                 if np.abs(dy_mean) > threshold :
-                    vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
-                    if np.abs(vmean)<threshold :
+                    # vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
+                    # if np.abs(vmean)<threshold :
+                    sign = np.mean(subset_y[:,3]) * np.mean(subset_ym[:,3])
+                    if sign>0 :
                         print("mirror_test passed on y ")
                         v.extend(subset_y)
                         v_m.extend(subset_ym)
