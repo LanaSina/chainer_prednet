@@ -52,12 +52,10 @@ def make_img_list(input_path, limit, repeat):
     generate_imagelist(imagelist_args)
 
 # return true if there are some strong vectors in there
-def strong_vectors(vectors):
+def strong_vectors(vectors, threshold):
 
     if(len(vectors)==0):
         return False
-    # to be affined
-    threshold = 0.02
     # data is rows of [x, y, dx, dy]
     if (sum(np.abs(vectors[:,2]))>threshold):
         return True
@@ -100,8 +98,7 @@ def  save(img, mirror_img, good_vectors, filename, output_path="."):
    
 
 # returns true if one direction seems to have a motion illusion
-def mirror_test(vectors, mirrored_vectors, mtype):
-    threshold = 0.02
+def mirror_test(vectors, mirrored_vectors, mtype, threshold):
     v = []
     v_m = []
 
@@ -142,24 +139,22 @@ def mirror_test(vectors, mirrored_vectors, mtype):
             # take the mean direction on original image
             # check x and y separately because of model bias
             if(TransformationType(mtype) == TransformationType.Mirror or TransformationType(mtype) == TransformationType.MirrorAndFlip):
-                dx_mean = np.mean(np.abs(subset_y[:,2]))
-                if dx_mean > threshold :
+                if np.mean(np.abs(subset_y[:,2])) > threshold and np.mean(np.abs(subset_y[:,2])) > threshold:
                     # vmean = np.mean(subset_y[:,2]) + np.mean(subset_ym[:,2])
                     # if np.abs(vmean)<threshold :
                     sign = np.mean(subset_y[:,2]) * np.mean(subset_ym[:,2])
-                    if sign>0 :
+                    if sign<0 :
                         print("mirror_test passed on x ")
                         v.extend(subset_y)
                         v_m.extend(subset_ym)
                         continue
 
             if(TransformationType(mtype) == TransformationType.Flip or TransformationType(mtype) == TransformationType.MirrorAndFlip):
-                dy_mean = np.mean(np.abs(subset_y[:,3]))
-                if np.abs(dy_mean) > threshold :
+                if np.mean(np.abs(subset_y[:,3])) > threshold and np.mean(np.abs(subset_ym[:,3])) > threshold:
                     # vmean = np.mean(subset_y[:,3]) + np.mean(subset_ym[:,3])
                     # if np.abs(vmean)<threshold :
                     sign = np.mean(subset_y[:,3]) * np.mean(subset_ym[:,3])
-                    if sign>0 :
+                    if sign<0 :
                         print("mirror_test passed on y ")
                         v.extend(subset_y)
                         v_m.extend(subset_ym)
@@ -170,6 +165,8 @@ def mirror_test(vectors, mirrored_vectors, mtype):
 
 # stype is boolean
 def compare_flow(input_image_dir, output_dir, limit, stype, mtype):
+    threshold = 0.1
+
     # calculate optical flow compared to input
     print("calculate optical flow")
     if not os.path.exists(output_dir+"/original/"):
@@ -200,7 +197,7 @@ def compare_flow(input_image_dir, output_dir, limit, stype, mtype):
         results["vectors"] = np.asarray(results["vectors"])
 
         # reject too small vectors
-        if (not strong_vectors(results["vectors"])):
+        if (not strong_vectors(results["vectors"], threshold)):
             print("no strong vectors in original image", i)
             continue
         
@@ -213,20 +210,18 @@ def compare_flow(input_image_dir, output_dir, limit, stype, mtype):
         mirrored_results = lucas_kanade(mirrored_image_path, mirrored_prediction_image_path, output_dir+"/mirrored/", save=stype)
         mirrored_results["vectors"] = np.asarray(mirrored_results["vectors"])
 
-        if (not strong_vectors(mirrored_results["vectors"])):
+        if (not strong_vectors(mirrored_results["vectors"], threshold)):
             print("no strong vectors in mirrored image", i)
             continue
 
         # analyse the vectors
-        good_vectors = mirror_test(results["vectors"], mirrored_results["vectors"], mtype)
+        good_vectors = mirror_test(results["vectors"], mirrored_results["vectors"], mtype, threshold)
         if (len(good_vectors["original"])>0):
             # save files and images
             if (not stype):
                 #save(results, mirrored_results, original_image, output_dir)
                 save(results["image"], mirrored_results["image"], good_vectors, original_image, output_dir)
-            
-        # else:
-        #     print("mirror_test failed ", original_image)
+
 
 # process images as static images
 def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0, stype=0):
