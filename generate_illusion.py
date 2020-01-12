@@ -2,23 +2,24 @@ import argparse
 import cv2
 import csv
 import os
+from PredNet.call_prednet import test_prednet
+
 
 # high score if vectors pass the mirror test
 def calculate_flow_score(vectors):
-    for vector in vectors:
+    pass
 
 # take the flow vectors origins and change the pixels
-def generate(input_image, output_dir):
+def generate(input_image, output_dir, model_name):
     repeat = 10
     limit = 1
-    model_name = "..."
     size = [160,120]
     channels = [3,48,96,192]
-    gpu = 0
+    gpu = -1
 
     # runs repeat x times on the input image, save in result folder
     test_prednet(initmodel = model_name, sequencelist = [input_image], size=size, 
-                channels = channels, output_dir = "result", gpu = gpu, skip_save_frames=repeat):
+                channels = channels, gpu = gpu, output_dir = "result", skip_save_frames=repeat)
 
 
  # image = cv2.imread(input_image)
@@ -55,6 +56,6 @@ parser.add_argument('--output_dir', '-o', default='.', help='path of output diec
 args = parser.parse_args()
 output_dir = args.output_dir 
 if not os.path.exists(output_dir):
-  os.makedirs(output_dir)
+    os.makedirs(output_dir)
 
-generate(args.input,output_dir)
+generate(args.input, output_dir, args.model)

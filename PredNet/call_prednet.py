@@ -106,7 +106,7 @@ def train_image_folders(sequencelist, prednet, imagelist, model,
         seq = (seq + 1)%len(sequencelist)
 
 
-def test_image_list(prednet, imagelist, model, output_dir, channels, size, gpu, skip_save_frames=0, 
+def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
     extension_start=0, extension_duration=0):
 
     xp = cuda.cupy if gpu >= 0 else np
@@ -119,7 +119,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, gpu, 
 
     for i in range(0, len(imagelist)):
         print("frame ", imagelist[i])
-        x_batch[0] = read_image(imagelist[i])
+        x_batch[0] = read_image(imagelist[i], offset)
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
         loss.unchain_backward()
@@ -165,7 +165,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, gpu, 
 
 # sequencelist = [images_path]
 def test_prednet(initmodel, sequencelist, size, channels, gpu, output_dir = "result", 
-                skip_save_frames=0, ext_t=0, ext=0, offset = [0,0], root = "."):
+                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], root = "."):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -192,8 +192,8 @@ def test_prednet(initmodel, sequencelist, size, channels, gpu, output_dir = "res
     for seq in range(len(sequencelist)):
         # imagelist = load_list(sequencelist[seq], args.root)
         imagelist = sorted(os.listdir(os.path.join(root, sequencelist[seq])))
-        test_image_list(prednet, imagelist, model, output_dir, channels, size, gpu,
-                        skip_save_frames, extension_start, extension_duration)
+        test_image_list(prednet, imagelist, model, output_dir, channels, size, offset,
+                        gpu, skip_save_frames, extension_start, extension_duration)
 
 
 
