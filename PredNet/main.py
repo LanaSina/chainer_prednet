@@ -5,7 +5,7 @@ from call_prednet import call_prednet
 
 parser = argparse.ArgumentParser(
 description='PredNet')
-parser.add_argument('--images', '-i', default='', help='Path to image list file')
+parser.add_argument('--images_path', '-i', default='', help='Path input images')
 parser.add_argument('--sequences', '-seq', default='', help='Path to sequence list file')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
