@@ -49,6 +49,7 @@ def generate(input_image, output_dir):
 
 parser = argparse.ArgumentParser(description='optical flow tests')
 parser.add_argument('--input', '-i', default='', help='Path to the directory which countains the input_images directory')
+parser.add_argument('--model', '-m', default='', help='.model file')
 parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
 
 args = parser.parse_args()

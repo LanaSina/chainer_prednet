@@ -263,7 +263,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0
 
 parser = argparse.ArgumentParser(description='optical flow tests')
 parser.add_argument('--input', '-i', default='', help='Path to the directory which countains the input_images directory')
-parser.add_argument('--model', '-m', default='output', help='.model file')
+parser.add_argument('--model', '-m', default='', help='.model file')
 parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
 parser.add_argument('--limit', '-l', type=int, default=-1, help='max number of images')
 parser.add_argument('--repeat', '-r', type=int, default=10, help='number of times to repeat image before calculating flow')
