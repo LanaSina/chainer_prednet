@@ -23,14 +23,13 @@ def load_list(path, root):
         tuples.append(os.path.join(root, pair[0]))
     return tuples
 
-def read_image(path):
-    full_path = os.path.join(args.images, path)
+def read_image(full_path, offset):
     image = np.asarray(Image.open(full_path)).transpose(2, 0, 1)
     # // is int division
-    top = args.offset[1] + (image.shape[1]  - args.size[1]) // 2
-    left = args.offset[0] + (image.shape[2]  - args.size[0]) // 2
-    bottom = args.size[1] + top
-    right = args.size[0] + left
+    top = offset[1] + (image.shape[1]  - size[1]) // 2
+    left = offset[0] + (image.shape[2]  - size[0]) // 2
+    bottom = size[1] + top
+    right = size[0] + left
     image = image[:, top:bottom, left:right].astype(np.float32)
     image /= 255
     return image
@@ -53,7 +52,7 @@ def save_model(count):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
-def train_image_list(imagelist, model, channels, size, gpu, period, save):
+def train_image_list(imagelist, model, channels, size, gpu, period, save, bprop):
     xp = cuda.cupy if gpu >= 0 else np
 
     batchSize = 1
@@ -61,25 +60,26 @@ def train_image_list(imagelist, model, channels, size, gpu, period, save):
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     if len(imagelist) == 0:
         print("Not found images.")
-        break
-    x_batch[0] = read_image(imagelist[0])
+        return
+
+    x_batch[0] = read_image(imagelist[0], offset)
     for i in range(1, len(imagelist)):
         y_batch[0] = read_image(imagelist[i]);
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
 
-        if (i + 1) % args.bprop == 0:
+        if (i + 1) % bprop == 0:
             print("count ", count," frameNo ", i)
             model.zerograds()
             loss.backward()
             loss.unchain_backward()
             loss = 0
             optimizer.update()
-            if args.gpu >= 0:model.to_cpu()
+            if gpu >= 0:model.to_cpu()
             # write_image(x_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'x.png')
             # write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
             # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
-            if args.gpu >= 0:model.to_gpu()
+            if gpu >= 0:model.to_gpu()
             print('loss:' + str(float(model.loss.data)))
             logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
 
@@ -93,16 +93,16 @@ def train_image_list(imagelist, model, channels, size, gpu, period, save):
 
 
 def train_image_folders(sequencelist, prednet, imagelist, model, 
-                        channels, size, gpu, period, save):
+                        channels, size, gpu, period, save, bprop, root):
     logf = open('log.txt', 'w')
     count = 0
     seq = 0
-    while count < args.period:
+    while count < period:
         prednet.reset_state()
         loss = 0
-        imagelist = load_list(sequencelist[seq], args.root)
-        train_image_list(imagelist, model, args.channels, args.size, args.gpu, 
-                        args.period, args.save)
+        imagelist = load_list(sequencelist[seq], root)
+        train_image_list(imagelist, model, channels, size, gpu, 
+                        period, save, bprop)
         seq = (seq + 1)%len(sequencelist)
 
 
@@ -179,7 +179,7 @@ def test_prednet(initmodel, sequencelist, size, channels, gpu, output_dir = "res
     if gpu >= 0:
         cuda.check_cuda_available()
         xp = cuda.cupy
-        cuda.get_device(args.gpu).use()
+        cuda.get_device(gpu).use()
         model.to_gpu()
         print('Running on GPU')
     else:
@@ -197,8 +197,9 @@ def test_prednet(initmodel, sequencelist, size, channels, gpu, output_dir = "res
 
 
 
-def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, output_dir = "result",
-                    period, save):
+def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
+                bprop, root,
+                output_dir = "result", period=1000000, save=10000):
     if not os.path.exists('models'):
         os.makedirs('models')
     if not os.path.exists('images'):
@@ -207,7 +208,7 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, output_d
         os.makedirs(output_dir)
 
     #Create Model
-    prednet = net.PredNet(args.size[0], args.size[1], args.channels)
+    prednet = net.PredNet(size[0], size[1], channels)
     model = L.Classifier(prednet, lossfun=mean_squared_error)
     model.compute_accuracy = False
     optimizer = optimizers.Adam()
@@ -216,7 +217,7 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, output_d
     if gpu >= 0:
         cuda.check_cuda_available()
         xp = cuda.cupy
-        cuda.get_device(args.gpu).use()
+        cuda.get_device(gpu).use()
         model.to_gpu()
         print('Running on GPU')
     else:
@@ -228,11 +229,11 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, output_d
         print('Load model from', initmodel)
         serializers.load_npz(initmodel, model)
     if resume:
-        print('Load optimizer state from', args.resume)
-        serializers.load_npz(args.resume, optimizer)
+        print('Load optimizer state from', resume)
+        serializers.load_npz(resume, optimizer)
 
-    train_image_folder(sequencelist, prednet, model, channels, size, gpu,
-                        period, save)      
+    train_image_folders(sequencelist, prednet, model, channels, size, gpu,
+                        period, save, bprop, root)      
     
       
 def string_to_intarray(string_input):
@@ -261,11 +262,11 @@ def call_prednet(args, output_dir = "result"):
         sequencelist = load_list(args.sequences, args.root)
 
     if args.test == True:
-        test_prednet(args.init_model, sequencelist, args.gpu, output_dir, args.channels, args.size,
-                            args.skip_save_frames, args.ext_t, args.ext, offset, args.root)
+        test_prednet(args.init_model, sequencelist, output_dir, size, channels, args.gpu,
+                            output_dir, args.skip_save_frames, args.ext_t, args.ext, offset, args.root)
     else:
-        train_prednet(args.init_model, sequencelist, args.gpu,  args.channels, args.size,
-                            args.period, args.save)      
+        train_prednet(args.init_model, sequencelist, args.gpu, size, channels,
+                            offset, args.resume, args.bprop, args.root, output_dir, args.period, args.save)      
 
     # For logging graph structure
     model(chainer.Variable(xp.asarray(x_batch)),
