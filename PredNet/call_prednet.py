@@ -107,7 +107,7 @@ def train_image_folders(sequencelist, prednet, imagelist, model,
 
 
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
-    extension_start=0, extension_duration=100):
+    extension_start=0, extension_duration=100, reset_each = False):
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -134,6 +134,8 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             write_image(model.y.data[0].copy(), new_filename)
 
         if gpu >= 0: model.to_gpu()
+        if reset_each:
+            prednet.reset_state()
 
         # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
         #     continue
@@ -167,7 +169,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 
 # sequencelist = [images_path]
 def test_prednet(initmodel, images_list, size, channels, gpu, output_dir = "result", 
-                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], root = "."):
+                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], root = ".", reset_each = False):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -192,7 +194,7 @@ def test_prednet(initmodel, images_list, size, channels, gpu, output_dir = "resu
     serializers.load_npz(initmodel, model)
 
     test_image_list(prednet, images_list, model, output_dir, channels, size, offset,
-                    gpu, skip_save_frames, extension_start, extension_duration)
+                    gpu, skip_save_frames, extension_start, extension_duration, reset_each)
 
 
 
