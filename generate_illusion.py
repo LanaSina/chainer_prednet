@@ -129,7 +129,10 @@ def get_best(population, n, model_name):
     for input_image in images_list:
         prediction_image_path = prediction_dir + str(i).zfill(10) + ".png"
         results = lucas_kanade(input_image, prediction_image_path, output_dir+"/original/flow/", save=True)
-        original_vectors[i] = np.asarray(results["vectors"])
+        if results["vectors"]:
+            original_vectors[i] = np.asarray(results["vectors"])
+        else:
+            original_vectors[i] = [0,0,0,0]
         i = i + 1
 
     #mirror images
@@ -138,7 +141,7 @@ def get_best(population, n, model_name):
     mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
     print("mirror images finished")
     mirror_images_list = sorted(os.listdir(mirror_images_dir))
-    ext_mlist = [mirror_images_dir + im for im in mirror_images_list]
+    ext_mlist = [mirror_images_dir + im for im in mirror_images_list[0:len(population)]]
     print(ext_mlist)
     # predict
     print("predict mirror images")
@@ -148,12 +151,17 @@ def get_best(population, n, model_name):
     print("mirror images flow")
     i = 0
     mirrored_vectors = [None] * len(population)
+    print("len(population)", len(population))
+    print("len(ext_mlist)", len(ext_mlist))
     for input_image in ext_mlist:
         print(input_image)
         prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
         print(prediction_image_path)
         results = lucas_kanade(input_image, prediction_image_path, output_dir+"/mirrored/flow/", save=True)
-        mirrored_vectors[i] = np.asarray(results["vectors"])
+        if results["vectors"]:
+            mirrored_vectors[i] = np.asarray(results["vectors"])
+        else:
+            mirrored_vectors[i] = [0,0,0,0]
         i = i + 1
 
     print("scores")
@@ -217,9 +225,11 @@ def generate(input_image, output_dir, model_name):
     # add parents
     next_population = init_population
     next_population.extend(best)
+    print("len(next_population)", len(next_population))
 
     for i in range(0,500):
-        best = get_best(next_population, 2)
+        print("len(next_population)", len(next_population))
+        best = get_best(next_population, 2, model_name)
         im = 0
         for image_array in best:
             image = Image.fromarray(image_array)
