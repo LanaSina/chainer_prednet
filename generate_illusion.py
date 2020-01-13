@@ -54,7 +54,7 @@ def generate(input_image, output_dir, model_name):
     limit = 1
     size = [160,120]
     channels = [3,48,96,192]
-    gpu = -1
+    gpu = 0
     prediction_dir = output_dir + "/original/prediction/"
     if not os.path.exists(prediction_dir):
         os.makedirs(prediction_dir)
