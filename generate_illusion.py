@@ -54,11 +54,21 @@ def generate(input_image, output_dir, model_name):
     channels = [3,48,96,192]
     gpu = -1
     prediction_dir = output_dir + "/original/prediction/"
+    if not os.path.exists(prediction_dir):
+        os.makedirs(prediction_dir)
 
+    name = input_image.split("/")
+    name = name[len(name)-1]
+    temp = name.split(".")
     image = np.array(Image.open(input_image).convert('RGB'))
     image_array = Image.fromarray(image.astype('uint8'), 'RGB')
     alternate_input = output_dir + "original/" + name
     image_array.save(alternate_input)
+
+    mirror_images_dir = output_dir + "/mirrored/"
+    mirror_image = mirror_images_dir + temp[0] + ".png"
+    if not os.path.exists(mirror_images_dir):
+        os.makedirs(mirror_images_dir)
 
     images_list = [alternate_input]*repeat
     mirror_images_list = [mirror_image]*repeat
@@ -76,14 +86,8 @@ def generate(input_image, output_dir, model_name):
         original_vectors = np.asarray(results["vectors"])
 
         #mirror image
-        mirror_images_dir = output_dir + "/mirrored/"
-        if not os.path.exists(mirror_images_dir):
-            os.makedirs(mirror_images_dir)
         mirror(input_image, mirror_images_dir, True, TransformationType.MirrorAndFlip)
-        name = input_image.split("/")
-        name = name[len(name)-1]
-        temp = name.split(".")
-        mirror_image = mirror_images_dir + temp[0] + ".png"
+        
         # predict
         test_prednet(initmodel = model_name, images_list = mirror_images_list, size=size, 
                     channels = channels, gpu = gpu, output_dir = mirror_images_dir + "prediction", skip_save_frames=repeat)
