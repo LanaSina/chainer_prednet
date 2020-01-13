@@ -10,9 +10,7 @@ class TransformationType(enum.Enum):
 
 
 # mirror all images on vertical and horizontal axes
-def mirror(input_image, output_dir, lossless, mtype = TransformationType.Mirror):
-    #transform = TransformationType(mtype)
-
+def mirror(input_image, output_dir, lossless, transform = TransformationType.Mirror):
     current_image = Image.open(input_image).convert('RGB')
     if (transform == TransformationType.Mirror or transform == TransformationType.MirrorAndFlip):
         current_image = ImageOps.mirror(current_image)

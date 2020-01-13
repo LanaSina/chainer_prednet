@@ -6,26 +6,28 @@ from optical_flow.optical_flow import lucas_kanade
 import os
 from PIL import Image
 from PredNet.call_prednet import test_prednet
+from random import random, randrange
 from utilities.mirror_images import mirror, TransformationType
 
 
 
 # high score if vectors pass the mirror test
 def illusion_score(vectors):
-
     # check vector alignements
     comp_x = 0
     comp_y = 0
     for vector in vectors:
         # dx
-        comp_x = comp_x + vectors[2]
-        comp_y = comp_y + abs(vectors[3])
+        comp_x = comp_x + vector[2]
+        comp_y = comp_y + abs(vector[3])
 
     # minimize comp_y, maximize comp_x
     score = comp_x - comp_y
     return score
 
-def random_modify(image):
+def random_modify(image_path):
+    image = np.array(Image.open(image_path).convert('RGB'))
+
     w = image.shape[0]
     h = image.shape[1]
     c_range = 20
@@ -97,7 +99,7 @@ def generate(input_image, output_dir, model_name):
         mirrored_vectors = np.asarray(results["vectors"])
 
         # calculate score
-        new_score = illusion_score(vectors) + illusion_score(mirrored_vectors)
+        new_score = illusion_score(original_vectors) + illusion_score(mirrored_vectors)
         print("score", score, "new_score", new_score)
         if (score==0) or new_score>score:
             score = new_score
