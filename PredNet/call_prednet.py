@@ -127,7 +127,6 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if gpu >= 0: model.to_cpu()
         #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
 
-        print("n ", (i+1)%skip_save_frames)
         if ((i+1)%skip_save_frames == 0):
             num = str(i/skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'

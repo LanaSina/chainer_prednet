@@ -11,7 +11,7 @@ class TransformationType(enum.Enum):
 
 # mirror all images on vertical and horizontal axes
 def mirror(input_image, output_dir, lossless, mtype = TransformationType.Mirror):
-    transform = TransformationType(mtype)
+    #transform = TransformationType(mtype)
 
     current_image = Image.open(input_image).convert('RGB')
     if (transform == TransformationType.Mirror or transform == TransformationType.MirrorAndFlip):
@@ -33,7 +33,6 @@ def mirror(input_image, output_dir, lossless, mtype = TransformationType.Mirror)
 
 
 def mirror_multiple(input_path, output_dir, mtype = TransformationType.Mirror):
-    transform = TransformationType(mtype)
     input_image_list = sorted(os.listdir(input_path))
     if limit==-1:
         limit = len(input_image_list)

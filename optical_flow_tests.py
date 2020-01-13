@@ -250,7 +250,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0
     mirror_images_dir = "mirrored/input_images"
     if not os.path.exists(mirror_images_dir):
         os.makedirs(mirror_images_dir)
-    mirror_multiple(input_image_dir, mirror_images_dir, limit, mtype)
+    mirror_multiple(input_image_dir, mirror_images_dir, limit, TransformationType(mtype))
     make_img_list(mirror_images_path, limit, repeat)
     run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
