@@ -82,11 +82,12 @@ def crossover(parents, n_offspring=1, mutation_ratio=0.1):
         im3 = Image.fromarray(mutation)
         mutated = Image.blend(blended, im3, alpha=mutation_ratio)
         #mutated.save("___" + str(i) +'.png')
-        offsprings[i] = mutated
+        offsprings[i] = np.array(mutated)
     return offsprings
 
 
-def get_best(population, n):
+def get_best(population, n, model_name):
+    print("get best")
     output_dir = "temp/"
     repeat = 1
     limit = 1
@@ -106,14 +107,16 @@ def get_best(population, n):
 
     images_list = [None]* len(population)
     #save temporarily
+    print("save temporarily")
     i = 0
-    for image in population:
-        image_array = Image.fromarray(image.astype('uint8'), 'RGB')
+    for image_array in population:
+        image = Image.fromarray(image_array)
         image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
-        input_list[i] = image_name
-        image_array.save(input_image, "PNG")
+        images_list[i] = image_name
+        image.save(image_name, "PNG")
         i = i + 1
 
+    print("saved ")
     # runs repeat x times on the input image, save in result folder
     test_prednet(initmodel = model_name, images_list = images_list, size=size, 
                 channels = channels, gpu = gpu, output_dir = prediction_dir, skip_save_frames=repeat, reset_each = True)
@@ -159,33 +162,34 @@ def generate(input_image, output_dir, model_name):
     size = [160,120]
     channels = [3,48,96,192]
     gpu = 0
-    prediction_dir = output_dir + "/original/prediction/"
-    if not os.path.exists(prediction_dir):
-        os.makedirs(prediction_dir)
+    # prediction_dir = output_dir + "/original/prediction/"
+    # if not os.path.exists(prediction_dir):
+    #     os.makedirs(prediction_dir)
 
-    name = input_image.split("/")
-    name = name[len(name)-1]
-    temp = name.split(".")
-    alternate_input = output_dir + "original/" + name
-    # image = np.array(Image.open(alternate_input).convert('RGB'))
-    image = get_random_image(size[1], size[0]) #np.array(Image.open(input_image).convert('RGB'))
-    image_array = Image.fromarray(image.astype('uint8'), 'RGB')
-    image_array.save(alternate_input)
+    # name = input_image.split("/")
+    # name = name[len(name)-1]
+    # temp = name.split(".")
+    # alternate_input = output_dir + "original/" + name
+    # # image = np.array(Image.open(alternate_input).convert('RGB'))
+    # image = get_random_image(size[1], size[0]) #np.array(Image.open(input_image).convert('RGB'))
+    # image_array = Image.fromarray(image.astype('uint8'), 'RGB')
+    # image_array.save(alternate_input)
 
-    mirror_images_dir = output_dir + "/mirrored/"
-    mirror_image = mirror_images_dir + temp[0] + ".png"
-    if not os.path.exists(mirror_images_dir):
-        os.makedirs(mirror_images_dir)
+    # mirror_images_dir = output_dir + "/mirrored/"
+    # mirror_image = mirror_images_dir + temp[0] + ".png"
+    # if not os.path.exists(mirror_images_dir):
+    #     os.makedirs(mirror_images_dir)
 
-    images_list = [alternate_input]*repeat
-    mirror_images_list = [mirror_image]*repeat
-    score = 0
+    # images_list = [alternate_input]*repeat
+    # mirror_images_list = [mirror_image]*repeat
+    # score = 0
 
-    size = 2
-    init_population = initial_population[size]
+    pop_size = 2
+    # gets arrays
+    init_population = initial_population(size, pop_size)
     # Generating next generation using crossover.
     new_population = crossover(init_population, n_offspring=2)
-    best = get_best(new_population, 2)
+    best = get_best(new_population, 2, model_name)
     i = 0
     for image_array in best:
         image = Image.fromarray(image_array)
