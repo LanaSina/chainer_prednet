@@ -30,7 +30,7 @@ def mirror(input_image, output_dir, lossless, transform = TransformationType.Mir
         current_image.save(image_name, quality=100)
 
 
-def mirror_multiple(input_path, output_dir, transform = TransformationType.Mirror):
+def mirror_multiple(input_path, output_dir, transform = TransformationType.Mirror, limit = -1):
     input_image_list = sorted(os.listdir(input_path))
     if limit==-1:
         limit = len(input_image_list)

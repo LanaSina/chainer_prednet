@@ -130,7 +130,7 @@ def get_best(population, n, model_name):
         i = i + 1
 
     #mirror images
-    mirror_multiple(output_dir + "images/", mirror_images_dir, True, TransformationType.MirrorAndFlip)
+    mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
     mirror_images_list = sorted(os.listdir(mirror_images_dir))
     # predict
     test_prednet(initmodel = model_name, images_list = mirror_images_list, size=size, 
