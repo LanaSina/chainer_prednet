@@ -6,7 +6,7 @@ from PredNet.call_prednet import call_prednet
 from generate_img_func import generate_imagelist
 import numpy as np
 from optical_flow.optical_flow import lucas_kanade, draw_tracks
-from utilities.mirror_images import mirror, TransformationType
+from utilities.mirror_images import mirror_multiple, TransformationType
 
 # This file runs a mirrored flow analysis to find which images contain illusions
 
@@ -250,7 +250,7 @@ def predict_static(input_path, output_dir, model_name, limit, repeat=10, mtype=0
     mirror_images_dir = "mirrored/input_images"
     if not os.path.exists(mirror_images_dir):
         os.makedirs(mirror_images_dir)
-    mirror(input_image_dir, mirror_images_dir, limit, mtype)
+    mirror_multiple(input_image_dir, mirror_images_dir, limit, mtype)
     make_img_list(mirror_images_path, limit, repeat)
     run_prednet(mirror_images_path, model_name, limit, repeat, "mirrored_result")
 
