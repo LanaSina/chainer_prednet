@@ -98,7 +98,10 @@ def get_best(population, n, model_name):
     if not os.path.exists(prediction_dir):
         os.makedirs(prediction_dir)
 
-    mirror_images_dir = output_dir + "mirrored/"
+    mirror_dir = output_dir + "mirrored/"
+    if not os.path.exists(mirror_dir+ "flow/"):
+        os.makedirs(mirror_dir +"flow/")
+    mirror_images_dir = mirror_dir+ "images/"
     if not os.path.exists(mirror_images_dir):
         os.makedirs(mirror_images_dir)
 
@@ -130,28 +133,39 @@ def get_best(population, n, model_name):
         i = i + 1
 
     #mirror images
+    print("mirror images")
+    print(output_dir)
     mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
+    print("mirror images finished")
     mirror_images_list = sorted(os.listdir(mirror_images_dir))
+    ext_mlist = [mirror_images_dir + im for im in mirror_images_list]
+    print(ext_mlist)
     # predict
-    test_prednet(initmodel = model_name, images_list = mirror_images_list, size=size, 
-                channels = channels, gpu = gpu, output_dir = mirror_images_dir + "prediction/", skip_save_frames=repeat)
+    print("predict mirror images")
+    test_prednet(initmodel = model_name, images_list = ext_mlist, size=size, 
+                channels = channels, gpu = gpu, output_dir = mirror_dir + "prediction/", skip_save_frames=repeat)
     # calculate flow
+    print("mirror images flow")
     i = 0
     mirrored_vectors = [None] * len(population)
-    for input_image in mirror_images_list:
-        prediction_image_path = mirror_images_dir + "prediction/" + str(i).zfill(10) + ".png"
-        results = lucas_kanade(input_image, prediction_image_path, output_dir+"/original/flow/", save=True)
+    for input_image in ext_mlist:
+        print(input_image)
+        prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
+        print(prediction_image_path)
+        results = lucas_kanade(input_image, prediction_image_path, output_dir+"/mirrored/flow/", save=True)
         mirrored_vectors[i] = np.asarray(results["vectors"])
         i = i + 1
 
+    print("scores")
     # calculate score
     scores = [None] * len(population)
     for i in range(0, len(population)):
         scores[i] =[i, illusion_score(original_vectors[i]) + illusion_score(mirrored_vectors[i])]
+    print(scores)
 
-    sorted_scores = scores.sort(key=lambda x:x[1])
+    sorted_scores = sorted(scores, key=lambda x:x[1], reverse = True)
     print("sorted_scores ", sorted_scores)
-    results = [population[i] for i in sorted_scores[0:n]]
+    results = [population[i[0]] for i in sorted_scores[0:n]]
 
     return results
 
@@ -190,10 +204,14 @@ def generate(input_image, output_dir, model_name):
     # Generating next generation using crossover.
     new_population = crossover(init_population, n_offspring=2)
     best = get_best(new_population, 2, model_name)
+
+    best_dir = output_dir + "best/"
+    if not os.path.exists(best_dir):
+        os.makedirs(best_dir)
     i = 0
     for image_array in best:
         image = Image.fromarray(image_array)
-        image.save(output_dir + "/best/" + str(i).zfill(10) +'.png')
+        image.save(best_dir + str(i).zfill(10) +'.png')
         i = i+1
 
     # add parents
