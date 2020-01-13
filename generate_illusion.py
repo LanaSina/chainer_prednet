@@ -16,14 +16,15 @@ from utilities.mirror_images import mirror, mirror_multiple, TransformationType
 def illusion_score(vectors):
     # check vector alignements
     comp_x = 0
-    comp_y = 0
+    count = 0
     for vector in vectors:
-        # dx
-        comp_x = comp_x + vector[2]
-        comp_y = comp_y + abs(vector[3])
+        # normalize
+        norm = np.sqrt(vector[2]*vector[2] + vector[3]*vector[3])
+        comp_x = comp_x + vector[2]/norm
+        #comp_y = comp_y + abs(vector[3])/norm
 
     # minimize comp_y, maximize comp_x
-    score = comp_x - comp_y
+    score = comp_x
     return score
 
 def generate_random_image(w, h):
@@ -65,17 +66,31 @@ def initial_population(img_shape, n_individuals=2):
      return init_population
 
 def crossover(parents, n_offspring=1, mutation_ratio=0.1):
+    print(crossover)
     # take half the pixels of each parent
     shape = parents[0].shape
 
     offsprings = [None]*n_offspring
     for i in range(0, n_offspring):
         # mix
-        cross = np.random.sample(shape)*100
         im1 = Image.fromarray(parents[0])
         im2 = Image.fromarray(parents[1])
-        blended = Image.blend(im1, im2, alpha=.5)
+
+        a = np.random.random()
+        print("alpha", a)
+        blended = Image.blend(im1, im2, alpha=a)
         #blended.save("__" + str(i) +'.png')
+
+        # blended = parents[1].copy()
+        # blended[0:shape[0]/2, 0:shape[1]/2, ] = parents[0][0:shape[0]/2, 0:shape[1]/2, ]
+        # gs_min = np.zeros(shape)
+        # gs_max = np.ones(shape) * 50
+        # cross = np.random.sample(shape)*100
+        # mask = cv2.inRange(cross, gs_min, gs_max)
+        # # plt.imshow(mask)
+        # # plt.show()
+        # result = cv2.bitwise_and(parents[0], parents[1], mask=mask)
+        # blended = Image.fromarray(result)
 
         # mutate
         mutation = get_random_image_array(shape[1], shape[0])
@@ -86,11 +101,10 @@ def crossover(parents, n_offspring=1, mutation_ratio=0.1):
     return offsprings
 
 
-def get_best(population, n, model_name):
+def get_best(population, n, model_name, limit):
     print("get best")
     output_dir = "temp/"
     repeat = 1
-    limit = 1
     size = [160,120]
     channels = [3,48,96,192]
     gpu = 0
@@ -110,19 +124,21 @@ def get_best(population, n, model_name):
 
     images_list = [None]* len(population)
     #save temporarily
-    print("save temporarily")
+    #print("save temporarily")
     i = 0
     for image_array in population:
         image = Image.fromarray(image_array)
         image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
         images_list[i] = image_name
+        print("***save temporarily", image_name)
         image.save(image_name, "PNG")
         i = i + 1
 
-    print("saved ")
+    #print("saved ")
     # runs repeat x times on the input image, save in result folder
     test_prednet(initmodel = model_name, images_list = images_list, size=size, 
-                channels = channels, gpu = gpu, output_dir = prediction_dir, skip_save_frames=repeat, reset_each = True)
+                channels = channels, gpu = gpu, output_dir = prediction_dir, skip_save_frames=repeat, reset_each = True,
+                )
     # calculate flows
     i = 0
     original_vectors = [None] * len(population)
@@ -132,27 +148,27 @@ def get_best(population, n, model_name):
         if results["vectors"]:
             original_vectors[i] = np.asarray(results["vectors"])
         else:
-            original_vectors[i] = [0,0,0,0]
+            original_vectors[i] = [[0,0,-1000,0]]
         i = i + 1
 
     #mirror images
-    print("mirror images")
+    #print("mirror images")
     print(output_dir)
     mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
-    print("mirror images finished")
+    #print("mirror images finished")
     mirror_images_list = sorted(os.listdir(mirror_images_dir))
-    ext_mlist = [mirror_images_dir + im for im in mirror_images_list[0:len(population)]]
+    ext_mlist = [mirror_images_dir + im for im in mirror_images_list[0:limit]]
     print(ext_mlist)
     # predict
-    print("predict mirror images")
+    #print("predict mirror images")
     test_prednet(initmodel = model_name, images_list = ext_mlist, size=size, 
                 channels = channels, gpu = gpu, output_dir = mirror_dir + "prediction/", skip_save_frames=repeat)
     # calculate flow
-    print("mirror images flow")
+    #print("mirror images flow")
     i = 0
     mirrored_vectors = [None] * len(population)
-    print("len(population)", len(population))
-    print("len(ext_mlist)", len(ext_mlist))
+    #print("len(population)", len(population))
+    #print("len(ext_mlist)", len(ext_mlist))
     for input_image in ext_mlist:
         print(input_image)
         prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
@@ -161,7 +177,7 @@ def get_best(population, n, model_name):
         if results["vectors"]:
             mirrored_vectors[i] = np.asarray(results["vectors"])
         else:
-            mirrored_vectors[i] = [0,0,0,0]
+            mirrored_vectors[i] = [[0,0,-1000,0]]
         i = i + 1
 
     print("scores")
@@ -179,7 +195,7 @@ def get_best(population, n, model_name):
 
 # take the flow vectors origins and change the pixels
 def generate(input_image, output_dir, model_name):
-    repeat = 1
+    repeat = 5
     limit = 1
     size = [160,120]
     channels = [3,48,96,192]
@@ -208,10 +224,15 @@ def generate(input_image, output_dir, model_name):
 
     pop_size = 2
     # gets arrays
+    # init_population = [np.uint8(generate_random_image(size[1], size[0])), 
+    #                   np.uint8(generate_random_image(size[1], size[0]))] #initial_population(size, pop_size)
     init_population = initial_population(size, pop_size)
+    print(0)
     # Generating next generation using crossover.
-    new_population = crossover(init_population, n_offspring=2)
-    best = get_best(new_population, 2, model_name)
+    new_population = crossover(init_population, n_offspring=4)
+    print(1)
+    best = get_best(new_population, 2, model_name, limit=len(new_population))
+    print(2)
 
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
@@ -229,13 +250,16 @@ def generate(input_image, output_dir, model_name):
 
     for i in range(0,500):
         print("len(next_population)", len(next_population))
-        best = get_best(next_population, 2, model_name)
+        best = get_best(next_population, 2, model_name, limit=len(next_population))
+       #print("len(best)",len(best))
         im = 0
         for image_array in best:
             image = Image.fromarray(image_array)
-            image.save(output_dir + "/best/" + str(im).zfill(10) +'.png')
+            image.save(best_dir + str(im).zfill(10) +'.png')
             im = im+1
-        new_population = crossover(best, n_offspring=2)
+        next_population = crossover(best, n_offspring=2, mutation_ratio=0.5)
+        next_population.extend(initial_population(size, 4))
+        #print("len(new_population)",len(new_population))
         
         # add parents
         next_population.extend(best)
