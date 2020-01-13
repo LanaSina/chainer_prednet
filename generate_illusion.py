@@ -17,8 +17,11 @@ def generate(input_image, output_dir, model_name):
     channels = [3,48,96,192]
     gpu = -1
 
+    images_list = [input_image]*repeat
+    print(images_list)
+
     # runs repeat x times on the input image, save in result folder
-    test_prednet(initmodel = model_name, sequencelist = [input_image], size=size, 
+    test_prednet(initmodel = model_name, images_list = images_list, size=size, 
                 channels = channels, gpu = gpu, output_dir = "result", skip_save_frames=repeat)
 
 

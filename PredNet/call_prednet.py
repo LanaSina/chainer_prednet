@@ -23,7 +23,7 @@ def load_list(path, root):
         tuples.append(os.path.join(root, pair[0]))
     return tuples
 
-def read_image(full_path, offset):
+def read_image(full_path, size, offset):
     image = np.asarray(Image.open(full_path)).transpose(2, 0, 1)
     # // is int division
     top = offset[1] + (image.shape[1]  - size[1]) // 2
@@ -62,9 +62,9 @@ def train_image_list(imagelist, model, channels, size, gpu, period, save, bprop)
         print("Not found images.")
         return
 
-    x_batch[0] = read_image(imagelist[0], offset)
+    x_batch[0] = read_image(imagelist[0], size, offset)
     for i in range(1, len(imagelist)):
-        y_batch[0] = read_image(imagelist[i]);
+        y_batch[0] = read_image(imagelist[i], size, offset);
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
 
@@ -107,7 +107,7 @@ def train_image_folders(sequencelist, prednet, imagelist, model,
 
 
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
-    extension_start=0, extension_duration=0):
+    extension_start=0, extension_duration=100):
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -119,23 +119,26 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 
     for i in range(0, len(imagelist)):
         print("frame ", imagelist[i])
-        x_batch[0] = read_image(imagelist[i], offset)
+        x_batch[0] = read_image(imagelist[i], size, offset)
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
         loss.unchain_backward()
         loss = 0
         if gpu >= 0: model.to_cpu()
         #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
+
+        print("n ", (i+1)%skip_save_frames)
         if ((i+1)%skip_save_frames == 0):
             num = str(i/skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
+            print("writing ", new_filename)
             write_image(model.y.data[0].copy(), new_filename)
 
         if gpu >= 0: model.to_gpu()
 
         # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
         #     continue
-        if i == 0  or (i%extension_start>0) or (extension_start==0):
+        if i == 0  or (extension_start==0) or (i%extension_start>0):
             continue
 
         if gpu >= 0: model.to_cpu()
@@ -164,7 +167,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 
 
 # sequencelist = [images_path]
-def test_prednet(initmodel, sequencelist, size, channels, gpu, output_dir = "result", 
+def test_prednet(initmodel, images_list, size, channels, gpu, output_dir = "result", 
                 skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], root = "."):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -189,11 +192,8 @@ def test_prednet(initmodel, sequencelist, size, channels, gpu, output_dir = "res
     # Init/Resume
     serializers.load_npz(initmodel, model)
 
-    for seq in range(len(sequencelist)):
-        # imagelist = load_list(sequencelist[seq], args.root)
-        imagelist = sorted(os.listdir(os.path.join(root, sequencelist[seq])))
-        test_image_list(prednet, imagelist, model, output_dir, channels, size, offset,
-                        gpu, skip_save_frames, extension_start, extension_duration)
+    test_image_list(prednet, images_list, model, output_dir, channels, size, offset,
+                    gpu, skip_save_frames, extension_start, extension_duration)
 
 
 
