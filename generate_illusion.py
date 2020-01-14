@@ -261,10 +261,9 @@ def generate(input_image, output_dir, model_name):
             image.save(best_dir + str(im).zfill(10) +'.png')
             im = im+1
         next_population = crossover(best, n_offspring=2, mutation_ratio=0.5)
-        next_population.extend(initial_population(size, 4))
-        #print("len(new_population)",len(new_population))
-        
-        # add parents
+        # add 4 new images
+        next_population.extend(initial_population(size, 4))        
+        # add parents, total 8 images
         next_population.extend(best)
 
 
