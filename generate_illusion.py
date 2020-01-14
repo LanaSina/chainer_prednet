@@ -80,7 +80,6 @@ def crossover(parents, n_offspring=1, mutation_ratio=0.1):
         im2 = Image.fromarray(parents[1])
 
         a = np.random.random()
-        print("alpha", a)
         blended = Image.blend(im1, im2, alpha=a)
         #blended.save("__" + str(i) +'.png')
 
@@ -133,11 +132,10 @@ def get_best(population, n, model_name, limit):
         image = Image.fromarray(image_array)
         image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
         images_list[i] = image_name
-        print("***save temporarily", image_name)
         image.save(image_name, "PNG")
         i = i + 1
 
-    #print("saved ")
+    print("saved temporarily", images_list)
     # runs repeat x times on the input image, save in result folder
     test_prednet(initmodel = model_name, images_list = images_list, size=size, 
                 channels = channels, gpu = gpu, output_dir = prediction_dir, skip_save_frames=repeat, reset_each = True,
@@ -155,13 +153,11 @@ def get_best(population, n, model_name, limit):
         i = i + 1
 
     #mirror images
-    #print("mirror images")
-    print(output_dir)
     mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
     #print("mirror images finished")
     mirror_images_list = sorted(os.listdir(mirror_images_dir))
     ext_mlist = [mirror_images_dir + im for im in mirror_images_list[0:limit]]
-    print(ext_mlist)
+    print("mirrored", ext_mlist)
     # predict
     #print("predict mirror images")
     test_prednet(initmodel = model_name, images_list = ext_mlist, size=size, 
@@ -251,7 +247,7 @@ def generate(input_image, output_dir, model_name):
     next_population.extend(best)
     print("len(next_population)", len(next_population))
 
-    for i in range(0,500):
+    for i in range(0,2):
         print("len(next_population)", len(next_population))
         best = get_best(next_population, 2, model_name, limit=len(next_population))
        #print("len(best)",len(best))

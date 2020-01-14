@@ -118,7 +118,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
 
     for i in range(0, len(imagelist)):
-        print("frame ", imagelist[i])
+        # print("frame ", imagelist[i])
         x_batch[0] = read_image(imagelist[i], size, offset)
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
@@ -130,7 +130,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if ((i+1)%skip_save_frames == 0):
             num = str(i/skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
-            print("writing ", new_filename)
+            # print("writing ", new_filename)
             write_image(model.y.data[0].copy(), new_filename)
 
         if gpu >= 0: model.to_gpu()
