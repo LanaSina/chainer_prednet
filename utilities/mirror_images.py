@@ -22,11 +22,11 @@ def mirror(input_image, output_dir, lossless, transform = TransformationType.Mir
     if lossless:
         temp = name.split(".")
         image_name = output_dir + "/" + temp[0] + ".png"
-        print("saving", image_name)
+        # print("saving", image_name)
         current_image.save(image_name, "PNG")
     else:
         image_name = output_dir + "/" + name
-        print("saving", image_name)
+        # print("saving", image_name)
         current_image.save(image_name, quality=100)
 
 

@@ -226,21 +226,18 @@ def generate(input_image, output_dir, model_name):
     # init_population = [np.uint8(generate_random_image(size[1], size[0])), 
     #                   np.uint8(generate_random_image(size[1], size[0]))] #initial_population(size, pop_size)
     init_population = initial_population(size, pop_size)
-    print(0)
-    # Generating next generation using crossover.
-    new_population = crossover(init_population, n_offspring=4)
-    print(1)
-    best = get_best(new_population, 2, model_name, limit=len(new_population))
-    print(2)
+    # # Generating next generation using crossover.
+    # new_population = crossover(init_population, n_offspring=4)
+    # best = get_best(new_population, 2, model_name, limit=len(new_population))
 
-    best_dir = output_dir + "best/"
-    if not os.path.exists(best_dir):
-        os.makedirs(best_dir)
-    i = 0
-    for image_array in best:
-        image = Image.fromarray(image_array)
-        image.save(best_dir + str(i).zfill(10) +'.png')
-        i = i+1
+    # best_dir = output_dir + "best/"
+    # if not os.path.exists(best_dir):
+    #     os.makedirs(best_dir)
+    # i = 0
+    # for image_array in best:
+    #     image = Image.fromarray(image_array)
+    #     image.save(best_dir + str(i).zfill(10) +'.png')
+    #     i = i+1
 
     # add parents
     next_population = init_population
@@ -256,11 +253,11 @@ def generate(input_image, output_dir, model_name):
             image = Image.fromarray(image_array)
             image.save(best_dir + str(im).zfill(10) +'.png')
             im = im+1
-        next_population = crossover(best, n_offspring=2, mutation_ratio=0.5)
+        next_population = best #crossover(best, n_offspring=2, mutation_ratio=0.5)
         # add 4 new images
-        next_population.extend(initial_population(size, 4))        
-        # add parents, total 8 images
-        next_population.extend(best)
+        # next_population.extend(initial_population(size, 4))        
+        # # add parents, total 8 images
+        # next_population.extend(best)
 
 
 
