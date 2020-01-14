@@ -13,14 +13,17 @@ from utilities.mirror_images import mirror, mirror_multiple, TransformationType
 
 
 # high score if vectors pass the mirror test
-def illusion_score(vectors):
+def illusion_score(vectors, flipped=False, mirrored=False):
     # check vector alignements
     comp_x = 0
     count = 0
     for vector in vectors:
         # normalize
         norm = np.sqrt(vector[2]*vector[2] + vector[3]*vector[3])
-        comp_x = comp_x + vector[2]/norm
+        if mirrored:
+            comp_x = comp_x + (-vector[2]/norm)
+        else:
+            comp_x = comp_x + vector[2]/norm
         #comp_y = comp_y + abs(vector[3])/norm
 
     # minimize comp_y, maximize comp_x

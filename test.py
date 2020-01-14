@@ -42,7 +42,7 @@ def crossover(parents, n_offspring=1, mutation_ratio=0.1):
     return offsprings
 
 def test():
-    shape = [160,120]
+    shape = [512,512]#[160,120]
     init_population = initial_population(shape, 2)
 
     i = 0
@@ -51,7 +51,7 @@ def test():
         i = i+1
 
     new_population = crossover(init_population, n_offspring=2)
-    
+
 
 
 test()
