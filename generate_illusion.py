@@ -57,12 +57,13 @@ def combined_illusion_score(vectors, m_vectors):
     s0x = sum_v[0] + sum_mv[0]
     s0y = sum_v[1] + sum_mv[1]
     s1 = abs(sum_v[0]) +  abs(sum_v[1]) +  abs(sum_mv[0]) +  abs(sum_mv[1])
+    s2 = len(vectors) + len(m_vectors)
 
-    return [s0x + s0y, s1]
+    return [s0x + s0y, s1, s2]
 
 def generate_random_image(w, h):
     image = np.random.randint(256, size=(w, h, 3))
-    return image
+    return np.uint8(image)
 
 def random_modify(image_path):
     image = np.array(Image.open(image_path).convert('RGB'))
@@ -94,7 +95,8 @@ def initial_population(img_shape, n_individuals=2):
 
      for indv_num in range(n_individuals):
          # Randomly generating initial population chromosomes genes values.
-         init_population[indv_num] = get_random_image_array(img_shape[0], img_shape[1])
+         init_population[indv_num] = generate_random_image(img_shape[1], img_shape[0])
+         # #get_random_image_array(img_shape[0], img_shape[1])
 
      return init_population
 
@@ -125,18 +127,45 @@ def crossover(parents, n_offspring=1, mutation_ratio=0.1):
         # blended = Image.fromarray(result)
 
         # mutate
-        mutation = get_random_image_array(shape[1], shape[0])
-        im3 = Image.fromarray(mutation)
-        mutated = Image.blend(blended, im3, alpha=mutation_ratio)
-        #mutated.save("___" + str(i) +'.png')
-        offsprings[i] = np.array(mutated)
+        # mutation = get_random_image_array(shape[1], shape[0])
+        # im3 = Image.fromarray(mutation)
+        # mutated = Image.blend(blended, im3, alpha=mutation_ratio)
+        # offsprings[i] = np.array(mutated)
+
+
+        # pixel mutation
+        #random_pixels = generate_random_image(shape[0], shape[1])
+        random_pixels = get_random_image_array(shape[1], shape[0])
+        temp = Image.fromarray(random_pixels)
+        #temp.show()
+        a = np.random.randint(low=0, high=255, size=3)
+        b =  np.random.randint(low=0, high=255, size=3)
+        gs_min = a
+        gs_max = b
+
+        for j in range(3):
+            if a[j] > b[j]:
+                gs_min[j] = b[j]
+                gs_max[j] = a[j]
+       
+        #print(gs_min, gs_max, random_pixels.shape)
+   
+        mask = cv2.inRange(random_pixels, gs_min, gs_max)
+        blended = np.array(blended)
+        new_pixels =  cv2.bitwise_and(random_pixels, random_pixels, mask=mask)
+        maskReversed = cv2.bitwise_not(mask)
+        old_pixels = cv2.bitwise_and(blended, blended, mask=maskReversed)
+        mixed = cv2.bitwise_or(old_pixels, new_pixels)
+        result = Image.blend(Image.fromarray(blended), Image.fromarray(mixed), alpha=0.5)
+
+        offsprings[i] = np.array(result)
     return offsprings
 
 
 def get_best(population, n, model_name, limit, id=0):
     print("get best")
     output_dir = "temp" + str(id) + "/"
-    repeat = 6
+    repeat = 10
     size = [160,120]
     channels = [3,48,96,192]
     gpu = 0
@@ -157,7 +186,6 @@ def get_best(population, n, model_name, limit, id=0):
     images_list = [None]* len(population)
     repeated_images_list = [None]* (len(population) + repeat)
     #save temporarily
-    #print("save temporarily")
     i = 0
     for image_array in population:
         image = Image.fromarray(image_array)
@@ -219,21 +247,26 @@ def get_best(population, n, model_name, limit, id=0):
     print("scores")
     # calculate score
     scores = [None] * len(population)
-    sums = [1,1]
+    sums = [1,1,1]
     for i in range(0, len(population)):
         # s0 = illusion_score(original_vectors[i])
         # s1 = illusion_score(mirrored_vectors[i], mirrored=True, flipped=True)
         # scores[i] =[i, score]
         score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
-        sums = sums + score
+        sums[0] = sums[0] + score[0]
+        sums[1] = sums[1] + score[1]
+        sums[2] = sums[2] + score[2]
         scores[i] =[i, score]
 
+    # print(scores)
+    #   print(sums)
     # normalize everything, and reverse the scores that should be minimized
     for i in range(0, len(scores)):
         score = scores[i]
-        s0 = 1 - (scores[1][0]/sums)
-        s1 = (scores[1][1]/sums)
-        scores[i] = [score[0], (s0+s1)/2]
+        s0 = 1 - (score[1][0]/sums[0])
+        s1 = (score[1][1]/sums[1])
+        s3 = (score[1][2]/sums[2])
+        scores[i] = [score[0], (s0+s1+s3)/3]
 
     print(scores)
 
@@ -245,7 +278,7 @@ def get_best(population, n, model_name, limit, id=0):
 
 # take the flow vectors origins and change the pixels
 def generate(input_image, output_dir, model_name):
-    repeat = 5
+    repeat = 6
     limit = 1
     size = [160,120]
     channels = [3,48,96,192]
@@ -284,16 +317,11 @@ def generate(input_image, output_dir, model_name):
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
-    # i = 0
-    # for image_array in best:
-    #     image = Image.fromarray(image_array)
-    #     image.save(best_dir + str(i).zfill(10) +'.png')
-    #     i = i+1
 
-    # add parents
-    # next_population = init_population
-    # next_population.extend(best)
     next_population = initial_population(size, pop_size)
+    # next_population = [generate_random_image(size[1], size[0]), 
+    #                     generate_random_image(size[1], size[0]),
+    #                     generate_random_image(size[1], size[0])]
 
     for i in range(0,500):
         print("len(next_population)", len(next_population))
