@@ -11,6 +11,8 @@ import numpy as np
 import cv2
 import os
 
+import torch
+
 
 
 # w h 
@@ -116,13 +118,37 @@ def get_net_image(net, x_res, y_res, z):
 
     return image
 
+def neat_illusion():
+     # image inputs
+    pix_coord = [[0,0], [0,1], [1,0], [1,1]]
+    # color output x,y,color
+    w = 2
+    h = 2
+    image_array = np.zeros((2,2,3))
+
+    def eval_genomes(genomes, config):
+        for genome_id, genome in genomes:
+            [net] = create_cppn(
+                                genome,
+                                config,
+                                ["x_in", "y_in"],
+                                ["delta_w"],
+                            )
+            for x in range(w):
+                for y in range(h):
+                    image_array[x,y] = net.activate(pix_coord[i])
+                    genome.fitness = np.random.random()
+
+    # Load configuration.
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         "neat.cfg")
 
 def neat_cppn():
 
     # 2-input XOR inputs and expected outputs.
     xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
     xor_outputs = [   (0.0,),     (1.0,),     (1.0,),     (0.0,)]
-
 
     def eval_genomes(genomes, config):
         for genome_id, genome in genomes:
@@ -181,7 +207,24 @@ def neat_cppn():
         ["delta_w"],
     )
 
-    print(delta_w_node)
+    print("*delta_w_node", delta_w_node)
+    input_ = torch.tensor(xor_inputs[1])
+    print("---\n", delta_w_node.activation(input_))
+    pre_activs = delta_w_node.aggregation(xor_inputs[0])
+
+    inputs = [w * x for w, x in zip(delta_w_node.weights, [input_])]
+    print("weights", delta_w_node.weights, "in", xor_inputs[0])
+    print("inputs", inputs)
+    print("bias", delta_w_node.bias)
+    pre_activs = delta_w_node.aggregation(inputs)
+    print("pre_activs", pre_activs)
+
+    activs = delta_w_node.activation(delta_w_node.response * pre_activs + delta_w_node.bias)
+    print("activs", activs)
+
+
+    result = delta_w_node.activate([input_], shape = torch.Size([2]))
+    print("result", result)
 
     #delta_w = delta_w_node(x_in = xor_inputs[0], y_in=xor_inputs[0])
 
