@@ -119,12 +119,15 @@ def get_net_image(net, x_res, y_res, z):
     return image
 
 def neat_illusion():
-     # image inputs
-    pix_coord = [[0,0], [0,1], [1,0], [1,1]]
+    # image inputs
+    # here you could have a z space but I don't
+    pix_coord = (0,0,0, 0,1,0, 1,0,0, 1,1,0)
     # color output x,y,color
-    w = 2
-    h = 2
-    image_array = np.zeros((2,2,3))
+    w = 3
+    h = 4
+    image_array = np.zeros((2,2)) #black and white
+    shape = torch.Size([len(pix_coord)])
+    input_ = [torch.tensor(pix_coord)]
 
     def eval_genomes(genomes, config):
         for genome_id, genome in genomes:
@@ -134,15 +137,55 @@ def neat_illusion():
                                 ["x_in", "y_in"],
                                 ["delta_w"],
                             )
-            for x in range(w):
-                for y in range(h):
-                    image_array[x,y] = net.activate(pix_coord[i])
-                    genome.fitness = np.random.random()
+            # for x in range(w):
+            #     for y in range(h):
+            #         # s = net.activate(input_, shape)
+            #         # print("s", s)
+            #         image_array[x,y] = 0
+                    #
+            genome.fitness = np.random.random()
 
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          "neat.cfg")
+
+    # Create the population, which is the top-level object for a NEAT run.
+    p = neat.Population(config)
+
+    # Add a stdout reporter to show progress in the terminal.
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    p.add_reporter(neat.Checkpointer(5))
+
+    # Run for up to x generations.
+    winner = p.run(eval_genomes, 3)
+
+    # Display the winning genome.
+    print('\nBest genome:\n{!s}'.format(winner))
+
+    # Show output of the most fit genome against training data.
+    [delta_w_node] = create_cppn(
+        winner,
+        config,
+        ["x_in", "y_in"],
+        ["delta_w"],
+    )
+
+    print("*delta_w_node", delta_w_node)
+    image_array = delta_w_node.activate(input_, shape = shape).numpy()
+
+    # for x in range(w):
+    #     for y in range(h):
+    #         image_array[x,y] = net.activate(pix_coord[i])
+
+    print("result", image_array)
+    img_data = np.array(image_array.reshape((h, w))*255.0, dtype=np.uint8)
+    print(img_data)
+    image =  Image.fromarray(img_data)
+    image.save("__0.png")
+
 
 def neat_cppn():
 
@@ -195,11 +238,6 @@ def neat_cppn():
 
 
     print("winner", winner)
-    # # pop = [genome, genome,..]
-    # for genome in pop:
-    # cppn_nodes = create_cppn(winner_net, config)
-    # print(cppn_nodes)
-
     [delta_w_node] = create_cppn(
         winner,
         config,
@@ -209,20 +247,6 @@ def neat_cppn():
 
     print("*delta_w_node", delta_w_node)
     input_ = torch.tensor(xor_inputs[1])
-    print("---\n", delta_w_node.activation(input_))
-    pre_activs = delta_w_node.aggregation(xor_inputs[0])
-
-    inputs = [w * x for w, x in zip(delta_w_node.weights, [input_])]
-    print("weights", delta_w_node.weights, "in", xor_inputs[0])
-    print("inputs", inputs)
-    print("bias", delta_w_node.bias)
-    pre_activs = delta_w_node.aggregation(inputs)
-    print("pre_activs", pre_activs)
-
-    activs = delta_w_node.activation(delta_w_node.response * pre_activs + delta_w_node.bias)
-    print("activs", activs)
-
-
     result = delta_w_node.activate([input_], shape = torch.Size([2]))
     print("result", result)
 
@@ -303,6 +327,7 @@ def mutate_cppn():
 
 
 
-#mutate_cppn()
-neat_cppn()
+# mutate_cppn()
+# neat_cppn()
+neat_illusion()
 # test()
