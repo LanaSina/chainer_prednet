@@ -33,13 +33,24 @@ class Art_Gen(object):
         self.num_points = x_res * y_res 
 
         # Configuring Network
-        self.img_batch = np.random.standard_normal(size = (batch_size, x_res, y_res, self.c_dim))
+        # Lana: this seems useless
+        # self.img_batch = np.random.standard_normal(size = (batch_size, x_res, y_res, self.c_dim))
         self.hid_vec = np.random.standard_normal(size =  (batch_size, self.h_size))
 
         self.x_dat = np.random.standard_normal(size = (batch_size, self.x_res * self.y_res, 1))
         self.y_dat = np.random.standard_normal(size = (batch_size, self.x_res * self.y_res, 1))
         self.r_dat = np.random.standard_normal(size = (batch_size, self.x_res * self.y_res, 1))
 
+        # what is that... inpput for each matrix?
+        # mat = np.random.standard_normal(size = (input.shape[1], out_dim)).astype(np.float32)
+        self.x_input = np.random.standard_normal(size = (1, net_size)).astype(np.float32)
+        self.y_input = np.random.standard_normal(size = (1, net_size)).astype(np.float32)
+        self.h_input = np.random.standard_normal(size = (h_size, net_size)).astype(np.float32)
+        #self.r_input = np.random.standard_normal(size = (x_res, net_size)).astype(np.float32)
+
+        # what this
+        self.h_input_2 = np.random.standard_normal(size = (net_size, net_size)).astype(np.float32)
+        self.h_input_3 = np.random.standard_normal(size = (net_size, self.c_dim)).astype(np.float32)
         
     def create_grid(self, x_res = 32, y_res = 32, scaling = 1.0):
 
@@ -67,18 +78,18 @@ class Art_Gen(object):
         # Unwrap the grid matrices      
         x_dat_unwrapped = np.reshape(x_dat, (self.batch_size*num_points, 1))
         y_dat_unwrapped = np.reshape(y_dat, (self.batch_size*num_points, 1))
-        r_dat_unwrapped = np.reshape(r_dat, (self.batch_size*num_points, 1))
+        # r_dat_unwrapped = np.reshape(r_dat, (self.batch_size*num_points, 1))
         h_vec_unwrapped = np.reshape(hid_vec_scaled, (self.batch_size*num_points, self.h_size))
 
 
         # Build the network
-        self.art_net = self.fully_connected(h_vec_unwrapped, self.net_size) + \
-                  self.fully_connected(x_dat_unwrapped, self.net_size, with_bias = False) + \
-                  self.fully_connected(y_dat_unwrapped, self.net_size, with_bias = False) + \
-                  self.fully_connected(r_dat_unwrapped, self.net_size, with_bias = False)
+        self.art_net = self.fully_connected(h_vec_unwrapped, self.net_size, mat = self.h_input) + \
+                  self.fully_connected(x_dat_unwrapped, self.net_size, with_bias = False, mat = self.x_input) + \
+                  self.fully_connected(y_dat_unwrapped, self.net_size, with_bias = False, mat = self.y_input) #+ \
+                  #self.fully_connected(r_dat_unwrapped, self.net_size, with_bias = False)
 
         # Set Activation function
-        out = self.tanh_sig()   
+        out = self.tanh_sig(1)   
 
         model = np.reshape(out, (self.batch_size, x_res, y_res, self.c_dim))
 
@@ -88,8 +99,8 @@ class Art_Gen(object):
     def tanh_sig(self,num_layers = 3):
         h = np.tanh(self.art_net)
         for i in range(num_layers):
-            h = np.tanh(self.fully_connected(h,self.net_size))
-        out = self.sigmoid(self.fully_connected(h, self.c_dim))
+            h = np.tanh(self.fully_connected(h, self.net_size, True, self.h_input_2))
+        out = self.sigmoid(self.fully_connected(h, self.c_dim, True, self.h_input_3))
 
         return out
 
@@ -103,6 +114,7 @@ class Art_Gen(object):
 
         return out
 
+    # not used
     def tanh_sig_sin_sof(self):
         h = np.tanh(self.art_net)
         h = 0.8*np.sin(self.fully_connected(h,self.net_size))
@@ -112,8 +124,9 @@ class Art_Gen(object):
 
         return out
     
-    def fully_connected(self, input, out_dim, with_bias = True):
-        mat = np.random.standard_normal(size = (input.shape[1], out_dim)).astype(np.float32)
+    def fully_connected(self, input, out_dim, with_bias = True, mat = None):
+        if mat is None:
+            mat = np.random.standard_normal(size = (input.shape[1], out_dim)).astype(np.float32)
 
         result = np.matmul(input, mat)
 
@@ -132,7 +145,7 @@ class Art_Gen(object):
 
         return np.log(1.0 + np.exp(x))  
 
-    def generate(self, x_res = 256, y_res = 256, scaling = 20.0,z = None):
+    def generate(self, x_res = 256, y_res = 256, scaling = 20.0, z = None):
 
         # Generate Random Key to generate image
         if z is None:
@@ -143,7 +156,8 @@ class Art_Gen(object):
 
         return art
 
-def init_pop(n,  net_size = 16, batch_size=1, h_size=32, RGB=True):
+def init_pop(n,  net_size = 16, batch_size=1, h_size=32, RGB=True, seed=1):
+    np.random.seed(seed)
     nets = [None]*n
     for x in range(n):
         art = Art_Gen()
