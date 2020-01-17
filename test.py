@@ -120,23 +120,34 @@ def get_net_image(net, x_res, y_res, z):
 
 def neat_illusion():
     # image inputs
-    # here you could have a z space but I don't
-    pix_coord = (0,0,0, 0,1,0, 1,0,0, 1,1,0)
     # color output x,y,color
-    w = 3
-    h = 4
-    image_array = np.zeros((2,2)) #black and white
-    shape = torch.Size([len(pix_coord)])
-    input_ = [torch.tensor(pix_coord)]
+    w = 5
+    h = 5
+    c_dim = 3
+    # x, y for each pixel
+    pix = np.zeros(((w,h,2)))
+    for x in range(w):
+        for y in range(h):
+            pix[x,y,0] = x 
+            pix[x,y,1] = y 
 
+    # pix_coord = tuple(pix)
+    # print("pix_coord", pix_coord)
+    # shape = torch.Size([len(pix_coord)])
+    # print(shape)
+    # input_ = [torch.tensor(pix_coord)]
+    leaf_names = ["x","y"]
+    out_names = ["r","g","b"]
+  
     def eval_genomes(genomes, config):
+        #print(genomes)
         for genome_id, genome in genomes:
-            [net] = create_cppn(
-                                genome,
-                                config,
-                                ["x_in", "y_in"],
-                                ["delta_w"],
-                            )
+            # [net] = create_cppn(
+            #                     genome,
+            #                     config,
+            #                     leaf_names,
+            #                     [""],
+            #                 )
             # for x in range(w):
             #     for y in range(h):
             #         # s = net.activate(input_, shape)
@@ -163,26 +174,48 @@ def neat_illusion():
     winner = p.run(eval_genomes, 3)
 
     # Display the winning genome.
-    print('\nBest genome:\n{!s}'.format(winner))
+    # print('\nBest genome:\n{!s}'.format(winner))
 
     # Show output of the most fit genome against training data.
-    [delta_w_node] = create_cppn(
+    delta_w_node = create_cppn(
         winner,
         config,
-        ["x_in", "y_in"],
-        ["delta_w"],
+        leaf_names,
+        out_names
     )
 
-    print("*delta_w_node", delta_w_node)
-    image_array = delta_w_node.activate(input_, shape = shape).numpy()
-
+    # as many nodes as outputs
+    print(delta_w_node) 
+    image_array = np.zeros(((h,w,3)))
+    r = []
+    g = []
+    b = []
+    print("image_array[:,:,0]", image_array[:,:,0])
     # for x in range(w):
     #     for y in range(h):
-    #         image_array[x,y] = net.activate(pix_coord[i])
+    #         pix[x,y,0] = x 
+    #         pix[x,y,1] = y 
+    # get r g b for all x and all y
+    inp_x = torch.tensor(pix[:,:,0].flatten())
+    inp_y = torch.tensor(pix[:,:,1].flatten())
+    c = 0
+    for node in delta_w_node:
+        pixel_func = delta_w_node[0]
+        pixels = pixel_func(x=inp_x, y=inp_y)
+        print(pixels)
+        pixels_np = pixels.numpy()
+        image_array[:,:,c] = np.reshape(pixels_np, (h, w))
+        c = c + 1
 
-    print("result", image_array)
-    img_data = np.array(image_array.reshape((h, w))*255.0, dtype=np.uint8)
-    print(img_data)
+    # delta_w = delta_w_node(_i=np.array(pix_coord))
+
+    # print("*delta_w_node", delta_w_node)
+    # print("delta_w", delta_w)
+
+    # image_array = delta_w.numpy()
+    # #delta_w_node.activate(input_, shape = shape).numpy()
+
+    img_data = np.array(image_array*255.0, dtype=np.uint8)
     image =  Image.fromarray(img_data)
     image.save("__0.png")
 
@@ -235,7 +268,6 @@ def neat_cppn():
 
     # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     # p.run(eval_genomes, 10)
-
 
     print("winner", winner)
     [delta_w_node] = create_cppn(

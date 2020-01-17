@@ -94,7 +94,7 @@ class Art_Gen(object):
         model = np.reshape(out, (self.batch_size, x_res, y_res, self.c_dim))
 
         return model
-
+        
 
     def tanh_sig(self,num_layers = 3):
         h = np.tanh(self.art_net)
@@ -103,6 +103,7 @@ class Art_Gen(object):
         out = self.sigmoid(self.fully_connected(h, self.c_dim, True, self.h_input_3))
 
         return out
+
 
     def sin_tanh_sof(self):
         h = np.tanh(self.art_net)
