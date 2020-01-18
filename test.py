@@ -138,7 +138,7 @@ def neat_illusion():
     w = 160
     h = 120
     c_dim = 3
-    scaling = 10
+    scaling = 2
     # x, y for each pixel
     pix = np.zeros(((w,h,3)))
     center = [w/2, h/2]
