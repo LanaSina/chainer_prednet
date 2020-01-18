@@ -12,7 +12,7 @@ from chainer import serializers
 from chainer.functions.loss.mean_squared_error import mean_squared_error
 import chainer.computational_graph as c
 from tb_chainer import SummaryWriter, NodeName, utils
-import net
+from . import net
 
 # what is this doing?
 def load_list(path, root):
@@ -128,7 +128,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
 
         if ((i+1)%skip_save_frames == 0):
-            num = str(i/skip_save_frames).zfill(10)
+            num = str(i//skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
             print("writing ", new_filename)
             write_image(model.y.data[0].copy(), new_filename)

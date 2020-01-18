@@ -10,6 +10,12 @@ from PredNet.call_prednet import test_prednet
 from random import random, randrange
 from utilities.mirror_images import mirror, mirror_multiple, TransformationType
 
+from pytorch_neat.pytorch_neat.cppn import create_cppn
+from pytorch_neat.pytorch_neat.multi_env_eval import MultiEnvEvaluator
+from pytorch_neat.pytorch_neat.neat_reporter import LogReporter
+from pytorch_neat.pytorch_neat.recurrent_net import RecurrentNet
+import neat
+import torch
 
 
 # high score if vectors pass the mirror test
@@ -306,14 +312,46 @@ def generate(input_image, output_dir, model_name):
         # add parents
         next_population.extend(best)
 
+
+
+def create_grid(x_res = 32, y_res = 32, scaling = 1.0):
+
+    num_points = x_res*y_res
+    x_range = np.linspace(-1*scaling, scaling, num = x_res)
+    y_range = np.linspace(-1*scaling, scaling, num = y_res)
+    x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
+    y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
+    r_mat = np.sqrt(x_mat*x_mat + y_mat*y_mat)
+    x_mat = np.tile(x_mat.flatten(), 1).reshape(1, num_points, 1)
+    y_mat = np.tile(y_mat.flatten(), 1).reshape(1, num_points, 1)
+    r_mat = np.tile(r_mat.flatten(), 1).reshape(1, num_points, 1)
+
+    return x_mat, y_mat, r_mat
+
+def fully_connected(input, out_dim, with_bias = True, mat = None):
+    if mat is None:
+        mat = np.random.standard_normal(size = (input.shape[1], out_dim)).astype(np.float32)
+
+    result = np.matmul(input, mat)
+
+    if with_bias == True:
+        bias = np.random.standard_normal(size =(1, out_dim)).astype(np.float32)
+        result += bias * np.ones((input.shape[0], 1), dtype = np.float32)
+
+    return result
+
 # population:  [id, net]
-def get_fitnesses_neat(population, model_name, limit, id=0):
+def get_fitnesses_neat(population, model_name, config, id=0):
     print("fitnesses of ", len(population))
     output_dir = "temp" + str(id) + "/"
     repeat = 10
-    size = [160,120]
+    w = 160
+    h = 120
+    size = [w,h]
     channels = [3,48,96,192]
     gpu = 0
+    c_dim = 3
+    scaling = 10
 
     prediction_dir = output_dir + "/original/prediction/"
     if not os.path.exists(prediction_dir):
@@ -332,11 +370,24 @@ def get_fitnesses_neat(population, model_name, limit, id=0):
     images_list = [None]* len(population)
     repeated_images_list = [None]* (len(population) + repeat)
     #save temporarily
+    leaf_names = ["x","y","r"]
+    out_names = ["r","g","b"]
+    x_dat, y_dat, r_dat = create_grid(w, h, scaling)
+    inp_x = torch.tensor(x_dat.flatten())
+    inp_y = torch.tensor(y_dat.flatten())
+    inp_r = torch.tensor(r_dat.flatten())
+
     i = 0
     for genome_id, genome in population:
         image_array = np.zeros(((w,h,3)))
         c = 0
-        for node_func in delta_w_node:
+        net_nodes = create_cppn(
+            genome,
+            config,
+            leaf_names,
+            out_names
+        )
+        for node_func in net_nodes:
             pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
             pixels_np = pixels.numpy()
             image_array[:,:,c] = np.reshape(pixels_np, (w, h))
@@ -415,7 +466,7 @@ def get_fitnesses_neat(population, model_name, limit, id=0):
     print(scores)
     i = 0
     for genome_id, genome in population:
-        genome.fitness = score[i][1]
+        genome.fitness = scores[i][1]
         i = i+1
 
 # take the flow vectors origins and change the pixels
@@ -430,7 +481,6 @@ def neat_illusion(input_image, output_dir, model_name):
     c_dim = 3
     scaling = 10
 
-    pop_size = 2
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
@@ -442,32 +492,16 @@ def neat_illusion(input_image, output_dir, model_name):
     inp_x = torch.tensor(x_dat.flatten())
     inp_y = torch.tensor(y_dat.flatten())
     inp_r = torch.tensor(r_dat.flatten())
-   
-
-    next_population = initial_population(size, pop_size)
-
-    for i in range(0,500):
-        print("len(next_population)", len(next_population))
-        best = get_best(next_population, 2, model_name, limit=len(next_population))
-       #print("len(best)",len(best))
-        im = 0
-        for image_array in best:
-            image = Image.fromarray(image_array)
-            image.save(best_dir + str(im).zfill(10) +'.png')
-            im = im+1
-        next_population = crossover(best, n_offspring=2, mutation_ratio=0.5)
-        # add 2 new images
-        next_population.extend(initial_population(size, 2))        
-        # add parents
-        next_population.extend(best)
-
-    def eval_genomes(genomes, config):
-        get_fitnesses_neat(genomes, model_name)
 
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         "neat.cfg")
+                         "chainer_prednet/neat.cfg")
+
+    def eval_genomes(genomes, config):
+        get_fitnesses_neat(genomes, model_name, config)
+
+    
 
     # Create the population, which is the top-level object for a NEAT run.
     p = neat.Population(config)
@@ -502,7 +536,7 @@ def neat_illusion(input_image, output_dir, model_name):
 
     img_data = np.array(image_array*255.0, dtype=np.uint8)
     image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
-    image.save("bet_illusion.png")
+    image.save("best_illusion.png")
 
 
 
