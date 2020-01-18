@@ -121,22 +121,18 @@ def get_net_image(net, x_res, y_res, z):
 def neat_illusion():
     # image inputs
     # color output x,y,color
-    w = 5
-    h = 5
+    w = 160
+    h = 120
     c_dim = 3
     # x, y for each pixel
-    pix = np.zeros(((w,h,2)))
+    pix = np.zeros(((w,h,3)))
     for x in range(w):
         for y in range(h):
             pix[x,y,0] = x 
             pix[x,y,1] = y 
+            pix[x,y,2] = np.random.random()
 
-    # pix_coord = tuple(pix)
-    # print("pix_coord", pix_coord)
-    # shape = torch.Size([len(pix_coord)])
-    # print(shape)
-    # input_ = [torch.tensor(pix_coord)]
-    leaf_names = ["x","y"]
+    leaf_names = ["x","y","r"]
     out_names = ["r","g","b"]
   
     def eval_genomes(genomes, config):
@@ -171,7 +167,7 @@ def neat_illusion():
     p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to x generations.
-    winner = p.run(eval_genomes, 3)
+    winner = p.run(eval_genomes, 10)
 
     # Display the winning genome.
     # print('\nBest genome:\n{!s}'.format(winner))
@@ -185,40 +181,24 @@ def neat_illusion():
     )
 
     # as many nodes as outputs
-    print(delta_w_node) 
-    image_array = np.zeros(((h,w,3)))
-    r = []
-    g = []
-    b = []
-    print("image_array[:,:,0]", image_array[:,:,0])
-    # for x in range(w):
-    #     for y in range(h):
-    #         pix[x,y,0] = x 
-    #         pix[x,y,1] = y 
+    # print(delta_w_node) 
+    image_array = np.zeros(((w,h,3)))
+  
     # get r g b for all x and all y
     inp_x = torch.tensor(pix[:,:,0].flatten())
     inp_y = torch.tensor(pix[:,:,1].flatten())
+    inp_r = torch.tensor(pix[:,:,2].flatten())
+
     c = 0
-    for node in delta_w_node:
-        pixel_func = delta_w_node[0]
-        pixels = pixel_func(x=inp_x, y=inp_y)
-        print(pixels)
+    for node_func in delta_w_node:
+        pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
         pixels_np = pixels.numpy()
-        image_array[:,:,c] = np.reshape(pixels_np, (h, w))
+        image_array[:,:,c] = np.reshape(pixels_np, (w, h))
         c = c + 1
 
-    # delta_w = delta_w_node(_i=np.array(pix_coord))
-
-    # print("*delta_w_node", delta_w_node)
-    # print("delta_w", delta_w)
-
-    # image_array = delta_w.numpy()
-    # #delta_w_node.activate(input_, shape = shape).numpy()
-
     img_data = np.array(image_array*255.0, dtype=np.uint8)
-    image =  Image.fromarray(img_data)
+    image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
     image.save("__0.png")
-
 
 def neat_cppn():
 
