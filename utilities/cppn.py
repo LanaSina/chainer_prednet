@@ -78,15 +78,15 @@ class Art_Gen(object):
         # Unwrap the grid matrices      
         x_dat_unwrapped = np.reshape(x_dat, (self.batch_size*num_points, 1))
         y_dat_unwrapped = np.reshape(y_dat, (self.batch_size*num_points, 1))
-        # r_dat_unwrapped = np.reshape(r_dat, (self.batch_size*num_points, 1))
+        r_dat_unwrapped = np.reshape(r_dat, (self.batch_size*num_points, 1))
         h_vec_unwrapped = np.reshape(hid_vec_scaled, (self.batch_size*num_points, self.h_size))
 
 
         # Build the network
         self.art_net = self.fully_connected(h_vec_unwrapped, self.net_size, mat = self.h_input) + \
                   self.fully_connected(x_dat_unwrapped, self.net_size, with_bias = False, mat = self.x_input) + \
-                  self.fully_connected(y_dat_unwrapped, self.net_size, with_bias = False, mat = self.y_input) #+ \
-                  #self.fully_connected(r_dat_unwrapped, self.net_size, with_bias = False)
+                  self.fully_connected(y_dat_unwrapped, self.net_size, with_bias = False, mat = self.y_input) + \
+                  self.fully_connected(r_dat_unwrapped, self.net_size, with_bias = False)
 
         # Set Activation function
         out = self.tanh_sig(1)   
@@ -94,7 +94,7 @@ class Art_Gen(object):
         model = np.reshape(out, (self.batch_size, x_res, y_res, self.c_dim))
 
         return model
-        
+
 
     def tanh_sig(self,num_layers = 3):
         h = np.tanh(self.art_net)
