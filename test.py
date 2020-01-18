@@ -190,12 +190,6 @@ def neat_illusion():
     image_array = np.zeros(((w,h,3)))
   
     x_dat, y_dat, r_dat = create_grid(w, h, scaling)
-
-    # get r g b for all x and all y
-    # inp_x = torch.tensor(pix[:,:,0].flatten())
-    # inp_y = torch.tensor(pix[:,:,1].flatten())
-    # inp_r = torch.tensor(pix[:,:,2].flatten())
-
     inp_x = torch.tensor(x_dat.flatten())
     inp_y = torch.tensor(y_dat.flatten())
     inp_r = torch.tensor(r_dat.flatten())

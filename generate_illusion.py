@@ -283,45 +283,13 @@ def generate(input_image, output_dir, model_name):
     size = [160,120]
     channels = [3,48,96,192]
     gpu = 0
-    # prediction_dir = output_dir + "/original/prediction/"
-    # if not os.path.exists(prediction_dir):
-    #     os.makedirs(prediction_dir)
-
-    # name = input_image.split("/")
-    # name = name[len(name)-1]
-    # temp = name.split(".")
-    # alternate_input = output_dir + "original/" + name
-    # # image = np.array(Image.open(alternate_input).convert('RGB'))
-    # image = get_random_image(size[1], size[0]) #np.array(Image.open(input_image).convert('RGB'))
-    # image_array = Image.fromarray(image.astype('uint8'), 'RGB')
-    # image_array.save(alternate_input)
-
-    # mirror_images_dir = output_dir + "/mirrored/"
-    # mirror_image = mirror_images_dir + temp[0] + ".png"
-    # if not os.path.exists(mirror_images_dir):
-    #     os.makedirs(mirror_images_dir)
-
-    # images_list = [alternate_input]*repeat
-    # mirror_images_list = [mirror_image]*repeat
-    # score = 0
 
     pop_size = 2
-    # gets arrays
-    # init_population = [np.uint8(generate_random_image(size[1], size[0])), 
-    #                   np.uint8(generate_random_image(size[1], size[0]))] #initial_population(size, pop_size)
-    # init_population = initial_population(size, pop_size)
-    # # Generating next generation using crossover.
-    # new_population = crossover(init_population, n_offspring=4)
-    # best = get_best(new_population, 2, model_name, limit=len(new_population))
-
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
 
     next_population = initial_population(size, pop_size)
-    # next_population = [generate_random_image(size[1], size[0]), 
-    #                     generate_random_image(size[1], size[0]),
-    #                     generate_random_image(size[1], size[0])]
 
     for i in range(0,500):
         print("len(next_population)", len(next_population))
@@ -338,44 +306,205 @@ def generate(input_image, output_dir, model_name):
         # add parents
         next_population.extend(best)
 
+# population:  [id, net]
+def get_fitnesses_neat(population, model_name, limit, id=0):
+    print("fitnesses of ", len(population))
+    output_dir = "temp" + str(id) + "/"
+    repeat = 10
+    size = [160,120]
+    channels = [3,48,96,192]
+    gpu = 0
+
+    prediction_dir = output_dir + "/original/prediction/"
+    if not os.path.exists(prediction_dir):
+        os.makedirs(prediction_dir)
+
+    mirror_dir = output_dir + "mirrored/"
+    if not os.path.exists(mirror_dir+ "flow/"):
+        os.makedirs(mirror_dir +"flow/")
+    mirror_images_dir = mirror_dir+ "images/"
+    if not os.path.exists(mirror_images_dir):
+        os.makedirs(mirror_images_dir)
+
+    if not os.path.exists(output_dir + "images/"):
+        os.makedirs(output_dir + "images/")
+
+    images_list = [None]* len(population)
+    repeated_images_list = [None]* (len(population) + repeat)
+    #save temporarily
+    i = 0
+    for genome_id, genome in population:
+        image_array = np.zeros(((w,h,3)))
+        c = 0
+        for node_func in delta_w_node:
+            pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+            pixels_np = pixels.numpy()
+            image_array[:,:,c] = np.reshape(pixels_np, (w, h))
+            c = c + 1
+
+        img_data = np.array(image_array*255.0, dtype=np.uint8)
+        image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
+        image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
+        images_list[i] = image_name
+        repeated_images_list[i*repeat:(i+1)*repeat] = [image_name]*repeat
+        image.save(image_name, "PNG")
+        i = i + 1
+
+    # runs repeat x times on the input image, save in result folder
+    test_prednet(initmodel = model_name, images_list = repeated_images_list, size=size, 
+                channels = channels, gpu = gpu, output_dir = prediction_dir, skip_save_frames=repeat,
+                reset_each = True,
+                )
+    # calculate flows
+    i = 0
+    original_vectors = [None] * len(population)
+    for input_image in images_list:
+        prediction_image_path = prediction_dir + str(i).zfill(10) + ".png"
+        results = lucas_kanade(input_image, prediction_image_path, output_dir+"/original/flow/", save=True)
+        if results["vectors"]:
+            original_vectors[i] = np.asarray(results["vectors"])
+        else:
+            original_vectors[i] = [[0,0,-1000,0]]
+        i = i + 1
+
+    #mirror images
+    mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
+    #print("mirror images finished")
+    temp_list = sorted(os.listdir(mirror_images_dir))
+    mirror_images_list = [mirror_images_dir + im for im in temp_list]
+    repeated_mirror_list = [mirror_images_dir + im for im in temp_list for i in range(repeat) ]
+
+    # predict
+    test_prednet(initmodel = model_name, images_list = repeated_mirror_list, size=size, 
+                channels = channels, gpu = gpu, output_dir = mirror_dir + "prediction/", skip_save_frames=repeat,
+                reset_each = True
+                )
+    # calculate flow
+    i = 0
+    mirrored_vectors = [None] * len(population)
+    for input_image in mirror_images_list:
+        print(input_image)
+        prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
+        print(prediction_image_path)
+        results = lucas_kanade(input_image, prediction_image_path, output_dir+"/mirrored/flow/", save=True)
+        if results["vectors"]:
+            mirrored_vectors[i] = np.asarray(results["vectors"])
+        else:
+            mirrored_vectors[i] = [[0,0,-1000,0]]
+        i = i + 1
+
+    print("scores")
+    # calculate score
+    scores = [None] * len(population)
+    sums = [1,1,1]
+    for i in range(0, len(population)):
+        score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
+        sums[0] = sums[0] + score[0]
+        sums[1] = sums[1] + score[1]
+        sums[2] = sums[2] + score[2]
+        scores[i] =[i, score]
+
+    # normalize everything, and reverse the scores that should be minimized
+    for i in range(0, len(scores)):
+        score = scores[i]
+        s0 = 1 - (score[1][0]/sums[0])
+        s1 = (score[1][1]/sums[1])
+        s3 = (score[1][2]/sums[2])
+        scores[i] = [score[0], (s0+s1+s3)/3]
+
+    print(scores)
+    i = 0
+    for genome_id, genome in population:
+        genome.fitness = score[i][1]
+        i = i+1
+
+# take the flow vectors origins and change the pixels
+def neat_illusion(input_image, output_dir, model_name):
+    repeat = 6
+    limit = 1
+    w = 160
+    h = 120
+    size = [w,h]
+    channels = [3,48,96,192]
+    gpu = 0
+    c_dim = 3
+    scaling = 10
+
+    pop_size = 2
+    best_dir = output_dir + "best/"
+    if not os.path.exists(best_dir):
+        os.makedirs(best_dir)
+
+    leaf_names = ["x","y","r"]
+    out_names = ["r","g","b"]
+
+    x_dat, y_dat, r_dat = create_grid(w, h, scaling)
+    inp_x = torch.tensor(x_dat.flatten())
+    inp_y = torch.tensor(y_dat.flatten())
+    inp_r = torch.tensor(r_dat.flatten())
+   
+
+    next_population = initial_population(size, pop_size)
+
+    for i in range(0,500):
+        print("len(next_population)", len(next_population))
+        best = get_best(next_population, 2, model_name, limit=len(next_population))
+       #print("len(best)",len(best))
+        im = 0
+        for image_array in best:
+            image = Image.fromarray(image_array)
+            image.save(best_dir + str(im).zfill(10) +'.png')
+            im = im+1
+        next_population = crossover(best, n_offspring=2, mutation_ratio=0.5)
+        # add 2 new images
+        next_population.extend(initial_population(size, 2))        
+        # add parents
+        next_population.extend(best)
+
+    def eval_genomes(genomes, config):
+        get_fitnesses_neat(genomes, model_name)
+
+    # Load configuration.
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         "neat.cfg")
+
+    # Create the population, which is the top-level object for a NEAT run.
+    p = neat.Population(config)
+
+    # Add a stdout reporter to show progress in the terminal.
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    p.add_reporter(neat.Checkpointer(5))
+
+    # Run for up to x generations.
+    winner = p.run(eval_genomes, 20)
+
+    # Display the winning genome.
+    # print('\nBest genome:\n{!s}'.format(winner))
+
+    # Show output of the most fit genome against training data.
+    delta_w_node = create_cppn(
+        winner,
+        config,
+        leaf_names,
+        out_names
+    )
+
+    image_array = np.zeros(((w,h,3)))
+    c = 0
+    for node_func in delta_w_node:
+        pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+        pixels_np = pixels.numpy()
+        image_array[:,:,c] = np.reshape(pixels_np, (w, h))
+        c = c + 1
+
+    img_data = np.array(image_array*255.0, dtype=np.uint8)
+    image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
+    image.save("bet_illusion.png")
 
 
-    # while score < 100:        
-        
-    #     # runs repeat x times on the input image, save in result folder
-    #     test_prednet(initmodel = model_name, images_list = images_list, size=size, 
-    #                 channels = channels, gpu = gpu, output_dir = prediction_dir, skip_save_frames=repeat)
-    #     # calculate flow
-    #     prediction_image_path = prediction_dir + str(0).zfill(10) + ".png"
-    #     results = lucas_kanade(input_image, prediction_image_path, output_dir+"/original/flow/", save=True)
-    #     original_vectors = np.asarray(results["vectors"])
-
-    #     #mirror image
-    #     mirror(input_image, mirror_images_dir, True, TransformationType.MirrorAndFlip)
-        
-    #     # predict
-    #     test_prednet(initmodel = model_name, images_list = mirror_images_list, size=size, 
-    #                 channels = channels, gpu = gpu, output_dir = mirror_images_dir + "prediction", skip_save_frames=repeat)
-    #     # calculate flow
-    #     prediction_image_path = mirror_images_dir + "prediction/" + str(0).zfill(10) + ".png"
-    #     results = lucas_kanade(input_image, prediction_image_path, mirror_images_dir+"/flow/", save=True)
-    #     mirrored_vectors = np.asarray(results["vectors"])
-
-    #     # calculate score
-    #     new_score = illusion_score(original_vectors) + illusion_score(mirrored_vectors)
-    #     print("score", score, "new_score", new_score)
-    #     if (score==0) or new_score>score:
-    #         score = new_score
-    #         image_array = Image.fromarray(image.astype('uint8'), 'RGB')
-    #         # image_name = output_dir + "original/" + name
-    #         image_array.save(input_image)
-
-    #     # modify image
-    #     image = random_modify(input_image)
-    #     image_array = Image.fromarray(image.astype('uint8'), 'RGB')
-    #     alternate_input = output_dir + "original/" + name
-    #     image_array.save(alternate_input)
-    
 
 
 parser = argparse.ArgumentParser(description='optical flow tests')
