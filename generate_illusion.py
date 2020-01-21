@@ -317,14 +317,14 @@ def get_fitnesses_neat(population, model_name, config, id=0):
     for i in range(0, len(population)):
         #score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
         score = 0
-        if(len(original_vectors[i]>0)):
+        if(len(original_vectors[i])>0):
             # bonus
             score = score + 0.1
             ratio = plausibility_ratio(original_vectors[i])
             score_0 = ratio[0]
-            # good_vectors = ratio[1]
+            good_vectors = ratio[1]
             # score = score + score_0
-            # if(len(good_vectors)>0): 
+            if(len(good_vectors)>0): 
             #     # bonus
             #     score = score + 0.1
             #     ratio = plausibility_ratio(mirrored_vectors[i])
@@ -335,8 +335,11 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             #         # bonus
             #         score = score + 10 - score_1
 
-            score_2 = circle_tangent_ratio(good_vectors) #good_vectors
-            score = (score_0 + score_2)*len(good_vectors)
+                score_2 = circle_tangent_ratio(good_vectors) #good_vectors
+                # f = len(good_vectors)
+                # if(f>20):
+                #     f = 20
+                score = score_2*score_2*len(good_vectors)
                 # score_3 = strength_number(good_vectors)
                 # score = score + score_2 + score_3
 

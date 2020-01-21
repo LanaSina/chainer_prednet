@@ -237,17 +237,13 @@ def mutate_cppn():
         image.save("_" + str(i) +'.png')
 
     # mutate
-    p0 = pop[0]
-    p1 = pop[1]
-    # network weights:  self.x_dat, y_dat, r_dat
-    #p0.y_dat[0,10] = p0.y_dat[0,10]*1;#.001
-    image = get_net_image(p0, x_res, y_res, inputs[0])
-    image.save("__0.png")
-    image = get_net_image(p0, x_res, y_res, inputs[0])
-    image.save("__1.png")
-    # p1.x_dat[0,10] = p1.x_dat[0,10]*2
-    # image = get_net_image(p1, x_res, y_res, inputs[1])
+    # p0 = pop[0]
+    # p1 = pop[1]
+    # image = get_net_image(p0, x_res, y_res, inputs[0])
+    # image.save("__0.png")
+    # image = get_net_image(p0, x_res, y_res, inputs[0])
     # image.save("__1.png")
+
 
 def fully_connected(input, out_dim, with_bias = True, mat = None):
     if mat is None:
@@ -367,8 +363,9 @@ def rotation_ratio():
     mean_ratio = circle_tangent(results["vectors"])
     print("mean_ratio", mean_ratio)
 
-rotation_ratio()
-# mutate_cppn()
+
+#rotation_ratio()
+mutate_cppn()
 # neat_cppn()
 # neat_illusion()
 #raw_test()
