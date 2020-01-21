@@ -414,7 +414,6 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         leaf_names,
         out_names
     )
-    
 
     image_array = np.zeros(((w,h,3)))
     c = 0
