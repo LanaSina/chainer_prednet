@@ -48,7 +48,7 @@ def plausibility_ratio(vectors):
         norm = np.sqrt(vector[2]*vector[2] + vector[3]*vector[3])
         if norm> 0.15: # or norm==0: 
             continue
-        r.extend(vector)
+        r.append(vector)
 
     ratio = len(r)/len(vectors)
     return [ratio, r]
@@ -66,7 +66,9 @@ def strength_number(vectors):
     return sum_v/total_v
 
 # returns the mirroring score (lower == better) 
-def mirroring_score():
+def mirroring_score(vectors, m_vectors):
+    # print("vectors", vectors)
+    sum_v = [0,0]
     for vector in vectors:
         sum_v = [sum_v[0] + vector[2], sum_v[1] + vector[3]]
 
@@ -327,6 +329,7 @@ def get_fitnesses_neat(population, model_name, config, id=0):
                 score = score + 0.1
                 ratio = plausibility_ratio(mirrored_vectors[i])
                 good_vectors_m = ratio[1]
+                # print("good_vectors", good_vectors)
                 score_1 = mirroring_score(good_vectors, good_vectors_m)
                 if score_1 < 10:
                     # bonus
@@ -339,17 +342,17 @@ def get_fitnesses_neat(population, model_name, config, id=0):
         scores[i] =[i, score]
 
     # normalize everything, and reverse the scores that should be minimized
-    for i in range(0, len(scores)):
-        score = scores[i]
-        # avoid comparing different species
-        s0 = -score[1][0]
-        s1 = score[1][1]
-        s3 = score[1][2]
-        total = (s0+s1+s3+ fidelity[i]*3)
+    # for i in range(0, len(scores)):
+    #     score = scores[i]
+    #     # avoid comparing different species
+    #     s0 = -score[1][0]
+    #     s1 = score[1][1]
+    #     s3 = score[1][2]
+    #     total = (s0+s1+s3+ fidelity[i]*3)
 
-        scores[i] = [score[0], total]
+    #     scores[i] = [score[0], total]
 
-    print(scores)
+    print("scores",scores)
     i = 0
     for genome_id, genome in population:
         genome.fitness = scores[i][1]
