@@ -320,8 +320,8 @@ def get_fitnesses_neat(population, model_name, config, id=0):
         if(len(original_vectors[i]>0)):
             # bonus
             score = score + 0.1
-            # ratio = plausibility_ratio(original_vectors[i])
-            # score_0 = ratio[0]
+            ratio = plausibility_ratio(original_vectors[i])
+            score_0 = ratio[0]
             # good_vectors = ratio[1]
             # score = score + score_0
             # if(len(good_vectors)>0): 
@@ -335,8 +335,8 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             #         # bonus
             #         score = score + 10 - score_1
 
-            score_2 = circle_tangent_ratio(original_vectors[i]) #good_vectors
-            score = score_2*len(original_vectors[i])
+            score_2 = circle_tangent_ratio(good_vectors) #good_vectors
+            score = (score_0 + score_2)*len(good_vectors)
                 # score_3 = strength_number(good_vectors)
                 # score = score + score_2 + score_3
 
@@ -406,7 +406,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     p.add_reporter(checkpointer)
 
     # Run for up to x generations.
-    winner = p.run(eval_genomes, 100)
+    winner = p.run(eval_genomes, 300)
 
     # Display the winning genome.
     # print('\nBest genome:\n{!s}'.format(winner))
