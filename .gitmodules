@@ -1,9 +1,6 @@
 [submodule "optical_flow"]
 	path = optical_flow
 url=https://github.com/LanaSina/Optical_Flow_Analyzer
-[submodule "pytorch_neat"]
-	path = pytorch_neat
-	url = https://github.com/uber-research/PyTorch-NEAT.git
 [submodule "cppn_tf"]
 	path = cppn_tf
 	url = https://github.com/hardmaru/cppn-tensorflow.git
