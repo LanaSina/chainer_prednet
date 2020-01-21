@@ -116,7 +116,7 @@ def combined_illusion_score(vectors, m_vectors):
     return [s0x + s0y, s1, s2]
 
 # returns a high score if vectors are aligned on concentric circles
-def circle_tangent_ratio(vectors):
+def circle_tangent_ratio(vectors, limits = None):
     w = 160
     h = 120
     c = [w/2.0, h/2.0]
@@ -124,18 +124,26 @@ def circle_tangent_ratio(vectors):
     # if beta = angle between radius and current vector
     # ratio of projection of V on tangent / ||V|| = sin(beta)
     # ratio = sin(arcos(R*V/||V||*||R||)) = sqrt(1- a^2)
+    count = 0
     for v in vectors:
         # radius vector R from image center to origin of V
         r = [c[0], c[1], v[0]-c[0], v[1]-c[1]]
+        norm_r = np.sqrt(r[2]*r[2] + r[3]*r[3])
+        norm_v = np.sqrt(v[2]*v[2] + v[3]*v[3])
+        if not limits is None:
+            if (norm_r<limits[0]) or (norm_r>limits[1]):
+                continue
+
         # a = V*R / ||V||*||R||
         a = r[2] * v[2] + r[3] * v[3]
-        a = a/(np.sqrt(r[2]*r[2] + r[3]*r[3]) * np.sqrt(v[2]*v[2] + v[3]*v[3]) )
+        a = a/(norm_r * norm_v)
         # ratio
         # this would be negative if going counter clockwise?
         ratio = np.sqrt(1 - a*a)
         mean_ratio = mean_ratio + ratio
+        count = count + 1
 
-    mean_ratio = mean_ratio/len(vectors)
+    mean_ratio = mean_ratio/count
     return mean_ratio
 
 
@@ -313,6 +321,7 @@ def get_fitnesses_neat(population, model_name, config, id=0):
     #     i = i + 1
 
     # calculate score
+    radius_limits = [20,50]
     scores = [None] * len(population)
     for i in range(0, len(population)):
         #score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
@@ -335,7 +344,7 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             #         # bonus
             #         score = score + 10 - score_1
 
-                score_2 = circle_tangent_ratio(good_vectors) #good_vectors
+                score_2 = circle_tangent_ratio(good_vectors, limits = radius_limits) #good_vectors
                 # f = len(good_vectors)
                 # if(f>20):
                 #     f = 20
