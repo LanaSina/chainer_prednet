@@ -285,32 +285,32 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             original_vectors[i] = [[0,0,-1000,0]]
         i = i + 1
 
-    #mirror images
-    mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
-    #print("mirror images finished")
-    temp_list = sorted(os.listdir(mirror_images_dir))
-    temp_list = temp_list[0:len(images_list)]
-    mirror_images_list = [mirror_images_dir + im for im in temp_list]
-    repeated_mirror_list = [mirror_images_dir + im for im in temp_list for i in range(repeat) ]
+    # #mirror images
+    # mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
+    # #print("mirror images finished")
+    # temp_list = sorted(os.listdir(mirror_images_dir))
+    # temp_list = temp_list[0:len(images_list)]
+    # mirror_images_list = [mirror_images_dir + im for im in temp_list]
+    # repeated_mirror_list = [mirror_images_dir + im for im in temp_list for i in range(repeat) ]
 
-    # predict
-    test_prednet(initmodel = model_name, images_list = repeated_mirror_list, size=size, 
-                channels = channels, gpu = gpu, output_dir = mirror_dir + "prediction/", skip_save_frames=repeat,
-                reset_each = True
-                )
-    # calculate flow
-    i = 0
-    mirrored_vectors = [None] * len(population)
-    for input_image in mirror_images_list:
-        print(input_image)
-        prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
-        print(prediction_image_path)
-        results = lucas_kanade(input_image, prediction_image_path, output_dir+"/mirrored/flow/", save=True)
-        if results["vectors"]:
-            mirrored_vectors[i] = np.asarray(results["vectors"])
-        else:
-            mirrored_vectors[i] = [[0,0,-1000,0]]
-        i = i + 1
+    # # predict
+    # test_prednet(initmodel = model_name, images_list = repeated_mirror_list, size=size, 
+    #             channels = channels, gpu = gpu, output_dir = mirror_dir + "prediction/", skip_save_frames=repeat,
+    #             reset_each = True
+    #             )
+    # # calculate flow
+    # i = 0
+    # mirrored_vectors = [None] * len(population)
+    # for input_image in mirror_images_list:
+    #     print(input_image)
+    #     prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
+    #     print(prediction_image_path)
+    #     results = lucas_kanade(input_image, prediction_image_path, output_dir+"/mirrored/flow/", save=True)
+    #     if results["vectors"]:
+    #         mirrored_vectors[i] = np.asarray(results["vectors"])
+    #     else:
+    #         mirrored_vectors[i] = [[0,0,-1000,0]]
+    #     i = i + 1
 
     # calculate score
     scores = [None] * len(population)
@@ -320,24 +320,25 @@ def get_fitnesses_neat(population, model_name, config, id=0):
         if(len(original_vectors[i]>0)):
             # bonus
             score = score + 0.1
-            ratio = plausibility_ratio(original_vectors[i])
-            score_0 = ratio[0]
-            good_vectors = ratio[1]
-            score = score + score_0
-            if(len(good_vectors)>0): 
-                # bonus
-                score = score + 0.1
-                ratio = plausibility_ratio(mirrored_vectors[i])
-                good_vectors_m = ratio[1]
-                # print("good_vectors", good_vectors)
-                score_1 = mirroring_score(good_vectors, good_vectors_m)
-                if score_1 < 10:
-                    # bonus
-                    score = score + 10 - score_1
+            # ratio = plausibility_ratio(original_vectors[i])
+            # score_0 = ratio[0]
+            # good_vectors = ratio[1]
+            # score = score + score_0
+            # if(len(good_vectors)>0): 
+            #     # bonus
+            #     score = score + 0.1
+            #     ratio = plausibility_ratio(mirrored_vectors[i])
+            #     good_vectors_m = ratio[1]
+            #     # print("good_vectors", good_vectors)
+            #     score_1 = mirroring_score(good_vectors, good_vectors_m)
+            #     if score_1 < 10:
+            #         # bonus
+            #         score = score + 10 - score_1
 
-                score_2 = circle_tangent_ratio(good_vectors)
-                score_3 = strength_number(good_vectors)
-                score = score + score_2 + score_3
+            score_2 = circle_tangent_ratio(original_vectors[i]) #good_vectors
+            score = score_2*len(original_vectors[i])
+                # score_3 = strength_number(good_vectors)
+                # score = score + score_2 + score_3
 
         scores[i] =[i, score]
 
