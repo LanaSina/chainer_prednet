@@ -41,9 +41,47 @@ def illusion_score(vectors, flipped=False, mirrored=False):
     score = comp_x
     return score
 
-    # 5/10 = 0.5 
-    # 10 * 
+# returns ratio and vectors that are not unplausibly big
+def plausibility_ratio(vectors):
+    r = []
+    for vector in vectors:
+        norm = np.sqrt(vector[2]*vector[2] + vector[3]*vector[3])
+        if norm> 0.15: # or norm==0: 
+            continue
+        r.extend(vector)
 
+    ratio = len(r)/len(vectors)
+    return [ratio, r]
+
+#returns mean of vectors norms
+def strength_number(vectors):
+    sum_v = 0
+    total_v = 0
+
+    for vector in vectors:
+        norm = np.sqrt(vector[2]*vector[2] + vector[3]*vector[3])
+        sum_v = sum_v + norm
+        total_v = total_v +1
+    
+    return sum_v/total_v
+
+# returns the mirroring score (lower == better) 
+def mirroring_score():
+    for vector in vectors:
+        sum_v = [sum_v[0] + vector[2], sum_v[1] + vector[3]]
+
+    sum_mv = [0,0]
+    for vector in m_vectors:
+        sum_mv = [sum_mv[0] + vector[2], sum_mv[1] + vector[3]]
+
+    s0x = sum_v[0] + sum_mv[0]
+    s0y = sum_v[1] + sum_mv[1]
+
+    return abs(s0x) + abs(s0y)
+
+# return the mirrored score on x and y, 
+# the global strength of all plausible vectors, 
+# and the ratio of plausible vectors vs too big vectors
 def combined_illusion_score(vectors, m_vectors):
     # check vector alignements
     sum_v = [0,0]
@@ -75,6 +113,30 @@ def combined_illusion_score(vectors, m_vectors):
 
     return [s0x + s0y, s1, s2]
 
+# returns a high score if vectors are aligned on concentric circles
+def circle_tangent_ratio(vectors):
+    w = 160
+    h = 120
+    c = [w/2.0, h/2.0]
+    mean_ratio = 0
+    # if beta = angle between radius and current vector
+    # ratio of projection of V on tangent / ||V|| = sin(beta)
+    # ratio = sin(arcos(R*V/||V||*||R||)) = sqrt(1- a^2)
+    for v in vectors:
+        # radius vector R from image center to origin of V
+        r = [c[0], c[1], v[0]-c[0], v[1]-c[1]]
+        # a = V*R / ||V||*||R||
+        a = r[2] * v[2] + r[3] * v[3]
+        a = a/(np.sqrt(r[2]*r[2] + r[3]*r[3]) * np.sqrt(v[2]*v[2] + v[3]*v[3]) )
+        # ratio
+        # this would be negative if going counter clockwise?
+        ratio = np.sqrt(1 - a*a)
+        mean_ratio = mean_ratio + ratio
+
+    mean_ratio = mean_ratio/len(vectors)
+    return mean_ratio
+
+
 def generate_random_image(w, h):
     image = np.random.randint(256, size=(w, h, 3))
     return np.uint8(image)
@@ -102,78 +164,6 @@ def random_modify(image_path):
 
     return image
 
-
-# w h 
-def initial_population(img_shape, n_individuals=2):
-     init_population = [None]*n_individuals
-
-     for indv_num in range(n_individuals):
-         # Randomly generating initial population chromosomes genes values.
-         init_population[indv_num] = generate_random_image(img_shape[1], img_shape[0])
-         # #get_random_image_array(img_shape[0], img_shape[1])
-
-     return init_population
-
-def crossover(parents, n_offspring=1, mutation_ratio=0.1):
-    print(crossover)
-    # take half the pixels of each parent
-    shape = parents[0].shape
-
-    offsprings = [None]*n_offspring
-    for i in range(0, n_offspring):
-        # mix
-        im1 = Image.fromarray(parents[0])
-        im2 = Image.fromarray(parents[1])
-
-        a = np.random.random()
-        blended = Image.blend(im1, im2, alpha=a)
-        #blended.save("__" + str(i) +'.png')
-
-        # blended = parents[1].copy()
-        # blended[0:shape[0]/2, 0:shape[1]/2, ] = parents[0][0:shape[0]/2, 0:shape[1]/2, ]
-        # gs_min = np.zeros(shape)
-        # gs_max = np.ones(shape) * 50
-        # cross = np.random.sample(shape)*100
-        # mask = cv2.inRange(cross, gs_min, gs_max)
-        # # plt.imshow(mask)
-        # # plt.show()
-        # result = cv2.bitwise_and(parents[0], parents[1], mask=mask)
-        # blended = Image.fromarray(result)
-
-        # mutate
-        # mutation = get_random_image_array(shape[1], shape[0])
-        # im3 = Image.fromarray(mutation)
-        # mutated = Image.blend(blended, im3, alpha=mutation_ratio)
-        # offsprings[i] = np.array(mutated)
-
-
-        # pixel mutation
-        #random_pixels = generate_random_image(shape[0], shape[1])
-        random_pixels = get_random_image_array(shape[1], shape[0])
-        temp = Image.fromarray(random_pixels)
-        #temp.show()
-        a = np.random.randint(low=0, high=255, size=3)
-        b =  np.random.randint(low=0, high=255, size=3)
-        gs_min = a
-        gs_max = b
-
-        for j in range(3):
-            if a[j] > b[j]:
-                gs_min[j] = b[j]
-                gs_max[j] = a[j]
-       
-        #print(gs_min, gs_max, random_pixels.shape)
-   
-        mask = cv2.inRange(random_pixels, gs_min, gs_max)
-        blended = np.array(blended)
-        new_pixels =  cv2.bitwise_and(random_pixels, random_pixels, mask=mask)
-        maskReversed = cv2.bitwise_not(mask)
-        old_pixels = cv2.bitwise_and(blended, blended, mask=maskReversed)
-        mixed = cv2.bitwise_or(old_pixels, new_pixels)
-        result = Image.blend(Image.fromarray(blended), Image.fromarray(mixed), alpha=0.5)
-
-        offsprings[i] = np.array(result)
-    return offsprings
 
 def create_grid(x_res = 32, y_res = 32, scaling = 1.0):
 
@@ -320,11 +310,32 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             mirrored_vectors[i] = [[0,0,-1000,0]]
         i = i + 1
 
-    print("scores")
     # calculate score
     scores = [None] * len(population)
     for i in range(0, len(population)):
-        score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
+        #score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
+        score = 0
+        if(len(original_vectors[i]>0)):
+            # bonus
+            score = score + 0.1
+            ratio = plausibility_ratio(original_vectors[i])
+            score_0 = ratio[0]
+            good_vectors = ratio[1]
+            score = score + score_0
+            if(len(good_vectors)>0): 
+                # bonus
+                score = score + 0.1
+                ratio = plausibility_ratio(mirrored_vectors[i])
+                good_vectors_m = ratio[1]
+                score_1 = mirroring_score(good_vectors, good_vectors_m)
+                if score_1 < 10:
+                    # bonus
+                    score = score + 10 - score_1
+
+                score_2 = circle_tangent_ratio(good_vectors)
+                score_3 = strength_number(good_vectors)
+                score = score + score_2 + score_3
+
         scores[i] =[i, score]
 
     # normalize everything, and reverse the scores that should be minimized

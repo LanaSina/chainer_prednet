@@ -12,6 +12,8 @@ import cv2
 import os
 
 import torch
+from optical_flow.optical_flow import lucas_kanade
+
 
 
 
@@ -29,67 +31,6 @@ def generate_random_image(w, h):
     image = np.random.randint(256, size=(w, h, 3))
     return np.uint8(image)
 
-
-def crossover(parents, n_offspring=1, mutation_ratio=0.1):
-    print(crossover)
-    # take half the pixels of each parent
-    shape = parents[0].shape
-
-    offsprings = [None]*n_offspring
-    for i in range(0, n_offspring):
-        # mix
-        im1 = Image.fromarray(parents[0])
-        im2 = Image.fromarray(parents[1])
-
-        a = np.random.random()
-        blended = Image.blend(im1, im2, alpha=a)
-        #blended.save("__" + str(i) +'.png')
-
-        # blended = parents[1].copy()
-        # blended[0:shape[0]/2, 0:shape[1]/2, ] = parents[0][0:shape[0]/2, 0:shape[1]/2, ]
-        # gs_min = np.zeros(shape)
-        # gs_max = np.ones(shape) * 50
-        # cross = np.random.sample(shape)*100
-        # mask = cv2.inRange(cross, gs_min, gs_max)
-        # # plt.imshow(mask)
-        # # plt.show()
-        # result = cv2.bitwise_and(parents[0], parents[1], mask=mask)
-        # blended = Image.fromarray(result)
-
-        # mutate
-        # mutation = get_random_image_array(shape[1], shape[0])
-        # im3 = Image.fromarray(mutation)
-        # mutated = Image.blend(blended, im3, alpha=mutation_ratio)
-        # offsprings[i] = np.array(mutated)
-
-
-        # pixel mutation
-        #random_pixels = generate_random_image(shape[0], shape[1])
-        random_pixels = get_random_image_array(shape[1], shape[0])
-        temp = Image.fromarray(random_pixels)
-        #temp.show()
-        a = np.random.randint(low=0, high=255, size=3)
-        b =  np.random.randint(low=0, high=255, size=3)
-        gs_min = a
-        gs_max = b
-
-        for j in range(3):
-            if a[j] > b[j]:
-                gs_min[j] = b[j]
-                gs_max[j] = a[j]
-       
-        #print(gs_min, gs_max, random_pixels.shape)
-   
-        mask = cv2.inRange(random_pixels, gs_min, gs_max)
-        blended = np.array(blended)
-        new_pixels =  cv2.bitwise_and(random_pixels, random_pixels, mask=mask)
-        maskReversed = cv2.bitwise_not(mask)
-        old_pixels = cv2.bitwise_and(blended, blended, mask=maskReversed)
-        mixed = cv2.bitwise_or(old_pixels, new_pixels)
-        result = Image.blend(Image.fromarray(blended), Image.fromarray(mixed), alpha=0.5)
-
-        offsprings[i] = np.array(result)
-    return offsprings
 
 def test():
     size = [160,120]
@@ -271,39 +212,6 @@ def neat_cppn():
 
 
 def mutate_cppn():
-    # config_path = os.path.join(os.path.dirname(__file__), "neat.cfg")
-    # config = neat.Config(
-    #     neat.DefaultGenome,
-    #     neat.DefaultReproduction,
-    #     neat.DefaultSpeciesSet,
-    #     neat.DefaultStagnation,
-    #     config_path,
-    # )
-
-    # evaluator = MultiEnvEvaluator(
-    #     make_net, activate_net, make_env=make_env, max_env_steps=max_env_steps
-    # )
-
-    # def eval_genomes(genomes, config):
-    #     for _, genome in genomes:
-    #         genome.fitness = evaluator.eval_genome(genome, config)
-
-    # pop = neat.Population(config)
-    # # stats = neat.StatisticsReporter()
-    # # pop.add_reporter(stats)
-    # # reporter = neat.StdOutReporter(True)
-    # # pop.add_reporter(reporter)
-    # # logger = LogReporter("neat.log", evaluator.eval_genome)
-    # # pop.add_reporter(logger)
-
-    # # pop.run(eval_genomes, n_generations)
-
-    # # pop = [genome, genome,..]
-    # for genome in pop:
-    #     cppn_nodes = create_cppn(genome, config)
-    #     print(cppn_nodes)
-
-
     n = 2
     # generate network weights
     #art = cppn.Art_Gen()
@@ -425,10 +333,42 @@ def raw_test():
     # image = get_net_image(art, w, h, z)
     # image.save("_0.png")
 
+def circle_tangent(vectors):
+    w = 160
+    h = 120
+    c = [w/2.0, h/2.0]
+    mean_ratio = 0
+    # if beta = angle between radius and current vector
+    # ratio of projection of V on tangent / ||V|| = sin(beta)
+    # ratio = sin(arcos(R*V/||V||*||R||)) = sqrt(1- a^2)
+    for v in vectors:
+        # radius vector R from image center to origin of V
+        r = [c[0], c[1], v[0]-c[0], v[1]-c[1]]
+        # a = V*R / ||V||*||R||
+        a = r[2] * v[2] + r[3] * v[3]
+        a = a/(np.sqrt(r[2]*r[2] + r[3]*r[3]) * np.sqrt(v[2]*v[2] + v[3]*v[3]) )
+        #print("a", a)
+        # ratio
+        ratio = np.sqrt(1 - a*a)
+        mean_ratio = mean_ratio + ratio
+        # this would be negative if going counter clockwise
+        print("ratio", ratio)
 
+    mean_ratio = mean_ratio/len(vectors)
+    return mean_ratio
 
+def rotation_ratio():
+    input_image = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/datasets/snake/snake.jpg"
+    # calculate flows
+    prediction_image_path = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/snake/0000000006.png"
+    #"/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/snake_composite/0000000009.png"
+    #"/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/snake/0000000006.png"
+    results = lucas_kanade(input_image, prediction_image_path, "./test", save=True)
+    mean_ratio = circle_tangent(results["vectors"])
+    print("mean_ratio", mean_ratio)
 
+rotation_ratio()
 # mutate_cppn()
 # neat_cppn()
-neat_illusion()
+# neat_illusion()
 #raw_test()
