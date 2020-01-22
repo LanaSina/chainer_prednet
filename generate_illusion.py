@@ -155,8 +155,11 @@ def circle_tangent_ratio(vectors, limits = None):
     else:
         mean_ratio = 0
 
-    s_sum = np.sqrt(global_sum[0]*global_sum[0] + global_sum[1]*global_sum[1])
-    s_sum = s_sum / np.sqrt(abs_sum[0]*abs_sum[0] + abs_sum[1]*abs_sum[1])
+    if abs_sum[0] == 0 and abs_sum[1] == 0:
+        s_sum = 0
+    else:
+        s_sum = np.sqrt(global_sum[0]*global_sum[0] + global_sum[1]*global_sum[1])
+        s_sum = s_sum / np.sqrt(abs_sum[0]*abs_sum[0] + abs_sum[1]*abs_sum[1])
 
     return [mean_ratio,s_sum]
 
