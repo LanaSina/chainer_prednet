@@ -116,11 +116,14 @@ def combined_illusion_score(vectors, m_vectors):
     return [s0x + s0y, s1, s2]
 
 # returns a high score if vectors are aligned on concentric circles
+# [ratio of tangent, sum of directions]
 def circle_tangent_ratio(vectors, limits = None):
     w = 160
     h = 120
     c = [w/2.0, h/2.0]
     mean_ratio = 0
+    global_sum = [0,0]
+    abs_sum = [0,0]
     # if beta = angle between radius and current vector
     # ratio of projection of V on tangent / ||V|| = sin(beta)
     # ratio = sin(arcos(R*V/||V||*||R||)) = sqrt(1- a^2)
@@ -134,13 +137,17 @@ def circle_tangent_ratio(vectors, limits = None):
             if (norm_r<limits[0]) or (norm_r>limits[1]):
                 continue
 
-        # a = V*R / ||V||*||R||
+        global_sum = global_sum + v[2:3]
+        abs_sum = abs_sum + abs(v[2:3])
+
+        # projection of vectors on each other a = V*R / ||V||*||R||
         a = r[2] * v[2] + r[3] * v[3]
         a = a/(norm_r * norm_v)
-        # ratio
-        # this would be negative if going counter clockwise?
-        ratio = np.sqrt(1 - a*a)
-        mean_ratio = mean_ratio + ratio
+        # need the sign of the angle for orientation of vector
+        if(a>0):
+            # ratio
+            ratio = np.sqrt(1 - a*a)
+            mean_ratio = mean_ratio + ratio
         count = count + 1
 
     if count > 0:
@@ -148,7 +155,10 @@ def circle_tangent_ratio(vectors, limits = None):
     else:
         mean_ratio = 0
 
-    return mean_ratio
+    s_sum = np.sqrt(global_sum[0]*global_sum[0] + global_sum[1]*global_sum[1])
+    s_sum = s_sum / np.sqrt(abs_sum[0]*abs_sum[0] + abs_sum[1]*abs_sum[1])
+
+    return [mean_ratio,s_sum]
 
 
 def generate_random_image(w, h):
@@ -348,11 +358,11 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             #         # bonus
             #         score = score + 10 - score_1
 
-                score_2 = circle_tangent_ratio(good_vectors, limits = radius_limits) #good_vectors
+                score_2 = circle_tangent_ratio(good_vectors, limits = radius_limits)
                 # f = len(good_vectors)
                 # if(f>20):
                 #     f = 20
-                score = score_2#*score_2*len(good_vectors)
+                score = score_2[0] + score_2[1] #*score_2*len(good_vectors)
                 # score_3 = strength_number(good_vectors)
                 # score = score + score_2 + score_3
 
