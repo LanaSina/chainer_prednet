@@ -143,7 +143,11 @@ def circle_tangent_ratio(vectors, limits = None):
         mean_ratio = mean_ratio + ratio
         count = count + 1
 
-    mean_ratio = mean_ratio/count
+    if count > 0:
+        mean_ratio = mean_ratio/count
+    else:
+        mean_ratio = 0
+
     return mean_ratio
 
 
@@ -348,7 +352,7 @@ def get_fitnesses_neat(population, model_name, config, id=0):
                 # f = len(good_vectors)
                 # if(f>20):
                 #     f = 20
-                score = score_2*score_2*len(good_vectors)
+                score = score_2#*score_2*len(good_vectors)
                 # score_3 = strength_number(good_vectors)
                 # score = score + score_2 + score_3
 
@@ -403,7 +407,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     def eval_genomes(genomes, config):
         get_fitnesses_neat(genomes, model_name, config)
 
-    checkpointer = neat.Checkpointer(5)
+    checkpointer = neat.Checkpointer(50)
 
     # Create the population, which is the top-level object for a NEAT run.
     if not checkpoint:
