@@ -231,7 +231,7 @@ def get_fidelity(input_image_path, prediction_image_path):
 
 
 # population:  [id, net]
-def get_fitnesses_neat(population, model_name, config, id=0, c_dim):
+def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     print("fitnesses of ", len(population))
     output_dir = "temp" + str(id) + "/"
     repeat = 10
@@ -268,7 +268,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim):
 
     i = 0
     for genome_id, genome in population:
-        image_array = np.zeros(((w,h,3)))
+        image_array = np.zeros(((w,h,c_dim)))
         c = 0
         net_nodes = create_cppn(
             genome,
@@ -417,7 +417,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
                          "chainer_prednet/neat.cfg")
 
     def eval_genomes(genomes, config):
-        get_fitnesses_neat(genomes, model_name, config)
+        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim)
 
     checkpointer = neat.Checkpointer(50)
 
@@ -447,7 +447,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         out_names
     )
 
-    image_array = np.zeros(((w,h,3)))
+    image_array = np.zeros(((w,h,c_dim)))
     c = 0
     for node_func in delta_w_node:
         pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
