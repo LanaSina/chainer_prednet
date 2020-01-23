@@ -361,11 +361,11 @@ def get_fitnesses_neat(population, model_name, config, id=0):
             #         # bonus
             #         score = score + 10 - score_1
 
-                score_2 = circle_tangent_ratio(good_vectors, limits = radius_limits)
+                score_2 = circle_tangent_ratio(good_vectors)#, limits = radius_limits)
                 # f = len(good_vectors)
                 # if(f>20):
                 #     f = 20
-                score = score_2[0] + score_2[1] #*score_2*len(good_vectors)
+                score = 1-score_2[0] + 1-score_2[1] #*score_2*len(good_vectors)
                 # score_3 = strength_number(good_vectors)
                 # score = score + score_2 + score_3
 
