@@ -268,22 +268,40 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
 
     i = 0
     for genome_id, genome in population:
-        image_array = np.zeros(((w,h,c_dim)))
-        c = 0
-        net_nodes = create_cppn(
-            genome,
-            config,
-            leaf_names,
-            out_names
-        )
-        for node_func in net_nodes:
+        if(c_dim>1):
+            image_array = np.zeros(((w,h,3)))
+            c = 0
+            net_nodes = create_cppn(
+                genome,
+                config,
+                leaf_names,
+                out_names
+            )
+            for node_func in net_nodes:
+                pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+                pixels_np = pixels.numpy()
+                image_array[:,:,c] = np.reshape(pixels_np, (w, h))
+                c = c + 1
+            img_data = np.array(image_array*255.0, dtype=np.uint8)
+            image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
+        else:
+            net_nodes = create_cppn(
+                genome,
+                config,
+                leaf_names,
+                out_names
+            )
+            node_func = net_nodes[0]
             pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
             pixels_np = pixels.numpy()
-            image_array[:,:,c] = np.reshape(pixels_np, (w, h))
-            c = c + 1
+            image_array = np.zeros(((w,h,3)))
+            pixels_np = np.reshape(pixels_np, (w, h)) * 255.0
+            image_array[:,:,0] = pixels_np
+            image_array[:,:,1] = pixels_np
+            image_array[:,:,2] = pixels_np
+            img_data = np.array(image_array, dtype=np.uint8)
+            image =  Image.fromarray(np.reshape(img_data,(h,w,3)))
 
-        img_data = np.array(image_array*255.0, dtype=np.uint8)
-        image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
         image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
         images_list[i] = image_name
         repeated_images_list[i*repeat:(i+1)*repeat] = [image_name]*repeat
@@ -447,16 +465,29 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         out_names
     )
 
-    image_array = np.zeros(((w,h,c_dim)))
-    c = 0
-    for node_func in delta_w_node:
+    if(c_dim>1):
+        image_array = np.zeros(((w,h,c_dim)))
+        c = 0
+        for node_func in delta_w_node:
+            pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+            pixels_np = pixels.numpy()
+            image_array[:,:,c] = np.reshape(pixels_np, (w, h))
+            c = c + 1
+        img_data = np.array(image_array*255.0, dtype=np.uint8)
+        image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
+    else:
+        image_array = np.zeros(((w,h)))
+        node_func = delta_w_node[0]
         pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
         pixels_np = pixels.numpy()
-        image_array[:,:,c] = np.reshape(pixels_np, (w, h))
-        c = c + 1
+        image_array = np.zeros(((w,h,3)))
+        pixels_np = np.reshape(pixels_np, (w, h)) * 255.0
+        image_array[:,:,0] = pixels_np
+        image_array[:,:,1] = pixels_np
+        image_array[:,:,2] = pixels_np
+        img_data = np.array(image_array, dtype=np.uint8)
+        image =  Image.fromarray(np.reshape(img_data,(h,w,3)))
 
-    img_data = np.array(image_array*255.0, dtype=np.uint8)
-    image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
     image.save("best_illusion.png")
 
 
