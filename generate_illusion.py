@@ -231,7 +231,7 @@ def get_fidelity(input_image_path, prediction_image_path):
 
 
 # population:  [id, net]
-def get_fitnesses_neat(population, model_name, config, id=0):
+def get_fitnesses_neat(population, model_name, config, id=0, c_dim):
     print("fitnesses of ", len(population))
     output_dir = "temp" + str(id) + "/"
     repeat = 10
@@ -240,7 +240,6 @@ def get_fitnesses_neat(population, model_name, config, id=0):
     size = [w,h]
     channels = [3,48,96,192]
     gpu = 0
-    c_dim = 3
     scaling = 10
 
     prediction_dir = output_dir + "/original/prediction/"
@@ -365,7 +364,7 @@ def get_fitnesses_neat(population, model_name, config, id=0):
                 # f = len(good_vectors)
                 # if(f>20):
                 #     f = 20
-                score = 1-score_2[0] + 1-score_2[1] #*score_2*len(good_vectors)
+                score = 1-score_2[1] #*score_2*len(good_vectors)
                 # score_3 = strength_number(good_vectors)
                 # score = score + score_2 + score_3
 
@@ -397,7 +396,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     size = [w,h]
     channels = [3,48,96,192]
     gpu = 0
-    c_dim = 3
+    c_dim = 1
     scaling = 10
 
     best_dir = output_dir + "best/"
