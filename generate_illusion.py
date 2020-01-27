@@ -404,18 +404,19 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
             #         # bonus
             #         score = score + 10 - score_1
                 y = 0
-                step = 40
+                step = h/2
                 sign = 1
                 count = 0
+                score_3 = 0
                 while y<h:
                     limit = [y, y+step]
                     score_2 = direction_ratio(good_vectors, limit)
-                    score = score + sign*score_2 
+                    score_3 = score_3 + sign*score_2 
                     y = y + step
                     count = count + 1
                     sign = -sign
 
-                score = score/count
+                score = score + score_3/count
 
         scores[i] =[i, score]
 
@@ -452,12 +453,21 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
 
-    leaf_names = ["x","y","r"]
+    leaf_names = ["x","y_t","y_b","r"]
     out_names = ["r","g","b"]
 
+    # x_dat, y_dat, r_dat = create_grid(w, h, scaling)
+    # inp_x = torch.tensor(x_dat.flatten())
+    # inp_y = torch.tensor(y_dat.flatten())
+    # inp_r = torch.tensor(r_dat.flatten())
+
+    # let's divide y in two to create more structure
     x_dat, y_dat, r_dat = create_grid(w, h, scaling)
     inp_x = torch.tensor(x_dat.flatten())
-    inp_y = torch.tensor(y_dat.flatten())
+    flat_y = y_dat.flatten()
+    half_len = len(flat_y)/2
+    inp_y_top = torch.tensor(flat_y[0:half_len-1])
+    inp_y_bottom = torch.tensor(flat_y[half_len:len(flat_y)-1])
     inp_r = torch.tensor(r_dat.flatten())
 
     # Load configuration.
@@ -468,7 +478,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     def eval_genomes(genomes, config):
         get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim)
 
-    checkpointer = neat.Checkpointer(50)
+    checkpointer = neat.Checkpointer(100)
 
     # Create the population, which is the top-level object for a NEAT run.
     if not checkpoint:
@@ -500,7 +510,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         image_array = np.zeros(((w,h,c_dim)))
         c = 0
         for node_func in delta_w_node:
-            pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+            pixels = node_func(x=inp_x, y_t=inp_y_top, y_b=inp_y_bottom, r = inp_r)
             pixels_np = pixels.numpy()
             image_array[:,:,c] = np.reshape(pixels_np, (w, h))
             c = c + 1
@@ -509,7 +519,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     else:
         image_array = np.zeros(((w,h)))
         node_func = delta_w_node[0]
-        pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+        pixels = node_func(x=inp_x, y_t=inp_y_top, y_b=inp_y_bottom, r = inp_r)
         pixels_np = pixels.numpy()
         image_array = np.zeros(((w,h,3)))
         pixels_np = np.reshape(pixels_np, (w, h)) * 255.0
