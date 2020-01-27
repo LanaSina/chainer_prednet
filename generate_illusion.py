@@ -115,15 +115,41 @@ def combined_illusion_score(vectors, m_vectors):
 
     return [s0x + s0y, s1, s2]
 
+# returns 1 if vectors all aligned on x to the right; 
+# -1 if to the left
+def direction_ratio(vectors, limits = None):
+    mean_ratio = 0
+    count = 0
+    # make sure that all vectors are on x axis
+    for v in vectors:
+        if not limits is None:
+            if (v[1]<limits[0]) or (v[1]>limits[1]):
+                continue
+        # x length divided by norm
+        norm_v = np.sqrt(v[2]*v[2] + v[3]*v[3])
+        ratio = v[2]/norm_v
+        mean_ratio = mean_ratio + ratio
+        count = count + 1
+
+    if count>0:
+        mean_ratio = mean_ratio / count
+    else:
+        mean_ratio = 0
+
+    return mean_ratio
+
+
+
 # returns a high score if vectors are aligned on concentric circles
-# [ratio of tangent, sum of directions]
+# [ratio of tangent, ratio of alignment]
 def circle_tangent_ratio(vectors, limits = None):
     w = 160
     h = 120
     c = [w/2.0, h/2.0]
     mean_ratio = 0
-    global_sum = [0,0]
+    global_sum= [0,0]
     abs_sum = [0,0]
+    sum_norm = 0
     # if beta = angle between radius and current vector
     # ratio of projection of V on tangent / ||V|| = sin(beta)
     # ratio = sin(arcos(R*V/||V||*||R||)) = sqrt(1- a^2)
@@ -137,9 +163,9 @@ def circle_tangent_ratio(vectors, limits = None):
             if (norm_r<limits[0]) or (norm_r>limits[1]):
                 continue
 
-        global_sum = global_sum + v[2:3]
-        abs_sum = abs_sum + abs(v[2:3])
-
+        global_sum = [global_sum[0] + v[2], global_sum[1]+v[3]]
+        abs_sum = [abs_sum[0] + abs(v[2]), abs_sum[1]+ abs(v[3])]
+        sum_norm = sum_norm + norm_v
         # projection of vectors on each other a = V*R / ||V||*||R||
         a = r[2] * v[2] + r[3] * v[3]
         a = a/(norm_r * norm_v)
@@ -155,11 +181,12 @@ def circle_tangent_ratio(vectors, limits = None):
     else:
         mean_ratio = 0
 
-    if abs_sum[0] == 0 and abs_sum[1] == 0:
-        s_sum = 0
+    if sum_norm == 0:
+        s_sum = 1000
     else:
-        s_sum = np.sqrt(global_sum[0]*global_sum[0] + global_sum[1]*global_sum[1])
-        s_sum = s_sum / np.sqrt(abs_sum[0]*abs_sum[0] + abs_sum[1]*abs_sum[1])
+        s_sum = abs(global_sum[0]/abs_sum[0]) + abs(global_sum[1]/abs_sum[1])
+        s_sum = s_sum/2
+        #s_sum = abs(global_sum[0]) + abs(global_sum[1])
 
     return [mean_ratio,s_sum]
 
@@ -368,8 +395,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
             good_vectors = ratio[1]
             # score = score + score_0
             if(len(good_vectors)>0): 
-            #     # bonus
-            #     score = score + 0.1
+                score = score + 0.1
             #     ratio = plausibility_ratio(mirrored_vectors[i])
             #     good_vectors_m = ratio[1]
             #     # print("good_vectors", good_vectors)
@@ -377,14 +403,19 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
             #     if score_1 < 10:
             #         # bonus
             #         score = score + 10 - score_1
+                y = 0
+                step = 40
+                sign = 1
+                count = 0
+                while y<h:
+                    limit = [y, y+step]
+                    score_2 = direction_ratio(good_vectors, limit)
+                    score = score + sign*score_2 
+                    y = y + step
+                    count = count + 1
+                    sign = -sign
 
-                score_2 = circle_tangent_ratio(good_vectors)#, limits = radius_limits)
-                # f = len(good_vectors)
-                # if(f>20):
-                #     f = 20
-                score = 1-score_2[1] #*score_2*len(good_vectors)
-                # score_3 = strength_number(good_vectors)
-                # score = score + score_2 + score_3
+                score = score/count
 
         scores[i] =[i, score]
 
