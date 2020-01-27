@@ -118,6 +118,7 @@ def combined_illusion_score(vectors, m_vectors):
 # returns 1 if vectors all aligned on x to the right; 
 # -1 if to the left
 def direction_ratio(vectors, limits = None):
+    # print(vectors)
     mean_ratio = 0
     count = 0
     # make sure that all vectors are on x axis
@@ -227,11 +228,19 @@ def create_grid(x_res = 32, y_res = 32, scaling = 1.0):
     x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
     y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
     r_mat = np.sqrt(x_mat*x_mat + y_mat*y_mat)
+    temp = np.ones((num_points,1))
+    s_mat_1 = y_mat < 0
+    s_mat_1 = s_mat_1.astype(int)
+    s_mat_m1 = y_mat >= 0
+    s_mat_m1 = s_mat_m1.astype(int)
+    s_mat = s_mat_1 - s_mat_m1
+
     x_mat = np.tile(x_mat.flatten(), 1).reshape(1, num_points, 1)
     y_mat = np.tile(y_mat.flatten(), 1).reshape(1, num_points, 1)
     r_mat = np.tile(r_mat.flatten(), 1).reshape(1, num_points, 1)
+    s_mat = np.tile(s_mat.flatten(), 1).reshape(1, num_points, 1)
 
-    return x_mat, y_mat, r_mat
+    return x_mat, y_mat, r_mat, s_mat
 
 def fully_connected(input, out_dim, with_bias = True, mat = None):
     if mat is None:
@@ -258,7 +267,7 @@ def get_fidelity(input_image_path, prediction_image_path):
 
 
 # population:  [id, net]
-def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
+def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 1):
     print("fitnesses of ", len(population))
     output_dir = "temp" + str(id) + "/"
     repeat = 10
@@ -267,7 +276,6 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     size = [w,h]
     channels = [3,48,96,192]
     gpu = 0
-    scaling = 10
 
     prediction_dir = output_dir + "/original/prediction/"
     if not os.path.exists(prediction_dir):
@@ -286,12 +294,16 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     images_list = [None]* len(population)
     repeated_images_list = [None]* (len(population) + repeat)
     #save temporarily
-    leaf_names = ["x","y","r"]
+    #leaf_names = ["x","y","r"]
+    leaf_names = ["x","y","s"]
     out_names = ["r","g","b"]
-    x_dat, y_dat, r_dat = create_grid(w, h, scaling)
+    
+    x_dat, y_dat, r_dat, s_dat = create_grid(w, h, scaling)
     inp_x = torch.tensor(x_dat.flatten())
     inp_y = torch.tensor(y_dat.flatten())
     inp_r = torch.tensor(r_dat.flatten())
+    inp_s = torch.tensor(s_dat.flatten())
+
 
     i = 0
     for genome_id, genome in population:
@@ -305,7 +317,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
                 out_names
             )
             for node_func in net_nodes:
-                pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+                pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
                 pixels_np = pixels.numpy()
                 image_array[:,:,c] = np.reshape(pixels_np, (w, h))
                 c = c + 1
@@ -319,7 +331,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
                 out_names
             )
             node_func = net_nodes[0]
-            pixels = node_func(x=inp_x, y=inp_y, r = inp_r)
+            pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
             pixels_np = pixels.numpy()
             image_array = np.zeros(((w,h,3)))
             pixels_np = np.reshape(pixels_np, (w, h)) * 255.0
@@ -403,20 +415,19 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
             #     if score_1 < 10:
             #         # bonus
             #         score = score + 10 - score_1
-                y = 0
                 step = h/2
-                sign = 1
+                y = 0                
                 count = 0
-                score_3 = 0
+                score_2 = [None]*2
                 while y<h:
                     limit = [y, y+step]
-                    score_2 = direction_ratio(good_vectors, limit)
-                    score_3 = score_3 + sign*score_2 
+                    score_2[count] = direction_ratio(good_vectors, limit)
                     y = y + step
                     count = count + 1
-                    sign = -sign
 
-                score = score + score_3/count
+                if(score_2[0]*score_2[1]<0):
+                    # bonus points
+                    score = score + len(good_vectors)*(abs(score_2[0]) + abs(score_2[1]))/2
 
         scores[i] =[i, score]
 
@@ -447,28 +458,21 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     channels = [3,48,96,192]
     gpu = 0
     c_dim = 1
-    scaling = 10
+    scaling = 4
 
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
 
-    leaf_names = ["x","y_t","y_b","r"]
+    # s = structure
+    leaf_names = ["x","y","s"]
     out_names = ["r","g","b"]
 
-    # x_dat, y_dat, r_dat = create_grid(w, h, scaling)
-    # inp_x = torch.tensor(x_dat.flatten())
-    # inp_y = torch.tensor(y_dat.flatten())
-    # inp_r = torch.tensor(r_dat.flatten())
-
-    # let's divide y in two to create more structure
-    x_dat, y_dat, r_dat = create_grid(w, h, scaling)
+    x_dat, y_dat, r_dat, s_dat = create_grid(w, h, scaling)
     inp_x = torch.tensor(x_dat.flatten())
-    flat_y = y_dat.flatten()
-    half_len = len(flat_y)/2
-    inp_y_top = torch.tensor(flat_y[0:half_len-1])
-    inp_y_bottom = torch.tensor(flat_y[half_len:len(flat_y)-1])
+    inp_y = torch.tensor(y_dat.flatten())
     inp_r = torch.tensor(r_dat.flatten())
+    inp_s = torch.tensor(s_dat.flatten())
 
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -476,7 +480,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
                          "chainer_prednet/neat.cfg")
 
     def eval_genomes(genomes, config):
-        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim)
+        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim, scaling = scaling)
 
     checkpointer = neat.Checkpointer(100)
 
@@ -510,7 +514,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         image_array = np.zeros(((w,h,c_dim)))
         c = 0
         for node_func in delta_w_node:
-            pixels = node_func(x=inp_x, y_t=inp_y_top, y_b=inp_y_bottom, r = inp_r)
+            pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
             pixels_np = pixels.numpy()
             image_array[:,:,c] = np.reshape(pixels_np, (w, h))
             c = c + 1
@@ -519,7 +523,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     else:
         image_array = np.zeros(((w,h)))
         node_func = delta_w_node[0]
-        pixels = node_func(x=inp_x, y_t=inp_y_top, y_b=inp_y_bottom, r = inp_r)
+        pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
         pixels_np = pixels.numpy()
         image_array = np.zeros(((w,h,3)))
         pixels_np = np.reshape(pixels_np, (w, h)) * 255.0
