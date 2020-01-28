@@ -421,13 +421,19 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
                 score_2 = [None]*2
                 while y<h:
                     limit = [y, y+step]
-                    score_2[count] = direction_ratio(good_vectors, limit)
+                    score_2[count] = direction_ratio(original_vectors[i], limit)
                     y = y + step
                     count = count + 1
 
+                # bonus points
                 if(score_2[0]*score_2[1]<0):
-                    # bonus points
-                    score = score + len(good_vectors)*(abs(score_2[0]) + abs(score_2[1]))/2
+                    # is the ideal number of vectors
+                    temp = 24 - len(good_vectors)
+                    if(temp==0):
+                        n_dist = 1
+                    else:
+                        n_dist = 1/temp*temp
+                    score = score + n_dist*(abs(score_2[0]) + abs(score_2[1]))/2
 
         scores[i] =[i, score]
 
