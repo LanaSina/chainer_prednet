@@ -322,7 +322,9 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
                 image_array[:,:,c] = np.reshape(pixels_np, (w, h))
                 c = c + 1
             img_data = np.array(image_array*255.0, dtype=np.uint8)
-            image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
+            image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))#, mode = "HSV")
+            #image = image.convert(mode="RGB")
+
         else:
             net_nodes = create_cppn(
                 genome,
@@ -421,7 +423,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
                 score_2 = [None]*2
                 while y<h:
                     limit = [y, y+step]
-                    score_2[count] = direction_ratio(original_vectors[i], limit)
+                    score_2[count] = direction_ratio(good_vectors, limit)
                     y = y + step
                     count = count + 1
 
@@ -463,7 +465,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     size = [w,h]
     channels = [3,48,96,192]
     gpu = 0
-    c_dim = 1
+    c_dim = 3
     scaling = 10
 
     best_dir = output_dir + "best/"
@@ -525,7 +527,8 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
             image_array[:,:,c] = np.reshape(pixels_np, (w, h))
             c = c + 1
         img_data = np.array(image_array*255.0, dtype=np.uint8)
-        image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))
+        image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))#, mode = "HSV")
+        #image = image.convert(mode="RGB")
     else:
         image_array = np.zeros(((w,h)))
         node_func = delta_w_node[0]
