@@ -464,7 +464,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     channels = [3,48,96,192]
     gpu = 0
     c_dim = 1
-    scaling = 4
+    scaling = 10
 
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
