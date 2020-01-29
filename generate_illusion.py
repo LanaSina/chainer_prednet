@@ -295,7 +295,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
     repeated_images_list = [None]* (len(population) + repeat)
     #save temporarily
     #leaf_names = ["x","y","r"]
-    leaf_names = ["x","y","s"]
+    leaf_names = ["x","s"]
     out_names = ["r","g","b"]
     
     x_dat, y_dat, r_dat, s_dat = create_grid(w, h, scaling)
@@ -317,7 +317,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
                 out_names
             )
             for node_func in net_nodes:
-                pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
+                pixels = node_func(x=inp_x, s = inp_s)
                 pixels_np = pixels.numpy()
                 image_array[:,:,c] = np.reshape(pixels_np, (w, h))
                 c = c + 1
@@ -471,7 +471,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         os.makedirs(best_dir)
 
     # s = structure
-    leaf_names = ["x","y","s"]
+    leaf_names = ["x","s"]
     out_names = ["r","g","b"]
 
     x_dat, y_dat, r_dat, s_dat = create_grid(w, h, scaling)
@@ -520,7 +520,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
         image_array = np.zeros(((w,h,c_dim)))
         c = 0
         for node_func in delta_w_node:
-            pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
+            pixels = node_func(x=inp_x, s = inp_s)
             pixels_np = pixels.numpy()
             image_array[:,:,c] = np.reshape(pixels_np, (w, h))
             c = c + 1
@@ -529,7 +529,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     else:
         image_array = np.zeros(((w,h)))
         node_func = delta_w_node[0]
-        pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
+        pixels = node_func(x=inp_x, s = inp_s)
         pixels_np = pixels.numpy()
         image_array = np.zeros(((w,h,3)))
         pixels_np = np.reshape(pixels_np, (w, h)) * 255.0
