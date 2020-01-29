@@ -271,11 +271,11 @@ def get_fidelity(input_image_path, prediction_image_path):
     # the two images are
     return 1-err
 
-def get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names):
+def get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names, inputs):
     half_h = int(h/2)
 
     if(c_dim>1):
-            image_array = np.zeros(((w,h,3)))
+            image_array = np.zeros(((h,w,3)))
             c = 0
             net_nodes = create_cppn(
                 genome,
@@ -285,17 +285,17 @@ def get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names):
             )
             for node_func in net_nodes:
                 if(c<3):
-                    pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
+                    pixels = node_func(x=inputs[0], y=inputs[1], s = inputs[2])
                     pixels_np = pixels.numpy()
-                    image_array[:,0:(half_h-1),c] = np.reshape(pixels_np, (w, half_h))
+                    image_array[0:half_h,:,c] = np.reshape(pixels_np, (half_h,w))
                 else:
-                    pixels = node_func(x=inp_x, y=inp_y, s = inp_minus_s)
+                    pixels = node_func(x=inputs[0], y=inputs[1], s = inputs[3])
                     pixels_np = pixels.numpy()
-                    image_array[:,half_h:(h-1),c] = np.reshape(pixels_np, (w, half_h))
+                    image_array[half_h:h,:,c-3] = np.reshape(pixels_np, (half_h,w))
 
                 c = c + 1
             img_data = np.array(image_array*255.0, dtype=np.uint8)
-            image =  Image.fromarray(np.reshape(img_data,(h,w,c_dim)))#, mode = "HSV")
+            image =  Image.fromarray(img_data)#, mode = "HSV")
             #image = image.convert(mode="RGB")
     else:
         net_nodes = create_cppn(
@@ -356,11 +356,12 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
     inp_r = torch.tensor(r_dat.flatten())
     inp_s = torch.tensor(s_dat.flatten())
     inp_minus_s = torch.tensor(-s_dat.flatten())
+    inputs = [inp_x, inp_y, inp_s, inp_minus_s]
 
 
     i = 0
     for genome_id, genome in population:
-        image = get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names)
+        image = get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names, inputs)
 
         image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
         images_list[i] = image_name
@@ -481,6 +482,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     limit = 1
     w = 160
     h = 120
+    half_h = int(h/2)
     size = [w,h]
     channels = [3,48,96,192]
     gpu = 0
@@ -501,6 +503,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     inp_r = torch.tensor(r_dat.flatten())
     inp_s = torch.tensor(s_dat.flatten())
     inp_minus_s = torch.tensor(-s_dat.flatten())
+    inputs = [inp_x, inp_y, inp_s, inp_minus_s]
 
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -531,7 +534,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     # print('\nBest genome:\n{!s}'.format(winner))
 
     # Show output of the most fit genome against training data.
-    image = get_image_from_cppn(winner, c_dim, w, h, config, leaf_names, out_names)
+    image = get_image_from_cppn(winner, c_dim, w, h, config, leaf_names, out_names, inputs)
 
     image.save("best_illusion.png")
 
