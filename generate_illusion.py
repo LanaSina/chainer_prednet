@@ -225,17 +225,15 @@ def create_grid(x_res = 32, y_res = 32, scaling = 1.0):
     num_points = x_res*y_res
     # repeat x a few times
     rep = 5
-    nx = int(160/rep) # 32
-    # resolution on x = 10, repeated 5 times
-    res = 8
-    a = np.linspace(-1*scaling, scaling, num = res)
-    a = np.repeat(a, nx/res) #4
+    nx = int(160/rep)
+    sc = scaling/rep
+    a = np.linspace(-1*sc, sc, num = nx)
     x_range = np.tile(a, rep)
-    #x_range = np.linspace(-1*scaling, scaling, num = x_res)
-    y_range = np.linspace(-1*scaling, scaling, num = y_res)
-    x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
-    y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
-    r_mat = np.sqrt(x_mat*x_mat + y_mat*y_mat)
+    # x_range = np.linspace(-1*scaling, scaling, num = x_res)
+    # y_range = np.linspace(-1*scaling, scaling, num = y_res)
+    # x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
+    # y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
+    # r_mat = np.sqrt(x_mat*x_mat + y_mat*y_mat)
 
     # s_mat_1 = y_mat < 0
     # s_mat_1 = s_mat_1.astype(int)
