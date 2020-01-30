@@ -224,11 +224,14 @@ def create_grid(x_res = 32, y_res = 32, scaling = 1.0):
 
     num_points = x_res*y_res
     # repeat x a few times
-    # rep = 5
-    # nx = int(160/rep)
-    # a = np.linspace(-1*scaling, scaling, num = nx)
-    # x_range = np.tile(a, rep)
-    x_range = np.linspace(-1*scaling, scaling, num = x_res)
+    rep = 5
+    nx = int(160/rep) # 32
+    # resolution on x = 10, repeated 5 times
+    res = 8
+    a = np.linspace(-1*scaling, scaling, num = res)
+    a = np.repeat(a, nx/res) #4
+    x_range = np.tile(a, rep)
+    #x_range = np.linspace(-1*scaling, scaling, num = x_res)
     y_range = np.linspace(-1*scaling, scaling, num = y_res)
     x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
     y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
@@ -271,8 +274,20 @@ def get_fidelity(input_image_path, prediction_image_path):
     # the two images are
     return 1-err
 
-def get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names, inputs):
+def get_image_from_cppn(genome, c_dim, w, h, config):
     half_h = int(h/2)
+    scaling = 4
+    leaf_names = ["x","y","s"]
+    out_names = ["r0","g0","b0","r1","g1","b1"]
+    x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
+
+    inp_x = torch.tensor(x_dat.flatten())
+    inp_y = torch.tensor(y_dat.flatten())
+    inp_s = torch.tensor(s_dat.flatten())
+    inp_minus_s = torch.tensor(-s_dat.flatten())
+    #reverse
+    x0 = x_dat[:,::-1,:].flatten()
+    inv_x = torch.tensor(x0.flatten())
 
     if(c_dim>1):
             image_array = np.zeros(((h,w,3)))
@@ -284,14 +299,24 @@ def get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names, inpu
                 out_names
             )
             for node_func in net_nodes:
-                if(c<3):
-                    pixels = node_func(x=inputs[0], y=inputs[1], s = inputs[2])
-                    pixels_np = pixels.numpy()
-                    image_array[0:half_h,:,c] = np.reshape(pixels_np, (half_h,w))
-                else:
-                    pixels = node_func(x=inputs[0], y=inputs[1], s = inputs[3])
-                    pixels_np = pixels.numpy()
-                    image_array[half_h:h,:,c-3] = np.reshape(pixels_np, (half_h,w))
+                # if(c<3):
+                #     pixels = node_func(x=inputs[0], y=inputs[1], s = inputs[2])
+                #     pixels_np = pixels.numpy()
+                #     image_array[0:half_h,:,c] = np.reshape(pixels_np, (half_h,w))
+                # else:
+                #     pixels = node_func(x=-inputs[0], y=inputs[1], s = -inputs[2])
+                #     pixels_np = pixels.numpy()
+                #     image_array[half_h:h,:,c-3] = np.reshape(pixels_np, (half_h,w))
+                if(c>=3):
+                    break
+
+                pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
+                pixels_np = pixels.numpy()
+                image_array[0:half_h,:,c] = np.reshape(pixels_np, (half_h,w))
+                pixels = node_func(x=inv_x, y=inp_y, s = inp_s)
+                pixels_np = pixels.numpy()
+                image_array[half_h:h,:,c] = np.reshape(pixels_np, (half_h,w))
+
 
                 c = c + 1
             img_data = np.array(image_array*255.0, dtype=np.uint8)
@@ -318,7 +343,7 @@ def get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names, inpu
     return image
 
 # population:  [id, net]
-def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 1):
+def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     print("fitnesses of ", len(population))
     output_dir = "temp" + str(id) + "/"
     repeat = 10
@@ -347,21 +372,21 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, scaling = 
     repeated_images_list = [None]* (len(population) + repeat)
     #save temporarily
     #leaf_names = ["x","y","r"]
-    leaf_names = ["x","y","s"]
-    out_names = ["r0","g0","b0","r1","g1","b1"]
+    # leaf_names = ["x","y","s"]
+    # out_names = ["r0","g0","b0","r1","g1","b1"]
     
-    x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
-    inp_x = torch.tensor(x_dat.flatten())
-    inp_y = torch.tensor(y_dat.flatten())
-    inp_r = torch.tensor(r_dat.flatten())
-    inp_s = torch.tensor(s_dat.flatten())
-    inp_minus_s = torch.tensor(-s_dat.flatten())
-    inputs = [inp_x, inp_y, inp_s, inp_minus_s]
+    # x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
+    # inp_x = torch.tensor(x_dat.flatten())
+    # inp_y = torch.tensor(y_dat.flatten())
+    # inp_r = torch.tensor(r_dat.flatten())
+    # inp_s = torch.tensor(s_dat.flatten())
+    # inp_minus_s = torch.tensor(-s_dat.flatten())
+    # inputs = [inp_x, inp_y, inp_s, inp_minus_s]
 
 
     i = 0
     for genome_id, genome in population:
-        image = get_image_from_cppn(genome, c_dim, w, h, config, leaf_names, out_names, inputs)
+        image = get_image_from_cppn(genome, c_dim, w, h, config)
 
         image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
         images_list[i] = image_name
@@ -487,23 +512,22 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     channels = [3,48,96,192]
     gpu = 0
     c_dim = 3
-    scaling = 10
 
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
 
     # s = structure
-    leaf_names = ["x","y","s"]
-    out_names = ["r0","g0","b0","r1","g1","b1"]
+    # leaf_names = ["x","y","s"]
+    # out_names = ["r0","g0","b0","r1","g1","b1"]
     
-    x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
-    inp_x = torch.tensor(x_dat.flatten())
-    inp_y = torch.tensor(y_dat.flatten())
-    inp_r = torch.tensor(r_dat.flatten())
-    inp_s = torch.tensor(s_dat.flatten())
-    inp_minus_s = torch.tensor(-s_dat.flatten())
-    inputs = [inp_x, inp_y, inp_s, inp_minus_s]
+    # x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
+    # inp_x = torch.tensor(x_dat.flatten())
+    # inp_y = torch.tensor(y_dat.flatten())
+    # inp_r = torch.tensor(r_dat.flatten())
+    # inp_s = torch.tensor(s_dat.flatten())
+    # inp_minus_s = torch.tensor(-s_dat.flatten())
+    # inputs = [inp_x, inp_y, inp_s, inp_minus_s]
 
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -511,7 +535,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
                          "chainer_prednet/neat.cfg")
 
     def eval_genomes(genomes, config):
-        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim, scaling = scaling)
+        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim)
 
     checkpointer = neat.Checkpointer(100)
 
@@ -534,7 +558,7 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     # print('\nBest genome:\n{!s}'.format(winner))
 
     # Show output of the most fit genome against training data.
-    image = get_image_from_cppn(winner, c_dim, w, h, config, leaf_names, out_names, inputs)
+    image = get_image_from_cppn(winner, c_dim, w, h, config)
 
     image.save("best_illusion.png")
 
