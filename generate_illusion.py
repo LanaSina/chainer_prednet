@@ -300,14 +300,6 @@ def get_image_from_cppn(genome, c_dim, w, h, config, s_val = 1):
                 out_names
             )
             for node_func in net_nodes:
-                # if(c<3):
-                #     pixels = node_func(x=inputs[0], y=inputs[1], s = inputs[2])
-                #     pixels_np = pixels.numpy()
-                #     image_array[0:half_h,:,c] = np.reshape(pixels_np, (half_h,w))
-                # else:
-                #     pixels = node_func(x=-inputs[0], y=inputs[1], s = -inputs[2])
-                #     pixels_np = pixels.numpy()
-                #     image_array[half_h:h,:,c-3] = np.reshape(pixels_np, (half_h,w))
                 if(c>=3):
                     break
 
@@ -318,9 +310,7 @@ def get_image_from_cppn(genome, c_dim, w, h, config, s_val = 1):
                 for x_slice in range(0,x_rep):
                     start = x_slice*x_subwidth
                     image_array[0:half_h, start:(start+x_subwidth), c] = np.reshape(pixels_np, (half_h,x_subwidth))
-                    pixels = node_func(x=inv_x, y=inp_y, s = inp_s)
-                    pixels_np = pixels.numpy()
-                    image_array[half_h:h, start:(start+x_subwidth), c] = np.reshape(pixels_np, (half_h,x_subwidth))
+                    image_array[half_h:h, start:(start+x_subwidth), c] = np.reshape(reverse_pixels_np, (half_h,x_subwidth))
 
                 c = c + 1
             img_data = np.array(image_array*255.0, dtype=np.uint8)
@@ -373,19 +363,22 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
         os.makedirs(output_dir + "images/")
 
     s_step = 0.2
-    total_count = int(len(population)* (2/s_step))
+    pertype_count = int((2/s_step))
+    total_count = len(population)*pertype_count
     images_list = [None]*total_count
     repeated_images_list = [None]* (total_count + repeat)
     i = 0
     for genome_id, genome in population:
         # traverse latent space
         j = 0
-        for s_val in range(-1,1,s_step):
+        for s in range(0,pertype_count):
+            s_val = -1 + s*s_step
+            index = i*pertype_count+j
             image = get_image_from_cppn(genome, c_dim, w, h, config, s_val = s_val)
 
-            image_name = output_dir + "images/" + str(i+j).zfill(10) + ".png"
-            images_list[i] = image_name
-            repeated_images_list[i*repeat:(i+1)*repeat] = [image_name]*repeat
+            image_name = output_dir + "images/" + str(index).zfill(10) + ".png"
+            images_list[index] = image_name
+            repeated_images_list[index*repeat:(index+1)*repeat] = [image_name]*repeat
             image.save(image_name, "PNG")
             j = j+1
         i = i + 1
