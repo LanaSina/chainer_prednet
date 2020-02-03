@@ -224,16 +224,16 @@ def create_grid(x_res = 32, y_res = 32, scaling = 1.0):
 
     num_points = x_res*y_res
     # repeat x a few times
-    rep = 5
-    nx = int(160/rep)
-    sc = scaling/rep
-    a = np.linspace(-1*sc, sc, num = nx)
-    x_range = np.tile(a, rep)
-    # x_range = np.linspace(-1*scaling, scaling, num = x_res)
-    # y_range = np.linspace(-1*scaling, scaling, num = y_res)
-    # x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
-    # y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
-    # r_mat = np.sqrt(x_mat*x_mat + y_mat*y_mat)
+    # rep = 5
+    # nx = int(160/rep)
+    # sc = scaling/rep
+    # a = np.linspace(-1*sc, sc, num = nx)
+    # x_range = np.tile(a, rep)
+    x_range = np.linspace(-1*scaling, scaling, num = x_res)
+    y_range = np.linspace(-1*scaling, scaling, num = y_res)
+    x_mat = np.matmul(np.ones((y_res, 1)), x_range.reshape((1, x_res)))
+    y_mat = np.matmul(y_range.reshape((y_res, 1)), np.ones((1, x_res)))
+    r_mat = np.sqrt(x_mat*x_mat + y_mat*y_mat)
 
     # s_mat_1 = y_mat < 0
     # s_mat_1 = s_mat_1.astype(int)
@@ -272,12 +272,15 @@ def get_fidelity(input_image_path, prediction_image_path):
     # the two images are
     return 1-err
 
-def get_image_from_cppn(genome, c_dim, w, h, config):
+def get_image_from_cppn(genome, c_dim, w, h, config, s_val = 1):
     half_h = int(h/2)
     scaling = 4
     leaf_names = ["x","y","s"]
     out_names = ["r0","g0","b0","r1","g1","b1"]
-    x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
+    x_rep = 5
+    x_subwidth = int(160/x_rep)
+    x_dat, y_dat, r_dat, s_dat = create_grid(x_subwidth, half_h, scaling)
+    s_dat = s_val*s_dat
 
     inp_x = torch.tensor(x_dat.flatten())
     inp_y = torch.tensor(y_dat.flatten())
@@ -310,11 +313,14 @@ def get_image_from_cppn(genome, c_dim, w, h, config):
 
                 pixels = node_func(x=inp_x, y=inp_y, s = inp_s)
                 pixels_np = pixels.numpy()
-                image_array[0:half_h,:,c] = np.reshape(pixels_np, (half_h,w))
                 pixels = node_func(x=inv_x, y=inp_y, s = inp_s)
-                pixels_np = pixels.numpy()
-                image_array[half_h:h,:,c] = np.reshape(pixels_np, (half_h,w))
-
+                reverse_pixels_np = pixels.numpy()
+                for x_slice in range(0,x_rep):
+                    start = x_slice*x_subwidth
+                    image_array[0:half_h, start:(start+x_subwidth), c] = np.reshape(pixels_np, (half_h,x_subwidth))
+                    pixels = node_func(x=inv_x, y=inp_y, s = inp_s)
+                    pixels_np = pixels.numpy()
+                    image_array[half_h:h, start:(start+x_subwidth), c] = np.reshape(pixels_np, (half_h,x_subwidth))
 
                 c = c + 1
             img_data = np.array(image_array*255.0, dtype=np.uint8)
@@ -356,40 +362,32 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     if not os.path.exists(prediction_dir):
         os.makedirs(prediction_dir)
 
-    mirror_dir = output_dir + "mirrored/"
-    if not os.path.exists(mirror_dir+ "flow/"):
-        os.makedirs(mirror_dir +"flow/")
-    mirror_images_dir = mirror_dir+ "images/"
-    if not os.path.exists(mirror_images_dir):
-        os.makedirs(mirror_images_dir)
+    # mirror_dir = output_dir + "mirrored/"
+    # if not os.path.exists(mirror_dir+ "flow/"):
+    #     os.makedirs(mirror_dir +"flow/")
+    # mirror_images_dir = mirror_dir+ "images/"
+    # if not os.path.exists(mirror_images_dir):
+    #     os.makedirs(mirror_images_dir)
 
     if not os.path.exists(output_dir + "images/"):
         os.makedirs(output_dir + "images/")
 
-    images_list = [None]* len(population)
-    repeated_images_list = [None]* (len(population) + repeat)
-    #save temporarily
-    #leaf_names = ["x","y","r"]
-    # leaf_names = ["x","y","s"]
-    # out_names = ["r0","g0","b0","r1","g1","b1"]
-    
-    # x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
-    # inp_x = torch.tensor(x_dat.flatten())
-    # inp_y = torch.tensor(y_dat.flatten())
-    # inp_r = torch.tensor(r_dat.flatten())
-    # inp_s = torch.tensor(s_dat.flatten())
-    # inp_minus_s = torch.tensor(-s_dat.flatten())
-    # inputs = [inp_x, inp_y, inp_s, inp_minus_s]
-
-
+    s_step = 0.2
+    total_count = int(len(population)* (2/s_step))
+    images_list = [None]*total_count
+    repeated_images_list = [None]* (total_count + repeat)
     i = 0
     for genome_id, genome in population:
-        image = get_image_from_cppn(genome, c_dim, w, h, config)
+        # traverse latent space
+        j = 0
+        for s_val in range(-1,1,s_step):
+            image = get_image_from_cppn(genome, c_dim, w, h, config, s_val = s_val)
 
-        image_name = output_dir + "images/" + str(i).zfill(10) + ".png"
-        images_list[i] = image_name
-        repeated_images_list[i*repeat:(i+1)*repeat] = [image_name]*repeat
-        image.save(image_name, "PNG")
+            image_name = output_dir + "images/" + str(i+j).zfill(10) + ".png"
+            images_list[i] = image_name
+            repeated_images_list[i*repeat:(i+1)*repeat] = [image_name]*repeat
+            image.save(image_name, "PNG")
+            j = j+1
         i = i + 1
 
     # runs repeat x times on the input image, save in result folder
@@ -399,12 +397,12 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
                 )
     # calculate flows
     i = 0
-    original_vectors = [None] * len(population)
-    fidelity = [None] * len(population)
+    original_vectors = [None] * total_count
+    #fidelity = [None] * len(population)
     for input_image in images_list:
         prediction_image_path = prediction_dir + str(i).zfill(10) + ".png"
         results = lucas_kanade(input_image, prediction_image_path, output_dir+"/original/flow/", save=True)
-        fidelity[i] = get_fidelity(input_image, prediction_image_path)
+        #fidelity[i] = get_fidelity(input_image, prediction_image_path)
         if results["vectors"]:
             original_vectors[i] = np.asarray(results["vectors"])
         else:
@@ -439,59 +437,44 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     #     i = i + 1
 
     # calculate score
-    radius_limits = [20,50]
+    #radius_limits = [20,50]
     scores = [None] * len(population)
     for i in range(0, len(population)):
         #score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
         score = 0
-        if(len(original_vectors[i])>0):
-            # bonus
-            score = score + 0.1
-            ratio = plausibility_ratio(original_vectors[i])
-            score_0 = ratio[0]
-            good_vectors = ratio[1]
-            # score = score + score_0
-            if(len(good_vectors)>0): 
+        final_score = -100
+        for j in range(0,int(2/s_step)):
+            if(len(original_vectors[i+j])>0):
+                # bonus
                 score = score + 0.1
-            #     ratio = plausibility_ratio(mirrored_vectors[i])
-            #     good_vectors_m = ratio[1]
-            #     # print("good_vectors", good_vectors)
-            #     score_1 = mirroring_score(good_vectors, good_vectors_m)
-            #     if score_1 < 10:
-            #         # bonus
-            #         score = score + 10 - score_1
-                step = h/2
-                y = 0                
-                count = 0
-                score_2 = [None]*2
-                while y<h:
-                    limit = [y, y+step]
-                    score_2[count] = direction_ratio(good_vectors, limit)
-                    y = y + step
-                    count = count + 1
+                ratio = plausibility_ratio(original_vectors[i+j])
+                score_0 = ratio[0]
+                good_vectors = ratio[1]
 
-                # bonus points
-                if(score_2[0]*score_2[1]<0):
-                    # is the ideal number of vectors
-                    temp = 24 - len(good_vectors)
-                    if(temp==0):
-                        n_dist = 1
-                    else:
-                        n_dist = 1/temp*temp
-                    score = score + n_dist*(abs(score_2[0]) + abs(score_2[1]))/2
+                if(len(good_vectors)>0): 
+                    score = score + 0.1
+                    step = h/2
+                    y = 0                
+                    count = 0
+                    score_2 = [None]*2
+                    while y<h:
+                        limit = [y, y+step]
+                        score_2[count] = direction_ratio(good_vectors, limit)
+                        y = y + step
+                        count = count + 1
 
+                    # bonus points
+                    if(score_2[0]*score_2[1]<0):
+                        # is the ideal number of vectors
+                        temp = 24 - len(good_vectors)
+                        if(temp==0):
+                            n_dist = 1
+                        else:
+                            n_dist = 1/temp*temp
+                        score = score + n_dist*(abs(score_2[0]) + abs(score_2[1]))/2
+                if score>final_score:
+                    final_score = score
         scores[i] =[i, score]
-
-    # normalize everything, and reverse the scores that should be minimized
-    # for i in range(0, len(scores)):
-    #     score = scores[i]
-    #     # avoid comparing different species
-    #     s0 = -score[1][0]
-    #     s1 = score[1][1]
-    #     s3 = score[1][2]
-    #     total = (s0+s1+s3+ fidelity[i]*3)
-
-    #     scores[i] = [score[0], total]
 
     print("scores",scores)
     i = 0
@@ -499,7 +482,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
         genome.fitness = scores[i][1]
         i = i+1
 
-# take the flow vectors origins and change the pixels
+
 def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     repeat = 6
     limit = 1
@@ -514,18 +497,6 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     best_dir = output_dir + "best/"
     if not os.path.exists(best_dir):
         os.makedirs(best_dir)
-
-    # s = structure
-    # leaf_names = ["x","y","s"]
-    # out_names = ["r0","g0","b0","r1","g1","b1"]
-    
-    # x_dat, y_dat, r_dat, s_dat = create_grid(w, half_h, scaling)
-    # inp_x = torch.tensor(x_dat.flatten())
-    # inp_y = torch.tensor(y_dat.flatten())
-    # inp_r = torch.tensor(r_dat.flatten())
-    # inp_s = torch.tensor(s_dat.flatten())
-    # inp_minus_s = torch.tensor(-s_dat.flatten())
-    # inputs = [inp_x, inp_y, inp_s, inp_minus_s]
 
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -556,9 +527,9 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
     # print('\nBest genome:\n{!s}'.format(winner))
 
     # Show output of the most fit genome against training data.
-    image = get_image_from_cppn(winner, c_dim, w, h, config)
+    # image = get_image_from_cppn(winner, c_dim, w, h, config)
 
-    image.save("best_illusion.png")
+    # image.save("best_illusion.png")
 
 
 
