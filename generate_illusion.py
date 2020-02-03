@@ -434,13 +434,15 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     scores = [None] * len(population)
     for i in range(0, len(population)):
         #score = combined_illusion_score(original_vectors[i], mirrored_vectors[i])
-        score = 0
         final_score = -100
+        temp_index = -1
         for j in range(0,int(2/s_step)):
-            if(len(original_vectors[i+j])>0):
+            index = i*pertype_count+j
+            score = 0
+            if(len(original_vectors[index])>0):
                 # bonus
                 score = score + 0.1
-                ratio = plausibility_ratio(original_vectors[i+j])
+                ratio = plausibility_ratio(original_vectors[index])
                 score_0 = ratio[0]
                 good_vectors = ratio[1]
 
@@ -467,9 +469,12 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
                         score = score + n_dist*(abs(score_2[0]) + abs(score_2[1]))/2
                 if score>final_score:
                     final_score = score
-        scores[i] =[i, score]
+                    temp_index = index
+        
+        print("index ", temp_index, " score ", final_score)
+        scores[i] =[i, final_score]
 
-    print("scores",scores)
+    # print("scores",scores)
     i = 0
     for genome_id, genome in population:
         genome.fitness = scores[i][1]
