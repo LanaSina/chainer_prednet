@@ -1,9 +1,8 @@
-from abstract_image import get_random_image, get_random_image_array
 import argparse
 import cv2
 import csv
 import numpy as np
-from optical_flow.optical_flow import lucas_kanade
+from ..optical_flow.optical_flow import lucas_kanade
 import os
 from PIL import Image
 from PredNet.call_prednet import test_prednet
