@@ -1,0 +1,1199 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+Read interesting pixels
+```{r}
+dataFolder = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/results/fpsi_50/snake_mirrored/"
+```
+
+```{r}
+filename = "original/csv/00.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+colnames(df) = c("x","y","dx","dy")
+original = df
+
+filename = "mirrored/csv/00.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+colnames(df) = c("x","y","dx","dy")
+mirrored = df
+
+s = data.frame(original$dx+mirrored$dx, original$dy+mirrored$dy)
+colnames(s) = c("dx", "dy")
+mean(abs(df$dx))
+
+t = 0.02
+cond = original$dx > t & s$dx < t
+
+
+pass = original$dx[cond]
+
+```
+
+
+```{r}
+filename = "pixels.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+pix = df
+
+m_rgb = c(mean(df$r), mean(df$g), mean(df$b))
+print(m_rgb)
+
+plot(df$r, col = "red")
+points(df$g, col = "green")
+points(df$b, col = "blue")
+```
+
+```{r}
+filename = "previous_pixels.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+```
+
+
+```{r}
+m_rgb = c(mean(df$r), mean(df$g), mean(df$b))
+print(m_rgb)
+
+plot(df$r, col = "red", type = "l")
+points(pix$r, type = "l")
+
+plot(df$g, col = "green", type = "l")
+points(pix$g, type = "l")
+
+plot(df$b, col = "blue", type = "l")
+points(pix$b, type = "l")
+
+plot(pix$r-df$r, col = "red", type = "l")
+plot(pix$g-df$g, col = "green", type = "l")
+plot(pix$b-df$b, col = "blue", type = "l")
+```
+
+
+
+
+
+Plot blur data from json file
+
+```{r}
+library("rjson")
+
+cont <- fromJSON(file = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_100/results_2cont.json")
+proc <- fromJSON(file = "/Users/lana/Desktop/prgm/CSL/prednet_chainer_2/image_analysis/averages/common/fpsi_100/results_2proc.json")
+```
+
+```{r}
+cont_data = c()
+for(l in cont$results){
+  cont_data = c(cont_data, l$score)
+}
+
+proc_data = c()
+for(l in proc$results){
+  proc_data = c(proc_data, l$score)
+}
+
+plot(proc_data, type = "l")
+points(cont_data, type = "l", col = "red")
+```
+
+
+
+
+
+```{r}
+library(rgl)
+
+# dataFolder = "results/greyscale_analysis/"
+# dataFolder = "image_analysis/bike_15m/"
+dataFolder = "image_analysis/averages/"
+# dataFolder = "image_analysis/flipbook_results/"
+
+```
+
+Grays
+
+```{r}
+# df dataframe (luminance, or channel)
+# w, h width, height
+# xr, yr coordinates of rectangles to highlight (vector)
+# ox,oy sizes of rectangles (vector)
+displayPeaks = function(data,w,h, xr,yr,ox,oy, color1 ="grey", color2 = "black"){
+
+  f = 5
+  # distance between the lines
+  offset = 50
+
+  for(i in c(1:h)){
+    start = (i*w)+1
+    y = data[start:(start+w-1)]*f
+    if(i==1){
+      plot(y, type = "l", ylim=c(0,(offset+20)*h), main = color1) 
+    } else {
+      points(y-i*offset+h*offset, type = "l", col = color1)
+    }
+  }
+  
+  x = 1
+  if(length(xr)==0){
+    return()
+  }
+  
+  for(x in c(1:length(xr))){
+    for(i in c(yr[x]:(yr[x]+oy[x]-1)) ){
+      start = i*w + xr[x]
+      y = data[start:(start+ox[x]-1)]*f
+      points(c(xr[x]:(xr[x]+ox[x]-1)), y-i*offset+h*offset, type = "l", col = color2)
+    }
+  }
+}
+```
+
+
+```{r}
+filename = "mit_rgb_5/throat_rgb.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
+
+```{r}
+
+h = 120
+w = 80
+
+#arm
+# xr = c(61)
+# yr = c(49) + 1 
+# ox = c(10)
+# oy = c(10)
+
+#throat
+xr = c(59,60)
+yr = c(49,75) + 1
+ox = c(10,8)
+oy = c(10,8)
+
+#finger
+# xr = c(22)
+# yr = c(22)
+# ox = c(15)
+# oy = c(15)
+# 
+# xr = c()
+# yr = c()
+# ox = c()
+# oy = c()
+
+displayPeaks(df$r, w, h, xr, yr, ox, oy, "red")
+displayPeaks(df$b, w, h, xr, yr, ox, oy, "blue")
+displayPeaks(df$g, w, h, xr, yr, ox, oy, "green")
+
+data = df$b + df$g + df$b
+data = data/3
+displayPeaks(data, w, h, xr, yr, ox, oy, "black", "red")
+
+```
+
+```{r}
+f = 5
+# distance between the lines
+offset = 50
+
+data = df$g
+color1 = "green"
+
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = data[start:(start+w-1)]*f
+  if(i==h){
+    plot(y, type = "l",main = color1, xlim = c(50,70), ylim=c(2000,6000)) 
+  } else {
+    points(y+i*offset, type = "l", col = color1)
+  }
+}
+
+data = df$r
+color1 = "red"
+
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = data[start:(start+w-1)]*f
+  points(y+i*offset, type = "l", col = color1)
+}
+
+data = df$b
+color1 = "blue"
+
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = data[start:(start+w-1)]*f
+  points(y+i*offset, type = "l", col = color1)
+}
+  
+```
+
+-------
+
+```{r}
+
+
+# r
+for(i in c(h:1)){
+  start = (i*w)+1
+  y = df$r[start:(start+w-1)]*f
+  if(i==h){
+    #plot(y, type = "l", xlim = c(xr-5,xr+15), ylim=c(0,offset*h)) #ylim =c(yr+5*offset,yr-15*offset))
+    plot(y, type = "l", ylim=c(0,offset*h), main = "Red") 
+  } else {
+    points(y+i*offset, type = "l", col = "red")
+  }
+}
+
+
+#throat
+# xr = 59
+# yr = 49 + 1 
+
+#arm
+xr = 61
+yr = 49 + 1 
+start = (yr*w)+1
+ox = 10
+oy = 10
+for(i in c(yr:(yr+oy-1))){
+  start = i*w + xr
+  y = df$r[start:(start+ox-1)]*f
+  points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "black")
+}
+
+# throat
+# xr = 60
+# yr = 75 + 1 #(h-49)*offset
+# start = (yr*w)+1
+# ox = 8
+# oy = 8
+# for(i in c(yr:(yr+oy-1))){
+#   start = i*w + xr
+#   y = df$lum[start:(start+ox-1)]*f
+#   points(c(xr:(xr+ox-1)), y+i*offset, type = "l", col = "red")
+# }
+
+
+# rect(xr, yr, xr+10, yr-10*offset, density = NULL, angle = 0, border = "red")
+# xr = 60
+# yr = (h-75)*offset
+# rect(xr, yr, xr+8, yr-8*offset, density = NULL, angle = 0, border = "red")
+```
+
+
+
+```{r}
+filename = "fpsi_50/gradient_5.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+```
+
+Gradient
+
+
+```{r}
+
+filename = "gradient_strong_input.csv"
+dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+plot(df$r, type="l", ylim = c(0,255), col = "red"
+     , main = "rgb averages", ylab = "rgb", xlab = "row")
+points(df$g, type = "l", col = "green")
+points(df$b, type = "l", col = "blue")
+
+#gradient basis
+points(dfi$r, type = "l", col = "black")
+abline(h=128)
+
+
+plot(df$b-df$r, type="l", col = "purple", ylim = c(-10,10)
+     , main = "y = blue-red", ylab = "rgb", xlab = "row")
+points(dfi$b - dfi$r, type = "l", col = "grey")
+abline(h=0)
+abline(v=15)
+abline(v=45)
+abline(v=75)
+abline(v=105)
+# legend(0,10,c("frame 5", "frame 6"), col = c("purple","grey"), lty=c(1,1))
+
+#points(dfi$r-128, type = "l", col = "black")
+
+```
+
+
+```{r}
+filename = "mit_rgb_5/left_vertical_snake_9.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+filename = "mit_rgb_5/right_vertical_snake_9.csv"
+dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+plot(df$r, type="l", ylim = c(0,255), col = "red"
+     , main = paste("rgb averages", filename), ylab = "rgb", xlab = "row")
+points(df$g, type = "l", col = "green")
+points(df$b, type = "l", col = "blue")
+
+plot(dfi$r, type="l", ylim = c(0,255), col = "red"
+     , main = paste("rgb averages", filename), ylab = "rgb", xlab = "row")
+points(dfi$g, type = "l", col = "green")
+points(dfi$b, type = "l", col = "blue")
+
+filename = "vertical_snake_input.csv"
+input = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+plot(input$r, type="l", ylim = c(0,255), col = "red"
+     , main = "rgb averages (input)", ylab = "rgb", xlab = "row")
+points(input$g, type = "l", col = "green")
+points(input$b, type = "l", col = "blue")
+
+plot(input$r-df$r, type="l", ylim = c(-255,255), col = "red"
+     , main = "rgb error", ylab = "rgb", xlab = "row")
+points(input$g-df$g, type = "l", col = "green")
+points(input$b-df$b, type = "l", col = "blue")
+abline(h=0)
+
+plot(input$r-dfi$r, type="l", ylim = c(-255,255), col = "red"
+     , main = "rgb error", ylab = "rgb", xlab = "row")
+points(input$g-dfi$g, type = "l", col = "green")
+points(input$b-dfi$b, type = "l", col = "blue")
+abline(h=0)
+
+```
+
+
+```{r}
+
+# second dataset
+filename = "mit_rgb_5/vertical_snake_9.csv"
+dfi = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+plot(dfi$r, type="l", ylim = c(0,255), col = "red"
+     , main = paste("rgb averages", filename), ylab = "rgb", xlab = "row")
+points(dfi$b, type = "l", col = "blue")
+
+plot(input$r-df$r, type="l", ylim = c(-255,255), col = "red"
+     , main = "rgb error", ylab = "rgb", xlab = "row")
+points(input$g-df$g, type = "l", col = "green")
+points(input$b-df$b, type = "l", col = "blue")
+abline(h=0)
+
+# rbg differences juxtaposed
+plot(df$b-df$r, type="l", col = "purple", ylim = c(-255,255)
+     , main = "(blue-red)", ylab = "rgb", xlab = "row")
+points(dfi$b - dfi$r, type = "l", col = "grey")
+abline(h=0)
+legend(10,20,c("frame 8", "frame 9"), col = c("purple","grey"), lty=c(1,1))
+
+
+# h = 120
+# abline(v=h/5+1)
+# abline(v=2*h/5+1)
+# abline(v=3*h/5+1)
+# 
+# abline(h=255)
+# abline(h=70)
+# abline(h=0)
+
+# plot(dfi$r, type="l", ylim = c(0,255), col = "red"
+#      , main = "rgb averages input", ylab = "rgb", xlab = "frame")
+# points(dfi$g, type = "l", col = "green")
+# points(dfi$b, type = "l", col = "blue")
+```
+
+```{r}
+# growing
+sub = subset(df, size_t0<size_t1)
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+all_increasing = length(sub$r0)
+sub = subset(sub, size_t1<size_t2)
+c_increasing = length(sub$r0)
+c_increasing/all_increasing
+
+
+# plot(sub$size_t0, type="l")
+# points(sub$size_t1, type="l", col= "red")
+# points(sub$size_t2, type="l", col = "blue")
+
+mean(sub$size_t0)
+mean(sub$size_t1)
+mean(sub$size_t2)
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(110,130)
+     , main = "Increasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+# decreasing
+sub = subset(df, size_t0>size_t1)
+# mean(sub$size_t0)
+# mean(sub$size_t1)
+# mean(sub$size_t2)
+#sub = subset(sub, size_t1< mean_size/3)
+
+all_decreasing = length(sub$r0)
+sub = subset(sub, size_t1>size_t2)
+c_decreasing = length(sub$r0)
+c_decreasing/all_decreasing
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(50,150)
+     , main = "Decreasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+```
+
+```{r}
+
+# now sort by intensity
+# getting lighter
+sub = subset(df, mean_rgb0<mean_rgb1)
+# 1st color is black
+# sub = subset(sub, mean_rgb0<50)
+
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+# all_lighter = length(sub$r0)
+# sub = subset(sub, mean_rgb1<mean_rgb2)
+# c_lighter = length(sub$r0)
+# c_lighter/all_lighter
+
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,250)
+     , main = "Getting lighter", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting lighter", ylab = "area size", xlab = "time")
+
+# getting darker
+sub = subset(df, mean_rgb0>mean_rgb1)
+# 
+# # all_darker = length(sub$r0)
+# sub = subset(sub, mean_rgb1>mean_rgb2)
+# # c_darker = length(sub$r0)
+# # c_darker/all_darker
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,250)
+     , main = "Getting darker", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting darker", ylab = "area size", xlab = "time")
+
+
+# getting darker + area sizes go from 20 to 80: add blue and green, red follows decreasing slope noormally
+# getting lighter + 6400 to 7000: remove a bit of all colors, but remove more red
+```
+
+```{r}
+
+# dark areas
+sub_d= subset(df, mean_rgb1<50)
+# growing
+sub = subset(sub_d, size_t0<size_t1)
+
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+all_increasing = length(sub$r0)
+sub = subset(sub, size_t1<size_t2)
+c_increasing = length(sub$r0)
+c_increasing/all_increasing
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,100)
+     , main = "Dark - Increasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+# decreasing
+sub = subset(sub_d, size_t0>size_t1)
+
+all_decreasing = length(sub$r0)
+sub = subset(sub, size_t1>size_t2)
+c_decreasing = length(sub$r0)
+c_decreasing/all_decreasing
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,100)
+     , main = "Dark - Decreasing area", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+# getting lighter
+sub = subset(sub_d, mean_rgb0<mean_rgb1)
+# 1st color is black
+# sub = subset(sub, mean_rgb0<50)
+
+# how many times does the trend continue to t1?
+# ie how often would it be right to predict a reduction
+# all_lighter = length(sub$r0)
+# sub = subset(sub, mean_rgb1<mean_rgb2)
+# c_lighter = length(sub$r0)
+# c_lighter/all_lighter
+
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,250)
+     , main = "Getting lighter", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting lighter", ylab = "area size", xlab = "time")
+
+# getting darker
+# sub = subset(sub_d, mean_rgb0>mean_rgb1)
+# 
+# # all_darker = length(sub$r0)
+# sub = subset(sub, mean_rgb1>mean_rgb2)
+# # c_darker = length(sub$r0)
+# # c_darker/all_darker
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,250)
+     , main = "Getting darker", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting darker", ylab = "area size", xlab = "time")
+
+
+
+
+# try things
+sub = subset(sub, r2>r1)
+
+mean_sizes = c(mean(sub$size_t0), mean(sub$size_t1), mean(sub$size_t2))
+plot(mean_sizes, type="l"
+     , main = "Getting bluer (t2>t1)", ylab = "area size", xlab = "time")
+
+mean_red = c(mean(sub$r0), mean(sub$r1), mean(sub$r2))
+mean_green = c(mean(sub$g0), mean(sub$g1), mean(sub$g2))
+mean_blue = c(mean(sub$b0), mean(sub$b1), mean(sub$b2))
+mean_combined = c(mean(sub$mean_rgb0), mean(sub$mean_rgb1), mean(sub$mean_rgb2))
+
+plot(mean_combined, type="l", ylim = c(0,250)
+     , main = "Getting bluer (t2>t1)", ylab = "rgb", xlab = "time")
+points(mean_red, type = "l", col = "red")
+points(mean_green, type = "l", col = "green")
+points(mean_blue, type = "l", col = "blue")
+
+```
+
+
+
+```{r}
+filename = "10000/flicker_analysis.csv"
+#filename = "benham/flicker_analysis.csv"
+
+
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors=F)
+
+```
+
+
+```{r}
+
+df$id <- seq.int(nrow(df))
+sub = df
+# select right areas (circle is not circular...)
+
+
+sub = subset(sub, predicted_b>predicted_r)
+
+sub = subset(sub, area_1>area_2)
+sub = subset(sub, area_0>area_2)
+
+sub = subset(sub, (value_t1-value_t0)>50)
+
+
+plot(sub$value_t0, sub$value_t1)
+plot(sub$value_t1, sub$value_t2)
+
+plot(sub$area_0, sub$area_1)
+plot(sub$area_1, sub$area_2)
+
+plot(df$value_t0, df$value_t1)
+points(sub$value_t0, sub$value_t1, col = "blue")
+plot(df$value_t1, df$value_t2)
+points(sub$value_t1, sub$value_t2, col = "blue")
+
+plot(df$area_0, df$area_1)
+points(sub$area_0, sub$area_1, col = "blue")
+plot(df$area_1, df$area_2)
+points(sub$area_1, sub$area_2, col = "blue")
+
+plot(df$id, df$area_0)
+points(sub$id, sub$area_0, col="blue")
+plot(df$id, df$area_1)
+points(sub$id, sub$area_1, col="blue")
+plot(df$id, df$area_1)
+points(sub$id, sub$area_1, col="blue")
+
+plot(df$id, df$value_t0)
+points(sub$id, sub$value_t0, col="blue")
+plot(df$id, df$value_t1)
+points(sub$id, sub$value_t1, col="blue")
+plot(df$id, df$value_t2)
+points(sub$id, sub$value_t2, col="blue")
+
+
+plot(sub$area_0)
+plot(sub$area_1)
+plot(sub$area_2)
+plot(sub$value_t0)
+plot(sub$value_t1)
+plot(sub$value_t2)
+
+v0 = mean(sub$value_t0)
+v1 = mean(sub$value_t1)
+v2 = mean(sub$value_t2)
+
+vec = c(v0, v1, v2)
+plot(vec, type = "l", col = colors[c_index+1]
+   , main = "values", ylim = c(min(vec)-10, max(vec)+10)
+   )
+
+a0 = mean(sub$area_0)
+a1 = mean(sub$area_1)
+a2 = mean(sub$area_2)
+
+plot(c(a0, a1, a2), type = "l", col = colors[c_index+1], main = "areas")
+
+plot(sub$predicted_b, type="l", col="blue", ylim = c(0,255))
+#points(sub$predicted_g, type="l", col="green")
+points(sub$predicted_r, type="l", col="red")
+
+print(mean(sub$predicted_b))
+print(mean(sub$predicted_r))
+print(mean(sub$predicted_g))
+
+# black white black
+# medium medium-small small
+# lines, white +bg , black part
+  
+```
+
+
+```{r}
+# filename = "benham/area_analysis.csv"
+# filename = "0/area_analysis.csv"
+filename = "10000/area_analysis.csv"
+
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+
+c_index=0
+```
+
+
+```{r}
+plot_areas = function(c_index, df){
+  colors = c("red", "green", "blue")
+
+  sub = subset(df, color_index == c_index)
+
+  # sub = subset(sub, value_t0 != 0)
+  # sub = subset(sub, color_value > 200)
+  plot(sub$value_t1, sub$value_t2)
+  points(c(0,50000), c(0,50000), type = "l", col= "red")
+  plot(sub$area_1, sub$area_2)
+  points(c(0,50000), c(0,50000), type = "l", col= "red")
+
+
+  v0 = mean(sub$value_t0)
+  v1 = mean(sub$value_t1)
+  v2 = mean(sub$value_t2)
+  
+  vec = c(v0, v1, v2)
+  plot(vec, type = "l", col = colors[c_index+1]
+       , main = "values", ylim = c(min(vec)-10, max(vec)+10)
+       )
+  
+  a0 = mean(sub$area_0)
+  a1 = mean(sub$area_1)
+  a2 = mean(sub$area_2)
+  
+  plot(c(a0, a1, a2), type = "l", col = colors[c_index+1], main = "areas")
+}
+```
+
+
+```{r}
+
+#red
+plot_areas(0, df)
+plot_areas(2, df)
+plot_areas(1, df)
+
+
+df_no_label = df
+df_no_label$color_index <- NULL
+
+pr <- prcomp(df_no_label, center = TRUE, scale = TRUE)
+summary(pr)
+
+
+plot(pr$x[,1],pr$x[,2], col=df$color_index+1)
+plot(pr$x[,2],pr$x[,3], col=df$color_index+1)
+
+plot3d(pr$x[,1],pr$x[,2],pr$x[,3], col=df$color_index+1)
+
+plot_areas(0, sub)
+plot_areas(2, sub)
+plot_areas(1, sub)
+# 
+#sub = subset(df, color_index == 2)
+#plot(sub$color_value)
+
+sub = subset(df, area_2<20)
+sub = subset(sub, value_t0<20)
+length(subset(sub, color_index==0)$color_index)
+length(subset(sub, color_index==1)$color_index)
+length(subset(sub, color_index==2)$color_index)
+
+sub = subset(df, value_t2>205 & value_t1<100)
+length(subset(sub, color_index==0)$color_index)
+length(subset(sub, color_index==1)$color_index)
+length(subset(sub, color_index==2)$color_index)
+
+
+```
+
+
+
+```{r}
+dataFolder = "image_analysis/"
+
+# install.packages("RColorBrewer")
+library(RColorBrewer)
+```
+
+Plot color and surrounding colors
+
+```{r}
+
+filename = "black_white_next/flickers.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+```
+
+```{r}
+plot(df$bw_r, col = "red", type = "l",
+     main = "black->white->...", ylim = c(0,255)
+     #,ylab = "Mean value"
+    )
+points(df$bw_g, col = "green", type = "l")
+points(df$bw_b, col = "blue", type = "l")
+
+plot(df$wb_r, col = "red", type = "l",
+     main = "white->black->...", ylim = c(0,255)
+     #,ylab = "Mean value"
+    )
+points(df$wb_g, col = "green", type = "l")
+points(df$wb_b, col = "blue", type = "l")
+
+print(mean(df$bw_r))
+print(mean(df$bw_g))
+print(mean(df$bw_b))
+print(mean(df$wb_r))
+print(mean(df$wb_g))
+print(mean(df$wb_b))
+
+plot(df$bw_diff_rt1, col = "red", type = "l",
+     main = "black->white->diff_rgb", ylim = c(-255,255)
+    )
+points(df$bw_diff_gt1, col = "green", type = "l")
+points(df$bw_diff_bt1, col = "blue", type = "l")
+
+plot(df$wb_diff_rt1, col = "red", type = "l",
+     main = "white->black->...", ylim = c(-255,255)
+    )
+points(df$wb_diff_gt1, col = "green", type = "l")
+points(df$wb_diff_bt1, col = "blue", type = "l")
+
+print(mean(df$bw_diff_rt1))
+print(mean(df$bw_diff_gt1))
+print(mean(df$bw_diff_bt1))
+print(mean(df$wb_diff_rt1))
+print(mean(df$wb_diff_gt1))
+print(mean(df$wb_diff_bt1))
+
+```
+```{r}
+
+filename = "black_white_next/random_flickers.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+```
+
+
+```{r}
+plot(df$r_0, col = "black", type = "l",
+     main = "r t0, t1, t2", ylim = c(0,255)
+    )
+points(df$r_1, col = "blue", type = "l")
+points(df$r_2, col = "red", type = "l")
+
+plot(df$r_diff_t02, col = "red", type = "l",
+     main = "r diff t2-t0, t2-t1", ylim = c(-255,255)
+    )
+points(df$r_diff_t12, col = "blue", type = "l")
+
+print(mean(df$r_diff_t02))
+print(mean(df$r_diff_t12))
+
+
+plot(df$g_0, col = "black", type = "l",
+     main = "r t0, t1, t2", ylim = c(0,255)
+    )
+points(df$g_1, col = "blue", type = "l")
+points(df$g_2, col = "red", type = "l")
+
+plot(df$g_diff_t02, col = "red", type = "l",
+     main = "r diff t2-t0, t2-t1", ylim = c(-255,255)
+    )
+points(df$g_diff_t12, col = "blue", type = "l")
+
+print(mean(df$g_diff_t02))
+print(mean(df$g_diff_t12))
+
+
+plot(df$b_0, col = "black", type = "l",
+     main = "r t0, t1, t2", ylim = c(0,255)
+    )
+points(df$b_1, col = "blue", type = "l")
+points(df$b_2, col = "red", type = "l")
+
+plot(df$b_diff_t02, col = "red", type = "l",
+     main = "r diff t2-t0, t2-t1", ylim = c(-255,255)
+    )
+points(df$b_diff_t12, col = "blue", type = "l")
+
+print(mean(df$b_diff_t02))
+print(mean(df$b_diff_t12))
+```
+
+
+
+Plot colors during and after flicker
+
+```{r}
+
+filename = "black_white_next/bike_15m_flicker_before.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+colors = brewer.pal(n = 3, name = "YlOrRd")
+plot(df$bw_r0, col = colors[1], type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,255)
+    )
+points(df$bw_r1, col = colors[2], type = "l")
+points(df$bw_r2, col = colors[3], type = "l")
+
+plot(df$wb_r0, col = colors[1], type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_r1, col = colors[2], type = "l")
+points(df$wb_r2, col = colors[3], type = "l")
+
+evo_r = c(mean(df$bw_r0), mean(df$bw_r1), mean(df$bw_r2))
+evo_g = c(mean(df$bw_g0), mean(df$bw_g1), mean(df$bw_g2))
+evo_b = c(mean(df$bw_b0), mean(df$bw_b1), mean(df$bw_b2))
+plot(evo_r, col = "red", type = "l",
+     main = "Mean rgb value of black->white flickering pixels", ylim = c(0,255),
+     ylab = "Mean value", xlab = "t0 = black, t1 = white, t2 = next color"
+    )
+points(evo_g, col = "green", type = "l")
+points(evo_b, col = "blue", type = "l")
+
+evo_r = c(mean(df$wb_r0), mean(df$wb_r1), mean(df$wb_r2))
+evo_g = c(mean(df$wb_g0), mean(df$wb_g1), mean(df$wb_g2))
+evo_b = c(mean(df$wb_b0), mean(df$wb_b1), mean(df$wb_b2))
+plot(evo_r, col = "red", type = "l",
+     main = "Mean rgb value of white->black flickering pixels", ylim = c(0,255),
+     ylab = "Mean value", xlab = "t0 = white, t1 = black, t2 = next color"
+    )
+points(evo_g, col = "green", type = "l")
+points(evo_b, col = "blue", type = "l")
+
+```
+
+```{r}
+plot(df$bw_r0, col = "red", type = "l",
+     main = "bw t0,  ...", ylim = c(0,255)
+    )
+points(df$bw_g0, col = "green", type = "l")
+points(df$bw_b0, col = "blue", type = "l")
+
+plot(df$bw_r1, col = "red", type = "l",
+     main = "bw t1, ...", ylim = c(0,255)
+    )
+points(df$bw_g1, col = "green", type = "l")
+points(df$bw_b1, col = "blue", type = "l")
+
+plot(df$bw_r2, col = "red", type = "l",
+     main = "Colored flickers: black, white, ...", ylim = c(0,255)
+    )
+points(df$bw_g2, col = "green", type = "l")
+points(df$bw_b2, col = "blue", type = "l")
+
+
+plot(df$wb_r0, col = "red", type = "l",
+     main = "wb t0,  ...", ylim = c(0,255)
+    )
+points(df$wb_g0, col = "green", type = "l")
+points(df$wb_b0, col = "blue", type = "l")
+
+plot(df$wb_r1, col = "red", type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_g1, col = "green", type = "l")
+points(df$wb_b1, col = "blue", type = "l")
+
+plot(df$wb_r2, col = "red", type = "l",
+     main = "Colored flickers: white, black, ...", ylim = c(0,255)
+    )
+points(df$wb_g2, col = "green", type = "l")
+points(df$wb_b2, col = "blue", type = "l")
+```
+
+
+Comparing the flickers
+
+```{r}
+filename = "black_white_next/bike_15m_shift.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+ymax = max(c(df$bw_r,df$bw_b))
+plot(df$bw_r, col = "red", type = "l",
+     main = "Colored flickers: black, white, ..."#, ylim = c(1,4)
+    )
+points(df$bw_b, col="blue", type="l")
+
+# legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
+#       col=c("red", "blue"), cex=0.8)
+
+ymax = max(c(df$bw_r,df$bw_b))
+plot(df$wb_r, col = "red", type = "l",
+     main = "Colored flickers: white, black, ..."#, ylim = c(1,4)
+    )
+points(df$wb_b, col="blue", type="l")
+
+print("bw")
+print(mean(df$bw_b))
+print(mean(df$bw_r))
+print("wb")
+print(mean(df$wb_b))
+print(mean(df$wb_r))
+
+```
+
+Looking at sequences
+
+```{r}
+filename = "black_white_next/fpsi_transitions.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE, stringsAsFactors= FALSE)
+
+combi_w = unique(df$white_tr)
+combi_b = unique(df$black_tr)
+print(combi_w)
+print(combi_b)
+
+print("white")
+for(combi in combi_w){
+  a = subset(df, white_tr == combi)
+  print(combi)
+  print(length(a$white_tr))
+}
+
+print("\n black")
+for(combi in combi_b){
+  a = subset(df, black_tr == combi)
+  print(combi)
+  print(length(a$black_tr))
+}
+
+a = subset(df, black_tr == "0_0_1_1")
+print(unique(a$white_tr))
+
+```
+
+
+Look at the average color of the sky
+
+```{r}
+filename = "black_white_next/bike_15m_left_sample.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(df$r, col = "red", type = "l",
+     main = "left corner rgb", ylim = c(0,255)
+    )
+points(df$b, col="blue", type="l")
+
+points(df$g, col="green", type="l")
+```
+
+
+
+Comparing the amount of blue in the top of the images (==background: sky, trees) vs the bottom (foreground: road).
+Hypothesis: maybe backgrounds tend to be redder and foregrounds tend to be bluer?
+
+```{r}
+filename = "top_bottom_diff.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+```
+
+```{r}
+plot(df$red_top, col = "red", type = "l",
+     main = "Top of frames", ylim = c(min(df$blue_top)-100000, max(df$red_top) + 100000)
+    )
+points(df$blue_top, col="blue", type="l")
+legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
+       col=c("red", "blue"), cex=0.8)
+
+plot(df$red_bottom, col = "red", type = "l",
+     main = "Bottom of frames", ylim = c(min(df$blue_bottom)-100000, max(df$red_bottom) + 100000)
+    )
+points(df$blue_bottom, col="blue", type="l")
+legend(15, max(df$red_top), legend=c("Sum of red", "Sum of blue"),
+       col=c("red", "blue"), cex=0.8)
+
+
+plot(df$red_top, col = "red", type = "l", 
+     main = "Red in frames, bottom vs top", ylim = c(min(df$red_top)-100000, max(df$red_bottom) + 100000)
+    )
+points(df$red_bottom, col="red", type="l", lty=2)
+legend(15, max(df$red_top), legend=c("Red in top", "Red in bottom"),
+       col=c("red", "red"), lty=1:2, cex=0.8)
+
+plot(df$blue_top, col = "blue", type = "l", 
+     main = "Blue in frames, bottom vs top", ylim = c(min(df$blue_bottom)-100000, max(df$blue_bottom) + 100000)
+    )
+points(df$blue_bottom, col="blue", type="l", lty=2)
+legend(15, max(df$blue_top), legend=c("Blue in top", "Blue in bottom"),
+       col=c("blue", "blue"), lty=1:2, cex=0.8)
+```
+
+
+Test if approaching objects become bluer/redder as result of atmospheric dispersion
+
+```{r}
+filename = "reds_blues.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+```
+
+```{r}
+
+plot(df$red, col = "red", type = "l",
+     main = "Approaching tree", ylim = c(min(df$red)-2, max(df$blue) + 2)
+    )
+points(df$blue, col="blue", type="l")
+legend(8, 58, legend=c("Red average", "Blue average"),
+       col=c("red", "blue"),  lty=c(1,1), cex=0.8)
+```
+
+Check if moving objects have more blues on their motion direction side and more red on the other side
+
+```{r}
+filename = "motion_half.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+```
+
+```{r}
+plot(df$red_left, col = "red", type = "l",
+     main = "Left of frames"#, ylim = c(min(df$blue_top)-100000, max(df$red_top) + 100000)
+    )
+points(df$blue_left, col="blue", type="l")
+legend(8, 32, legend=c("Red Average", "Blue average"),
+       col=c("red", "blue"), lty=c(1,1), cex=0.8)
+
+plot(df$red_right, col = "red", type = "l",
+     main = "Right of frames", ylim = c(min(df$red_right)-2, max(df$blue_right) + 2)
+    )
+points(df$blue_right, col="blue", type="l")
+legend(8, 30, legend=c("Red Average", "Blue average"),
+       col=c("red", "blue"), lty=c(1,1), cex=0.8)
+
+```
+
+
+Colors
+
+```{r}
+dataFolder = "results//bike_lines_fw//"
+filename = "colors_average_20.csv"
+df = read.csv(paste(dataFolder,filename,sep = ""), check.names = FALSE)
+
+plot(x = df$red, type = "l", col = "red", ylab = "Average color values"
+     #, ylim=c(0,10)
+     )
+points(x = df$green, type = "l", col = "green")
+points(x = df$blue, type = "l", col = "blue")
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
