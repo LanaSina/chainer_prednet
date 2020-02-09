@@ -22,15 +22,15 @@ You can intterupt and resume downloading.
 
 3. Train  
 On a CPU  
-$ python main.py -i dataset/train_list.txt  
+$ python call_prednet.py -i dataset/train_list.txt  
 On a GPU  
-$ python main.py -i dataset/train_list.txt -g 0  
+$ python call_prednet.py -i dataset/train_list.txt -g 0  
   
 Model files and some images will be generated in models/ and images/ directory.   
 Image suffix means x (input), y (predicted), z (correct).  
 
 4. Test  
-$ python main.py -i dataset/test_list.txt --test --initmodel models/???.model  
+$ python call_prednet.py -i dataset/test_list.txt --test --initmodel models/???.model  
 Plase specify the model file with option --initialmodel.  
 Test result will be generated in images/ directory.  
 Image suffix means x (input), y (predicted).  
