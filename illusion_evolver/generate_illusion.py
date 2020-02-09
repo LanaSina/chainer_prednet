@@ -530,19 +530,17 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
 
     # image.save("best_illusion.png")
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='optical flow tests')
+    parser.add_argument('--input', '-i', default='', help='Path to the directory which countains the input_images directory')
+    parser.add_argument('--model', '-m', default='', help='.model file')
+    parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
+    parser.add_argument('--checkpoint', '-c', help='path of checkpoint to restore')
 
+    args = parser.parse_args()
+    output_dir = args.output_dir 
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-
-parser = argparse.ArgumentParser(description='optical flow tests')
-parser.add_argument('--input', '-i', default='', help='Path to the directory which countains the input_images directory')
-parser.add_argument('--model', '-m', default='', help='.model file')
-parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
-parser.add_argument('--checkpoint', '-c', help='path of checkpoint to restore')
-
-args = parser.parse_args()
-output_dir = args.output_dir 
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-neat_illusion(args.input, output_dir, args.model, args.checkpoint)
+    neat_illusion(args.input, output_dir, args.model, args.checkpoint)
 

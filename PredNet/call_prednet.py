@@ -75,7 +75,7 @@ def train_image_list(imagelist, model, channels, size, gpu, period, save, bprop)
             loss.unchain_backward()
             loss = 0
             optimizer.update()
-            if gpu >= 0:model.to_cpu()
+            # if gpu >= 0:model.to_cpu()
             # write_image(x_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'x.png')
             # write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
             # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
