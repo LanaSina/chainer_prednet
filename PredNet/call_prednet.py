@@ -150,7 +150,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             print('extended frameNo:' + str(j + 1))
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
-            if j == extension_duration.ext - 1:
+            if j == extension_duration - 1:
                 g = c.build_computational_graph([model.y])
                 node_name = NodeName(g.nodes)
                 for n in g.nodes:
