@@ -40,7 +40,7 @@ def write_image(image, path):
 
 writer = SummaryWriter('runs/test')#+datetime.now().strftime('%B%d  %H:%M:%S'))
 
-def save_model(count):
+def save_model(count, model, optimizer):
     print('save the model')
     serializers.save_npz('models/' + str(count) + '.model', model)
     print('save the optimizer')
@@ -49,9 +49,9 @@ def save_model(count):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
-def train_image_list(imagelist, model, channels, size, gpu, period, save, bprop):
-    xp = cuda.cupy if gpu >= 0 else np
+def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, save, bprop):
 
+    xp = cuda.cupy if gpu >= 0 else np
     batchSize = 1
     x_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
@@ -60,6 +60,8 @@ def train_image_list(imagelist, model, channels, size, gpu, period, save, bprop)
         return
 
     x_batch[0] = read_image(imagelist[0], size, offset)
+    loss = 0
+    count = 0
     for i in range(1, len(imagelist)):
         y_batch[0] = read_image(imagelist[i], size, offset);
         loss += model(chainer.Variable(xp.asarray(x_batch)),
@@ -81,16 +83,17 @@ def train_image_list(imagelist, model, channels, size, gpu, period, save, bprop)
             logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
 
         if (count%save) == 0:
-            save_model(count)
+            save_model(count, model, optimizer)
         x_batch[0] = y_batch[0]
         count += 1
+
         if (count>=period):
-            save_model(count)
+            save_model(count, model, optimizer)
             break
 
 
-def train_image_folders(sequencelist, prednet, imagelist, model, 
-                        channels, size, gpu, period, save, bprop, root):
+def train_image_folders(sequencelist, prednet, model, optimizer,
+                        channels, size, gpu, period, save, bprop):
     logf = open('log.txt', 'w')
     count = 0
     seq = 0
@@ -98,7 +101,7 @@ def train_image_folders(sequencelist, prednet, imagelist, model,
         prednet.reset_state()
         loss = 0
         imagelist = make_list(sequencelist[seq])
-        train_image_list(imagelist, model, channels, size, gpu, 
+        train_image_list(imagelist, model, optimizer, channels, size, gpu, 
                         period, save, bprop)
         seq = (seq + 1)%len(sequencelist)
 
@@ -172,8 +175,8 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     prednet = net.PredNet(size[0], size[1], channels)
     model = L.Classifier(prednet, lossfun=mean_squared_error)
     model.compute_accuracy = False
-    optimizer = optimizers.Adam()
-    optimizer.setup(model)
+    # optimizer = optimizers.Adam()
+    # optimizer.setup(model)
 
     if gpu >= 0:
         cuda.check_cuda_available()
@@ -227,14 +230,14 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
         print('Load optimizer state from', resume)
         serializers.load_npz(resume, optimizer)
 
-    train_image_folders(sequencelist, prednet, model, channels, size, gpu,
-                        period, save, bprop, root)      
+    train_image_folders(sequencelist, prednet, model, optimizer, channels, size, gpu,
+                        period, save, bprop)      
 
-    # For logging graph structure
-    model(chainer.Variable(xp.asarray(x_batch)),
-          chainer.Variable(xp.asarray(y_batch)))
-    writer.add_graph(model.y)
-    writer.close()
+    # # For logging graph structure
+    # model(chainer.Variable(xp.asarray(x_batch)),
+    #       chainer.Variable(xp.asarray(y_batch)))
+    # writer.add_graph(model.y)
+    # writer.close()
       
 def string_to_intarray(string_input):
     array = string_input.split(',')
@@ -251,8 +254,6 @@ if __name__ == "__main__":
     parser.add_argument('--sequences', '-seq', default='', help='Path to sequence list file')
     parser.add_argument('--gpu', '-g', default=-1, type=int,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--root', '-r', default='.',
-                        help='Root directory path of sequence and image files')
     parser.add_argument('--initmodel', default='',
                         help='Initialize the model from given file')
     parser.add_argument('--resume', default='',
@@ -306,5 +307,5 @@ if __name__ == "__main__":
                     args.skip_save_frames, args.ext_t, args.ext, offset)
     else:
         train_prednet(args.initmodel, sequencelist, args.gpu, size, channels,
-                            offset, args.resume, args.bprop, args.root, args.output_dir, args.period, args.save)      
+                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save)      
 
