@@ -12,7 +12,7 @@ from chainer import serializers
 from chainer.functions.loss.mean_squared_error import mean_squared_error
 import chainer.computational_graph as c
 from tb_chainer import SummaryWriter, NodeName, utils
-from . import net
+import net
 
 # what is this doing?
 def load_list(path, root):
@@ -293,7 +293,7 @@ if __name__ == "__main__":
         cuda.check_cuda_available()
     xp = cuda.cupy if args.gpu >= 0 else np
 
-    if args.images:
+    if args.images_path:
         sequencelist = [args.images_path]
     else:
         sequencelist = load_list(args.sequences, args.root)
