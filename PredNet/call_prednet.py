@@ -15,13 +15,10 @@ from tb_chainer import SummaryWriter, NodeName, utils
 import net
 
 # what is this doing?
-def load_list(path, root):
-    # how is that a list of tuples and not just a list of images?
-    tuples = []
-    for line in open(path):
-        pair = line.strip().split()
-        tuples.append(os.path.join(root, pair[0]))
-    return tuples
+def make_list(images_dir):
+    temp_list = sorted(os.listdir(images_dir))
+    image_list = [os.path.join(images_dir, im)  for im in temp_list]
+    return image_list
 
 def read_image(full_path, size, offset):
     image = np.asarray(Image.open(full_path)).transpose(2, 0, 1)
@@ -100,7 +97,7 @@ def train_image_folders(sequencelist, prednet, imagelist, model,
     while count < period:
         prednet.reset_state()
         loss = 0
-        imagelist = load_list(sequencelist[seq], root)
+        imagelist = make_list(sequencelist[seq])
         train_image_list(imagelist, model, channels, size, gpu, 
                         period, save, bprop)
         seq = (seq + 1)%len(sequencelist)
@@ -145,7 +142,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if gpu >= 0: model.to_cpu()
         x_batch[0] = model.y.data[0].copy()
         if gpu >= 0: model.to_gpu()
-        print(extension_duration)
+
         for j in range(0,extension_duration):
             print('extended frameNo:' + str(j + 1))
             loss += model(chainer.Variable(xp.asarray(x_batch)),
@@ -167,11 +164,9 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         prednet.reset_state()
 
 
-# sequencelist = [images_path]
-def test_prednet(initmodel, images_list, size, channels, gpu, output_dir = "result", 
-                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], root = ".", reset_each = False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+# sequence_list = [path, path] of folders with text file listing images
+def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
+                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], reset_each = False):
 
     #Create Model
     prednet = net.PredNet(size[0], size[1], channels)
@@ -193,20 +188,19 @@ def test_prednet(initmodel, images_list, size, channels, gpu, output_dir = "resu
     # Init/Resume
     serializers.load_npz(initmodel, model)
 
-    test_image_list(prednet, images_list, model, output_dir, channels, size, offset,
-                    gpu, skip_save_frames, extension_start, extension_duration, reset_each)
+    for seq in sequence_list:
+        image_list = make_list(seq)
+        test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
+                        gpu, skip_save_frames, extension_start, extension_duration, reset_each)
 
 
 
 def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
-                bprop, root,
-                output_dir = "result", period=1000000, save=10000):
+                bprop, root, output_dir="result", period=1000000, save=10000):
     if not os.path.exists('models'):
         os.makedirs('models')
     if not os.path.exists('images'):
         os.makedirs('images')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     #Create Model
     prednet = net.PredNet(size[0], size[1], channels)
@@ -235,7 +229,12 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
 
     train_image_folders(sequencelist, prednet, model, channels, size, gpu,
                         period, save, bprop, root)      
-    
+
+    # For logging graph structure
+    model(chainer.Variable(xp.asarray(x_batch)),
+          chainer.Variable(xp.asarray(y_batch)))
+    writer.add_graph(model.y)
+    writer.close()
       
 def string_to_intarray(string_input):
     array = string_input.split(',')
@@ -248,6 +247,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
     description='PredNet')
     parser.add_argument('--images_path', '-i', default='', help='Path input images')
+    parser.add_argument('--output_dir', '-out', default= "result", help='where to save predictions')
     parser.add_argument('--sequences', '-seq', default='', help='Path to sequence list file')
     parser.add_argument('--gpu', '-g', default=-1, type=int,
                         help='GPU ID (negative value indicates CPU)')
@@ -261,7 +261,7 @@ if __name__ == "__main__":
                         help='Size of target images. width,height (pixels)')
     parser.add_argument('--channels', '-c', default='3,48,96,192',
                         help='Number of channels on each layers')
-    parser.add_argument('--offset', '-o', default='0,0',
+    parser.add_argument('--offset', '-off', default='0,0',
                         help='Center offset of clipping input image (pixels)')
     parser.add_argument('--input_len', '-l', default=50, type=int,
                         help='Input frame length fo extended prediction on test (frames)')
@@ -285,6 +285,9 @@ if __name__ == "__main__":
         print('Please specify images or sequences')
         exit()
 
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+
     size = string_to_intarray(args.size)
     channels = string_to_intarray(args.channels)
     offset = string_to_intarray(args.offset)
@@ -296,17 +299,12 @@ if __name__ == "__main__":
     if args.images_path:
         sequencelist = [args.images_path]
     else:
-        sequencelist = load_list(args.sequences, args.root)
+        sequencelist = args.sequences
 
     if args.test == True:
-        test_prednet(args.init_model, sequencelist, output_dir, size, channels, args.gpu,
-                            output_dir, args.skip_save_frames, args.ext_t, args.ext, offset, args.root)
+        test_prednet(args.initmodel, sequencelist, size, channels, args.gpu, args.output_dir,
+                    args.skip_save_frames, args.ext_t, args.ext, offset)
     else:
-        train_prednet(args.init_model, sequencelist, args.gpu, size, channels,
-                            offset, args.resume, args.bprop, args.root, output_dir, args.period, args.save)      
+        train_prednet(args.initmodel, sequencelist, args.gpu, size, channels,
+                            offset, args.resume, args.bprop, args.root, args.output_dir, args.period, args.save)      
 
-    # For logging graph structure
-    model(chainer.Variable(xp.asarray(x_batch)),
-          chainer.Variable(xp.asarray(y_batch)))
-    writer.add_graph(model.y)
-    writer.close()
