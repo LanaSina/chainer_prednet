@@ -14,7 +14,7 @@ import chainer.computational_graph as c
 from tb_chainer import SummaryWriter, NodeName, utils
 import net
 
-# what is this doing?
+# return the sorted list of images in that folder
 def make_list(images_dir):
     temp_list = sorted(os.listdir(images_dir))
     image_list = [os.path.join(images_dir, im)  for im in temp_list]
@@ -50,6 +50,7 @@ def save_model(count, model, optimizer):
     writer.add_scalar('loss', float(model.loss.data), count)
 
 def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, save, bprop):
+    logf = open('log.txt', 'w')
 
     xp = cuda.cupy if gpu >= 0 else np
     batchSize = 1
@@ -94,7 +95,6 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
 
 def train_image_folders(sequencelist, prednet, model, optimizer,
                         channels, size, gpu, period, save, bprop):
-    logf = open('log.txt', 'w')
     count = 0
     seq = 0
     while count < period:
@@ -137,8 +137,6 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if reset_each:
             prednet.reset_state()
 
-        # if i == 0 or (args.input_len > 0 and i % args.input_len != 0):
-        #     continue
         if i == 0  or (extension_start==0) or (i%extension_start>0):
             continue
 
@@ -264,8 +262,8 @@ if __name__ == "__main__":
                         help='Number of channels on each layers')
     parser.add_argument('--offset', '-off', default='0,0',
                         help='Center offset of clipping input image (pixels)')
-    parser.add_argument('--input_len', '-l', default=50, type=int,
-                        help='Input frame length fo extended prediction on test (frames)')
+    # parser.add_argument('--input_len', '-l', default=50, type=int,
+    #                     help='Input frame length fo extended prediction on test (frames)')
     parser.add_argument('--ext', '-e', default=0, type=int,
                         help='Extended prediction on test (frames)')
     parser.add_argument('--ext_t', default=20, type=int,
