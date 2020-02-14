@@ -49,20 +49,20 @@ def save_model(count, model, optimizer):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
-def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, save, bprop):
+def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, save, bprop, step = 0):
+    if len(imagelist) == 0:
+        print("Not found images.")
+        return
+
     logf = open('log.txt', 'w')
 
     xp = cuda.cupy if gpu >= 0 else np
     batchSize = 1
     x_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
-    if len(imagelist) == 0:
-        print("Not found images.")
-        return
 
     x_batch[0] = read_image(imagelist[0], size, offset)
     loss = 0
-    count = 0
     for i in range(1, len(imagelist)):
         y_batch[0] = read_image(imagelist[i], size, offset);
         loss += model(chainer.Variable(xp.asarray(x_batch)),
@@ -83,27 +83,31 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
             print('loss:' + str(float(model.loss.data)))
             logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
 
-        if (count%save) == 0:
+        step += 1
+        if (step%save) == 0:
             save_model(count, model, optimizer)
         x_batch[0] = y_batch[0]
-        count += 1
-
-        if (count>=period):
-            save_model(count, model, optimizer)
+        
+        if (step>=period):
             break
+
+    return step
 
 
 def train_image_folders(sequencelist, prednet, model, optimizer,
                         channels, size, gpu, period, save, bprop):
-    count = 0
-    seq = 0
-    while count < period:
-        prednet.reset_state()
-        loss = 0
-        imagelist = make_list(sequencelist[seq])
-        train_image_list(imagelist, model, optimizer, channels, size, gpu, 
-                        period, save, bprop)
-        seq = (seq + 1)%len(sequencelist)
+
+    step = 0
+    while step<period:
+        for sequence in sequencelist:
+            prednet.reset_state()
+            imagelist = make_list(sequence)
+            step = train_image_list(imagelist, model, optimizer, channels, size, gpu, 
+                        period, save, bprop, step)
+            if (step>=period):
+                break
+
+    save_model(step, model, optimizer)
 
 
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
@@ -197,7 +201,7 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
 
 
 def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
-                bprop, root, output_dir="result", period=1000000, save=10000):
+                bprop, output_dir="result", period=1000000, save=10000):
     if not os.path.exists('models'):
         os.makedirs('models')
     if not os.path.exists('images'):
@@ -228,8 +232,8 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
         print('Load optimizer state from', resume)
         serializers.load_npz(resume, optimizer)
 
-    train_image_folders(sequencelist, prednet, model, optimizer, channels, size, gpu,
-                        period, save, bprop)      
+    train_image_folders(sequencelist, prednet, model, optimizer, 
+                        channels, size, gpu, period, save, bprop)   
 
     # # For logging graph structure
     # model(chainer.Variable(xp.asarray(x_batch)),
@@ -305,5 +309,6 @@ if __name__ == "__main__":
                     args.skip_save_frames, args.ext_t, args.ext, offset)
     else:
         train_prednet(args.initmodel, sequencelist, args.gpu, size, channels,
-                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save)      
+                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save)  
+
 
