@@ -69,7 +69,7 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
                       chainer.Variable(xp.asarray(y_batch)))
 
         if (i + 1) % bprop == 0:
-            print("count ", count," frameNo ", i)
+            print("count ", step," frameNo ", i)
             model.zerograds()
             loss.backward()
             loss.unchain_backward()
