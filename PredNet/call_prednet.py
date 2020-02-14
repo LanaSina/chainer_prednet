@@ -85,7 +85,7 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
 
         step += 1
         if (step%save) == 0:
-            save_model(count, model, optimizer)
+            save_model(step, model, optimizer)
         x_batch[0] = y_batch[0]
         
         if (step>=period):
