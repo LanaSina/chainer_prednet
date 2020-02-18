@@ -264,7 +264,7 @@ def call_with_args(args):
         temp_list = [line.rstrip('\n') for line in open(args.sequences)]
         # now read files in list
         for path in temp_list:
-            sequence_list = [line.rstrip('\n') for line in open(args.sequences)]
+            sequence_list = [line.rstrip('\n') for line in open(path)]
 
     if args.test == True:
         test_prednet(args.initmodel, sequence_list, size, channels, args.gpu, args.output_dir,
@@ -277,9 +277,9 @@ def call_with_args(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
     description='PredNet')
-    parser.add_argument('--images_path', '-i', default='', help='Path input images')
+    parser.add_argument('--images_path', '-i', default='', help='Path to input images')
     parser.add_argument('--output_dir', '-out', default= "result", help='where to save predictions')
-    parser.add_argument('--sequences', '-seq', default='', help='Path to file with list ')
+    parser.add_argument('--sequences', '-seq', default='', help='Path to file with list of text files, that themselves contain lists of images')
     parser.add_argument('--gpu', '-g', default=-1, type=int,
                         help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--initmodel', default='',
