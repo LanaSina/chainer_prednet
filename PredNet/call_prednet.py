@@ -69,7 +69,7 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
                       chainer.Variable(xp.asarray(y_batch)))
 
         if (i + 1) % bprop == 0:
-            print("count ", step," frameNo ", i)
+            print("step ", step," frameNo ", i)
             model.zerograds()
             loss.backward()
             loss.unchain_backward()
@@ -94,15 +94,13 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
     return step
 
 
-def train_image_folders(sequencelist, prednet, model, optimizer,
+def train_image_sequences(sequence_list, prednet, model, optimizer,
                         channels, size, gpu, period, save, bprop):
-
     step = 0
     while step<period:
-        for sequence in sequencelist:
+        for image_list in sequence_list:
             prednet.reset_state()
-            imagelist = make_list(sequence)
-            step = train_image_list(imagelist, model, optimizer, channels, size, gpu, 
+            step = train_image_list(image_list, model, optimizer, channels, size, gpu, 
                         period, save, bprop, step)
             if (step>=period):
                 break
@@ -169,7 +167,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         prednet.reset_state()
 
 
-# sequence_list = [path, path] of folders with text file listing images
+# sequence_list = [[path,path,path], [path,path,path]] list of lists of images
 def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
                 skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], reset_each = False):
 
@@ -193,14 +191,12 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     # Init/Resume
     serializers.load_npz(initmodel, model)
 
-    for seq in sequence_list:
-        image_list = make_list(seq)
-        test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
+    train_image_sequences(prednet, image_list, model, output_dir, channels, size, offset,
                         gpu, skip_save_frames, extension_start, extension_duration, reset_each)
 
 
 
-def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
+def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
                 bprop, output_dir="result", period=1000000, save=10000):
     if not os.path.exists('models'):
         os.makedirs('models')
@@ -232,14 +228,10 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
         print('Load optimizer state from', resume)
         serializers.load_npz(resume, optimizer)
 
-    train_image_folders(sequencelist, prednet, model, optimizer, 
+    for image_list in sequence_list:
+        train_image_folders(image_list, prednet, model, optimizer, 
                         channels, size, gpu, period, save, bprop)   
 
-    # # For logging graph structure
-    # model(chainer.Variable(xp.asarray(x_batch)),
-    #       chainer.Variable(xp.asarray(y_batch)))
-    # writer.add_graph(model.y)
-    # writer.close()
       
 def string_to_intarray(string_input):
     array = string_input.split(',')
@@ -248,12 +240,46 @@ def string_to_intarray(string_input):
 
     return array
 
+def call_with_args(args):  
+    if (not args.images_path) and (not args.sequences):
+        print('Please specify images or sequences')
+        exit()
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+
+    size = string_to_intarray(args.size)
+    channels = string_to_intarray(args.channels)
+    offset = string_to_intarray(args.offset)
+
+    if args.gpu >= 0:
+        cuda.check_cuda_available()
+    xp = cuda.cupy if args.gpu >= 0 else np
+
+    if args.images_path:
+        temp_list = make_list(args.images_path)
+        sequence_list = [temp_list]
+    else:
+        # read file
+        temp_list = [line.rstrip('\n') for line in open(args.sequences)]
+        # now read files in list
+        for path in temp_list:
+            sequence_list = [line.rstrip('\n') for line in open(args.sequences)]
+
+    if args.test == True:
+        test_prednet(args.initmodel, sequence_list, size, channels, args.gpu, args.output_dir,
+                    args.skip_save_frames, args.ext_t, args.ext, offset)
+    else:
+        train_prednet(args.initmodel, sequence_list, args.gpu, size, channels,
+                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save)  
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
     description='PredNet')
     parser.add_argument('--images_path', '-i', default='', help='Path input images')
     parser.add_argument('--output_dir', '-out', default= "result", help='where to save predictions')
-    parser.add_argument('--sequences', '-seq', default='', help='Path to sequence list file')
+    parser.add_argument('--sequences', '-seq', default='', help='Path to file with list ')
     parser.add_argument('--gpu', '-g', default=-1, type=int,
                         help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--initmodel', default='',
@@ -284,31 +310,5 @@ if __name__ == "__main__":
     parser.set_defaults(test=False)
     args = parser.parse_args()
 
-    if (not args.images_path) and (not args.sequences):
-        print('Please specify images or sequences')
-        exit()
-
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
-
-    size = string_to_intarray(args.size)
-    channels = string_to_intarray(args.channels)
-    offset = string_to_intarray(args.offset)
-
-    if args.gpu >= 0:
-        cuda.check_cuda_available()
-    xp = cuda.cupy if args.gpu >= 0 else np
-
-    if args.images_path:
-        sequencelist = [args.images_path]
-    else:
-        sequencelist = args.sequences
-
-    if args.test == True:
-        test_prednet(args.initmodel, sequencelist, size, channels, args.gpu, args.output_dir,
-                    args.skip_save_frames, args.ext_t, args.ext, offset)
-    else:
-        train_prednet(args.initmodel, sequencelist, args.gpu, size, channels,
-                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save)  
-
+    call_with_args(args)
 
