@@ -108,6 +108,7 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
     save_model(step, model, optimizer)
 
 
+# imagelist = [path, path, path]
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
     extension_start=0, extension_duration=100, reset_each = False):
 
@@ -191,7 +192,8 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     # Init/Resume
     serializers.load_npz(initmodel, model)
 
-    train_image_sequences(prednet, image_list, model, output_dir, channels, size, offset,
+    for image_list in sequence_list:
+        test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
                         gpu, skip_save_frames, extension_start, extension_duration, reset_each)
 
 
@@ -263,8 +265,14 @@ def call_with_args(args):
         # read file
         temp_list = [line.rstrip('\n') for line in open(args.sequences)]
         # now read files in list
+        # extract path of seq list file
+        array = args.sequences.split('/')
+        base_path = os.path.abspath(os.getcwd()) + "/" + '/'.join(array[:-1])
+        sequence_list = [None]* len(temp_list)
+        i = 0
         for path in temp_list:
-            sequence_list = [line.rstrip('\n') for line in open(path)]
+            sequence_list[i] = [os.path.join(base_path,line.rstrip('\n')) for line in open(os.path.join(base_path,path))]
+            i = i+1
 
     if args.test == True:
         test_prednet(args.initmodel, sequence_list, size, channels, args.gpu, args.output_dir,
