@@ -15,8 +15,10 @@ from tb_chainer import SummaryWriter, NodeName, utils
 import net
 
 # return the sorted list of images in that folder
-def make_list(images_dir):
+def make_list(images_dir, limit):
     temp_list = sorted(os.listdir(images_dir))
+    if(limit>0):
+        temp_list = temp_list[0:limit]
     image_list = [os.path.join(images_dir, im)  for im in temp_list]
     return image_list
 
@@ -49,7 +51,7 @@ def save_model(count, model, optimizer):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
-def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, save, bprop, step = 0):
+def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, period, save, bprop, step = 0):
     if len(imagelist) == 0:
         print("Not found images.")
         return
@@ -95,12 +97,12 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
 
 
 def train_image_sequences(sequence_list, prednet, model, optimizer,
-                        channels, size, gpu, period, save, bprop):
+                        channels, size, offset, gpu, period, save, bprop):
     step = 0
     while step<period:
         for image_list in sequence_list:
             prednet.reset_state()
-            step = train_image_list(image_list, model, optimizer, channels, size, gpu, 
+            step = train_image_list(image_list, model, optimizer, channels, size, offset, gpu, 
                         period, save, bprop, step)
             if (step>=period):
                 break
@@ -230,9 +232,8 @@ def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
         print('Load optimizer state from', resume)
         serializers.load_npz(resume, optimizer)
 
-    for image_list in sequence_list:
-        train_image_folders(image_list, prednet, model, optimizer, 
-                        channels, size, gpu, period, save, bprop)   
+    train_image_sequences(sequence_list, prednet, model, optimizer, 
+                        channels, size, offset, gpu, period, save, bprop)   
 
       
 def string_to_intarray(string_input):
@@ -259,7 +260,7 @@ def call_with_args(args):
     xp = cuda.cupy if args.gpu >= 0 else np
 
     if args.images_path:
-        temp_list = make_list(args.images_path)
+        temp_list = make_list(args.images_path, args.input_len)
         sequence_list = [temp_list]
     else:
         # read file
@@ -287,7 +288,7 @@ if __name__ == "__main__":
     description='PredNet')
     parser.add_argument('--images_path', '-i', default='', help='Path to input images')
     parser.add_argument('--output_dir', '-out', default= "result", help='where to save predictions')
-    parser.add_argument('--sequences', '-seq', default='', help='Path to file with list of text files, that themselves contain lists of images')
+    parser.add_argument('--sequences', '-seq', default='', help='In text mode, Path to file with list of text files, that themselves contain lists of images')
     parser.add_argument('--gpu', '-g', default=-1, type=int,
                         help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--initmodel', default='',
@@ -314,6 +315,8 @@ if __name__ == "__main__":
                         help='Period of training (frames)')
     parser.add_argument('--test', dest='test', action='store_true')
     parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, help='predictions will be saved every x steps')
+    parser.add_argument('--input_len', default=-1, type=int,
+                        help='how many frames to use if using images_path')
 
     parser.set_defaults(test=False)
     args = parser.parse_args()
