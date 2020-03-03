@@ -10,36 +10,36 @@ This code is the chainer implementation of [PredNet](http://arxiv.org/abs/1605.0
 The network learns a still image sequence generated from a video by a deep learning algorithm, and generates predicted frames.
 
 ## Quick start
-Open `running_chainer.ipynb` in Codalab.
+Open `running_chainer.ipynb` in Codalab.  
 Upload video frames by drag-and-drop in your codalab instance.
 
 
 ## Test environments
 
 1.
-OS: Ubuntu 16.04
-Python: 2.7
-GPU: Nvidia GTX1080ti
-chainer==5.30
+OS: Ubuntu 16.04  
+Python: 2.7  
+GPU: Nvidia GTX1080ti  
+chainer==5.30  
 
 2.
 Codalab Python 3 + GPU
 
 ## Requirements
 
+tensorboard-chainer  
+opencv  
+pillow  
+matplotlib  
+scipy  
+python-opencv  
+setuptools  
+numpy  
+cupy  
+net  
+cv2  
+setuptools  
 tensorboard-chainer
-opencv
-pillow 
-matplotlib
-scipy
-python-opencv
-setuptools
-numpy
-cupy
-net
-cv2
-setuptools
-tensorboard-chainer 
 
 GPU driver, CUDA Toolkit and cudnn
 
@@ -85,6 +85,7 @@ This will train the network on your specified input and save the loss and `[step
 https://github.com/neka-nat/ by Tanaka
 
 https://coxlab.github.io/prednet/ Original PredNet
+
 https://github.com/quadjr/PredNet Implemented by chainer
 
 
