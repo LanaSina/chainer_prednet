@@ -71,7 +71,6 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
                       chainer.Variable(xp.asarray(y_batch)))
 
         if (i + 1) % bprop == 0:
-            print("step ", step," frameNo ", i)
             model.zerograds()
             loss.backward()
             loss.unchain_backward()
@@ -82,7 +81,8 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
             # write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
             # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
             if gpu >= 0:model.to_gpu()
-            print('loss:' + str(float(model.loss.data)))
+            print("step ", step," frameNo ", i, "loss:", model.loss.data)
+            #print('loss:' + str(float(model.loss.data)))
             logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
 
         step += 1
