@@ -157,7 +157,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if gpu >= 0: model.to_gpu()
 
         for j in range(0,extension_duration):
-            print('extended frameNo:' + str(j + 1))
+
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
             if j == extension_duration - 1:
@@ -171,7 +171,11 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             loss.unchain_backward()
             loss = 0
             if gpu >= 0:model.to_cpu()
-            write_image(model.y.data[0].copy(), output_dir + '/test_' + str(i) + 'y_' + str(j + 1) + '.png')
+            num = str(i//skip_save_frames + j + 1).zfill(10)
+            new_filename = output_dir + '/' + num + '_extended.png'
+            print("writing ", new_filename)
+
+            write_image(model.y.data[0].copy(), new_filename)
             x_batch[0] = model.y.data[0].copy()
             if gpu >= 0:model.to_gpu()
         prednet.reset_state()
