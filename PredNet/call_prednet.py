@@ -51,12 +51,13 @@ def save_model(count, model, optimizer):
         writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
     writer.add_scalar('loss', float(model.loss.data), count)
 
-def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, period, save, bprop, step = 0):
+
+def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, period, save, 
+                     bprop, logf, step = 0):
+
     if len(imagelist) == 0:
         print("Not found images.")
         return
-
-    logf = open('log.txt', 'w')
 
     xp = cuda.cupy if gpu >= 0 else np
     batchSize = 1
@@ -66,6 +67,7 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
     x_batch[0] = read_image(imagelist[0], size, offset)
     loss = 0
     for i in range(1, len(imagelist)):
+
         y_batch[0] = read_image(imagelist[i], size, offset);
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
@@ -82,8 +84,8 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
             # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
             if gpu >= 0:model.to_gpu()
             print("step ", step," frameNo ", i, "loss:", model.loss.data)
-            #print('loss:' + str(float(model.loss.data)))
-            logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
+            logf.write(str(step) + ', ' + str(float(model.loss.data)) + '\n')
+            logf.flush()
 
         step += 1
         if (step%save) == 0:
@@ -99,11 +101,12 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
 def train_image_sequences(sequence_list, prednet, model, optimizer,
                         channels, size, offset, gpu, period, save, bprop):
     step = 0
+    logf = open('train_log.txt', 'w')
     while step<period:
         for image_list in sequence_list:
             prednet.reset_state()
             step = train_image_list(image_list, model, optimizer, channels, size, offset, gpu, 
-                        period, save, bprop, step)
+                        period, save, bprop, logf, step)
             if (step>=period):
                 break
 
@@ -111,8 +114,8 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
 
 
 # imagelist = [path, path, path]
-def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
-    extension_start=0, extension_duration=100, reset_each = False):
+def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
+    extension_start=0, extension_duration=100, reset_each = False, step = 0):
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -122,21 +125,25 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
     x_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
 
-    for i in range(0, len(imagelist)):
-        # print("frame ", imagelist[i])
+    for i in range(0, len(imagelist)-1):
         x_batch[0] = read_image(imagelist[i], size, offset)
+        y_batch[0] = read_image(imagelist[i+1], size, offset)
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
         loss.unchain_backward()
         loss = 0
         if gpu >= 0: model.to_cpu()
-        #write_image(x_batch[0].copy(), 'result/test_' + str(i) + 'x.png')
+        print("step ", step," frameNo ", i, "loss:", model.loss.data)
+        logf.write(str(step) + ', ' + str(float(model.loss.data)) + '\n')
+        logf.flush()
+        step = step + 1
 
         if ((i+1)%skip_save_frames == 0):
             num = str(i//skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
             print("writing ", new_filename)
             write_image(model.y.data[0].copy(), new_filename)
+
 
         if gpu >= 0: model.to_gpu()
         if reset_each:
@@ -169,6 +176,8 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             if gpu >= 0:model.to_gpu()
         prednet.reset_state()
 
+    return step
+
 
 # sequence_list = [[path,path,path], [path,path,path]] list of lists of images
 def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
@@ -194,9 +203,12 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     # Init/Resume
     serializers.load_npz(initmodel, model)
 
+    logf = open('test_log.txt', 'w')
+    step = 0
     for image_list in sequence_list:
-        test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
-                        gpu, skip_save_frames, extension_start, extension_duration, reset_each)
+        step = test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
+                                gpu, logf, skip_save_frames, extension_start, extension_duration,
+                                reset_each, step)
 
 
 
