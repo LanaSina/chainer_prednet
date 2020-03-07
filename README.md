@@ -16,6 +16,8 @@ Upload video frames by drag-and-drop in your codalab instance.
 
 ## Test environments
 
+The code has been tested and runs on following setups:
+
 1.
 OS: Ubuntu 16.04  
 Python: 2.7  
@@ -24,6 +26,12 @@ chainer==5.30
 
 2.
 Codalab Python 3 + GPU
+
+3.
+OS: Ubuntu 16.04.5LTS
+Python: 2.7.12
+GPU: Nvidia GTX1080ti
+chainer==6.7.0
 
 ## Requirements
 
