@@ -136,20 +136,19 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         print("step ", step," frameNo ", i, "loss:", model.loss.data)
         logf.write(str(step) + ', ' + str(float(model.loss.data)) + '\n')
         logf.flush()
-        step = step + 1
 
         if ((i+1)%skip_save_frames == 0):
-            num = str(i//skip_save_frames).zfill(10)
+            num = str(step//skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
             print("writing ", new_filename)
             write_image(model.y.data[0].copy(), new_filename)
-
 
         if gpu >= 0: model.to_gpu()
         if reset_each:
             prednet.reset_state()
 
-        if i == 0  or (extension_start==0) or (i%extension_start>0):
+        step = step + 1
+        if step == 0  or (extension_start==0) or (step%extension_start>0):
             continue
 
         if gpu >= 0: model.to_cpu()
@@ -160,18 +159,18 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
-            if j == extension_duration - 1:
-                g = c.build_computational_graph([model.y])
-                node_name = NodeName(g.nodes)
-                for n in g.nodes:
-                    if isinstance(n, chainer.variable.VariableNode) and \
-                      not isinstance(n._variable(), chainer.Parameter) and n.data is not None:
-                        img = utils.make_grid(np.expand_dims(chainer.cuda.to_cpu(n.data[-1, ...]), 1))
-                        writer.add_image(node_name.name(n), img, i)
+            # if j == extension_duration - 1:
+            #     g = c.build_computational_graph([model.y])
+            #     node_name = NodeName(g.nodes)
+            #     for n in g.nodes:
+            #         if isinstance(n, chainer.variable.VariableNode) and \
+            #           not isinstance(n._variable(), chainer.Parameter) and n.data is not None:
+            #             img = utils.make_grid(np.expand_dims(chainer.cuda.to_cpu(n.data[-1, ...]), 1))
+            #             writer.add_image(node_name.name(n), img, i)
             loss.unchain_backward()
             loss = 0
             if gpu >= 0:model.to_cpu()
-            num = str(i//skip_save_frames + j + 1).zfill(10)
+            num = str(step//skip_save_frames + j ).zfill(10)
             new_filename = output_dir + '/' + num + '_extended.png'
             print("writing ", new_filename)
 
