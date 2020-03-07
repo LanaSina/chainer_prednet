@@ -72,7 +72,7 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
 
-        if (i + 1) % bprop == 0:
+        if (step + 1) % bprop == 0:
             model.zerograds()
             loss.backward()
             loss.unchain_backward()
@@ -125,19 +125,25 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
     x_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
 
-    for i in range(0, len(imagelist)-1):
+    for i in range(0, len(imagelist)):
         x_batch[0] = read_image(imagelist[i], size, offset)
-        y_batch[0] = read_image(imagelist[i+1], size, offset)
+        if(i<len(imagelist)-1):
+            y_batch[0] = read_image(imagelist[i+1], size, offset)
+
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
         loss.unchain_backward()
         loss = 0
         if gpu >= 0: model.to_cpu()
-        print("step ", step," frameNo ", i, "loss:", model.loss.data)
-        logf.write(str(step) + ', ' + str(float(model.loss.data)) + '\n')
-        logf.flush()
 
-        if ((i+1)%skip_save_frames == 0):
+        if(i<len(imagelist)-1):
+            print("step ", step," frameNo ", i, "loss:", model.loss.data)
+            logf.write(str(step) + ', ' + str(float(model.loss.data)) + '\n')
+            logf.flush()
+        else:
+            print("step ", step," frameNo ", i, "loss: last frame.")
+
+        if ((step+1)%skip_save_frames == 0):
             num = str(step//skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
             print("writing ", new_filename)
@@ -208,12 +214,12 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
 
     logf = open('test_log.txt', 'w')
     step = 0
+    print("sequence_list ", sequence_list)
     for image_list in sequence_list:
         step = test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
                                 gpu, logf, skip_save_frames, extension_start, extension_duration,
                                 reset_each, step)
-
-
+        
 
 def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
                 bprop, output_dir="result", period=1000000, save=10000):
