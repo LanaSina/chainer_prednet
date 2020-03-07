@@ -70,15 +70,19 @@ By default, the latter half of the video will be the test data.
 
 see `running_chainer.ipynb` .
 
-Example with [test images](link), using [model](link) trained on [FPSI dataset](link) and 10 predicitons of the rotating snake illusion on gpu
+Example with [test images](https://figshare.com/articles/Test_data/5483680), using this [model](https://figshare.com/articles/Sample_Weight_Model_Front_Psychol_15_March_2018_/11931222) trained on [FPSI dataset](https://figshare.com/articles/Training_data/5483668). Output 10 predicitons of the rotating snake illusion on gpu
 
 `python chainer_prednet/PredNet/call_prednet.py --images input_images --initmodel fpsi_500000_20v.model --input_len 10 --test --g 0`
 
-Example of training:
+Example of training on your own data:
 
-`chainer_prednet/PredNet/call_prednet.py --images input_images --g 0 --save 10000` 
+`chainer_prednet/PredNet/call_prednet.py --images input_images --g 0 --save 10000 --period 1000000` 
 
-This will train the network on your specified input and save the loss and `[step].model` files.
+This will train the network on your specified input for 1000000 steps and save `[step].model` files.
+
+### Optical flow
+
+TODO documentation and add images
 
 ## References
 
