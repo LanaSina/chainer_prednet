@@ -90,7 +90,14 @@ This will train the network on your specified input for 1000000 steps and save `
 
 ### Optical flow
 
-TODO documentation and add images
+The optical flow module allows you to visualise predicted motion.
+For example to detect visual illusions, perform extended prediction on a static input image and take the optical flow between two extended predictions or even between a regular prediction and an extended prediction.
+See `running_prednet.ipynb` for how to run the following example: a. Rotating Snakes illusion as input image, b. extended prediction, c. optical flow (magnified 60x)
+
+![Input](images_for_readme/input.jpeg)
+![Extended prediction](images_for_readme/ext_14.png)
+![Flow](images_for_readme/flow.png)
+
 
 ## References
 
