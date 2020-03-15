@@ -10,8 +10,8 @@ This code is the chainer implementation of [PredNet](http://arxiv.org/abs/1605.0
 The network learns a still image sequence generated from a video by a deep learning algorithm, and generates predicted frames.
 
 ## Quick start
-Open `running_chainer.ipynb` in Codalab.  
-Upload video frames by drag-and-drop in your codalab instance.
+Open `running_chainer.ipynb` in Colab (from the github repo: click on `running_chainer.ipynb`, github will show a an "open in colab" button.)
+Upload video frames by drag-and-drop in your codlab instance.
 
 
 ## Test environments

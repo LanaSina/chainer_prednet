@@ -11,7 +11,7 @@ from chainer import optimizers
 from chainer import serializers
 from chainer.functions.loss.mean_squared_error import mean_squared_error
 import chainer.computational_graph as c
-from tb_chainer import SummaryWriter, NodeName, utils
+# from tb_chainer import SummaryWriter, NodeName, utils
 import net
 
 # return the sorted list of images in that folder
@@ -40,16 +40,16 @@ def write_image(image, path):
     result = Image.fromarray(image)
     result.save(path)
 
-writer = SummaryWriter('runs/test')#+datetime.now().strftime('%B%d  %H:%M:%S'))
+# writer = SummaryWriter('runs/test')#+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 def save_model(count, model, optimizer):
     print('save the model')
     serializers.save_npz('models/' + str(count) + '.model', model)
     print('save the optimizer')
     serializers.save_npz('models/' + str(count) + '.state', optimizer)
-    for name, param in model.predictor.namedparams():
-        writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
-    writer.add_scalar('loss', float(model.loss.data), count)
+    # for name, param in model.predictor.namedparams():
+    #     writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
+    # writer.add_scalar('loss', float(model.loss.data), count)
 
 
 def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, period, save, 
