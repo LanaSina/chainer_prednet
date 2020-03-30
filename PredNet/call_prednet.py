@@ -149,7 +149,8 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if ((step+1)%skip_save_frames == 0):
             num = str(step//skip_save_frames).zfill(10)
             new_filename = output_dir + '/' + num + '.png'
-            print("writing ", new_filename)
+            if verbose == 1:
+                print("writing ", new_filename)
             write_image(model.y.data[0].copy(), new_filename)
 
         if gpu >= 0: model.to_gpu()
@@ -218,7 +219,8 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
 
     logf = open('test_log.txt', 'w')
     step = 0
-    print("sequence_list ", sequence_list)
+    if verbose == 1:
+        print("sequence_list ", sequence_list)
     for image_list in sequence_list:
         step = test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
                                 gpu, logf, skip_save_frames, extension_start, extension_duration,
