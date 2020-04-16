@@ -2,12 +2,12 @@ import argparse
 import cv2
 import csv
 import numpy as np
-from ..optical_flow.optical_flow import lucas_kanade
+from optical_flow.optical_flow import lucas_kanade
 import os
 from PIL import Image
-from PredNet.call_prednet import test_prednet
+from chainer_prednet.PredNet.call_prednet import test_prednet
 from random import random, randrange
-from utilities.mirror_images import mirror, mirror_multiple, TransformationType
+from chainer_prednet.utilities.mirror_images import mirror, mirror_multiple, TransformationType
 
 from pytorch_neat.pytorch_neat.cppn import create_cppn
 from pytorch_neat.pytorch_neat.multi_env_eval import MultiEnvEvaluator
@@ -482,7 +482,7 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
         i = i+1
 
 
-def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
+def neat_illusion(output_dir, model_name, checkpoint = None):
     repeat = 6
     limit = 1
     w = 160
@@ -532,15 +532,13 @@ def neat_illusion(input_image, output_dir, model_name, checkpoint = None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='optical flow tests')
-    parser.add_argument('--input', '-i', default='', help='Path to the directory which countains the input_images directory')
     parser.add_argument('--model', '-m', default='', help='.model file')
     parser.add_argument('--output_dir', '-o', default='.', help='path of output diectory')
-    parser.add_argument('--checkpoint', '-c', help='path of checkpoint to restore')
 
     args = parser.parse_args()
     output_dir = args.output_dir 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    neat_illusion(args.input, output_dir, args.model, args.checkpoint)
+    neat_illusion(output_dir, args.model, args.checkpoint)
 
