@@ -186,7 +186,8 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             if gpu >= 0:model.to_cpu()
             num = str(step//skip_save_frames + j ).zfill(10)
             new_filename = output_dir + '/' + num + '_extended.png'
-            print("writing ", new_filename)
+            if verbose == 1:
+                print("writing ", new_filename)
 
             write_image(model.y.data[0].copy(), new_filename)
             x_batch[0] = model.y.data[0].copy()
