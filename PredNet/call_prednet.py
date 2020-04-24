@@ -116,7 +116,7 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
 
 # imagelist = [path, path, path]
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
-    extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1):
+    extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1):
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -125,6 +125,9 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
     batchSize = 1
     x_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
+
+    if reset_each:
+        reset_at = 1
 
     for i in range(0, len(imagelist)):
         x_batch[0] = read_image(imagelist[i], size, offset)
@@ -154,7 +157,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             write_image(model.y.data[0].copy(), new_filename)
 
         if gpu >= 0: model.to_gpu()
-        if reset_each:
+        if reset_at>0 and i%reset_at==0:
             prednet.reset_state()
 
         step = step + 1
@@ -195,7 +198,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 # sequence_list = [[path,path,path], [path,path,path]] list of lists of images
 def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
                 skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], 
-                reset_each = False, verbose = 1):
+                reset_each = False, verbose = 1, reset_at = -1):
 
     #Create Model
     prednet = net.PredNet(size[0], size[1], channels)
@@ -224,7 +227,7 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     for image_list in sequence_list:
         step = test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
                                 gpu, logf, skip_save_frames, extension_start, extension_duration,
-                                reset_each, step, verbose)
+                                reset_each, step, verbose, reset_at)
         
 
 def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
