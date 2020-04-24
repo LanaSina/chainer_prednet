@@ -157,11 +157,12 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             write_image(model.y.data[0].copy(), new_filename)
 
         if gpu >= 0: model.to_gpu()
-        if reset_at>0 and i%reset_at==0:
-            prednet.reset_state()
 
         step = step + 1
+        #print("step", step)
         if step == 0  or (extension_start==0) or (step%extension_start>0):
+            if reset_at>0 and i%reset_at==0:
+                prednet.reset_state()
             continue
 
         if gpu >= 0: model.to_cpu()
