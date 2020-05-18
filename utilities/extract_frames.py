@@ -7,24 +7,26 @@ import sys
 import argparse
 
 usage = 'Usage: python {} INPUT_FILE [--prefix <prefix>] [--dir <directory>] [--help]'.format(__file__)
-parser = argparse.ArgumentParser(description='This script is to generate images from a video.',
+parser = argparse.ArgumentParser(description='This script extract frames from a video.',
                                  usage=usage)
 parser.add_argument('input_video', action='store', nargs=None, 
                     type=str, help='Input video.')
 parser.add_argument('-p', '--prefix', action='store', nargs='?',
-                    default='frame', type=str, help='Prefix of Output file name.')
+                    default='frame', type=str, help='Prefix of output file name.')
 parser.add_argument('-d', '--dir', action='store', nargs='?',
-                    default='data', type=str, help='Directory of Output files.')
+                    default='data', type=str, help='Directory of output files.')
 parser.add_argument('-r', '--ratio', action='store',
-                    default=0.1, type=float, help='Ratio of test datum.')
+                    default=0.1, type=float, help='Ratio of test data.')
 parser.add_argument('-w', '--width', action='store',
                     default=-1, type=int, help='Width of images.')
 parser.add_argument('-g', '--height', action='store',
                     default=-1, type=int, help='height of images.')
 parser.add_argument('-n', '--n_copy', action='store',
-                    default=1, type=int, help='Number to copy images.')
+                    default=1, type=int, help='Copies of each frame to save.')
+parser.add_argument('-c', '--count', action='store',
+                    default=1, type=int, help='Max number of frames.')
 parser.add_argument('-s', '--skip', action='store',
-                    default=1, type=int, help='Skip amount of data.')
+                    default=1, type=int, help='Skip this many frames.')
 parser.add_argument('-f', '--flip', action='store_true',
                     default=False, help='Flip image.')
                     
@@ -36,9 +38,9 @@ count = 0
 cur_skip = 0
 files = []
 
-print("Start to save images...")
+print("Saving images...")
 
-while True:
+while count<args.count:
     success, image = vidcap.read()
     if not success:
         break
