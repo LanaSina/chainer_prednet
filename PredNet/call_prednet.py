@@ -11,9 +11,8 @@ from chainer import optimizers
 from chainer import serializers
 from chainer.functions.loss.mean_squared_error import mean_squared_error
 import chainer.computational_graph as c
-# from tb_chainer import SummaryWriter, NodeName, utils
-#from . 
-import net
+# sometimes need to be just import net 
+from . import net
 
 # return the sorted list of images in that folder
 def make_list(images_dir, limit):
