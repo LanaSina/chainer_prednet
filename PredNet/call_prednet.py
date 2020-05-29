@@ -12,7 +12,7 @@ from chainer import serializers
 from chainer.functions.loss.mean_squared_error import mean_squared_error
 import chainer.computational_graph as c
 # sometimes need to be just import net 
-import net
+from . import net
 
 # return the sorted list of images in that folder
 def make_list(images_dir, limit):
