@@ -12,7 +12,7 @@ from chainer import serializers
 from chainer.functions.loss.mean_squared_error import mean_squared_error
 import chainer.computational_graph as c
 # sometimes need to be just import net 
-from . import net
+import net
 
 # return the sorted list of images in that folder
 def make_list(images_dir, limit):
@@ -40,19 +40,14 @@ def write_image(image, path):
     result = Image.fromarray(image)
     result.save(path)
 
-# writer = SummaryWriter('runs/test')#+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 def save_model(count, model, optimizer):
     print('save the model')
     serializers.save_npz('models/' + str(count) + '.model', model)
     print('save the optimizer')
     serializers.save_npz('models/' + str(count) + '.state', optimizer)
-    # for name, param in model.predictor.namedparams():
-    #     writer.add_histogram(name, chainer.cuda.to_cpu(param.data), count)
-    # writer.add_scalar('loss', float(model.loss.data), count)
-
-
-def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, period, save, 
+  
+def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, input_len, save, 
                      bprop, logf, step = 0, verbose = 1):
 
     if len(imagelist) == 0:
@@ -78,10 +73,7 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
             loss.unchain_backward()
             loss = 0
             optimizer.update()
-            # if gpu >= 0:model.to_cpu()
-            # write_image(x_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'x.png')
-            # write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
-            # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
+       
             if gpu >= 0:model.to_gpu()
             if verbose == 1:
                 print("step ", step," frame ", i, "loss:", model.loss.data)
@@ -93,30 +85,28 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, p
             save_model(step, model, optimizer)
         x_batch[0] = y_batch[0]
         
-        if (step>=period):
+        if (input_len>0 and step>=input_len):
             break
 
     return step
 
 
 def train_image_sequences(sequence_list, prednet, model, optimizer,
-                        channels, size, offset, gpu, period, save, bprop, verbose = 1):
+                        channels, size, gpu, input_len, save, bprop):
     step = 0
     logf = open('train_log.txt', 'w')
-    while step<period:
+    while step<input_len:
         for image_list in sequence_list:
             prednet.reset_state()
             step = train_image_list(image_list, model, optimizer, channels, size, offset, gpu, 
-                        period, save, bprop, logf, step, verbose)
-            if (step>=period):
-                break
+                        input_len, save, bprop, logf, step, verbose)
 
     save_model(step, model, optimizer)
 
 
 # imagelist = [path, path, path]
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
-    extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1):
+    extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -130,6 +120,9 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         reset_at = 1
 
     for i in range(0, len(imagelist)):
+        if input_len>0 and i>input_len:
+            break
+
         x_batch[0] = read_image(imagelist[i], size, offset)
         if(i<len(imagelist)-1):
             y_batch[0] = read_image(imagelist[i+1], size, offset)
@@ -200,7 +193,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 # sequence_list = [[path,path,path], [path,path,path]] list of lists of images
 def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
                 skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], 
-                reset_each = False, verbose = 1, reset_at = -1):
+                reset_each = False, verbose = 1, reset_at = -1, input_len=-1):
 
     #Create Model
     prednet = net.PredNet(size[0], size[1], channels)
@@ -229,7 +222,7 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     for image_list in sequence_list:
         step = test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
                                 gpu, logf, skip_save_frames, extension_start, extension_duration,
-                                reset_each, step, verbose, reset_at)
+                                reset_each, step, verbose, reset_at, input_len)
         
 
 def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
@@ -307,12 +300,17 @@ def call_with_args(args):
             sequence_list[i] = [os.path.join(base_path,line.rstrip('\n')) for line in open(os.path.join(base_path,path))]
             i = i+1
 
+    if args.period:
+        input_len = args.period
+    else:
+        input_len = args.input_len
+
     if args.test == True:
         test_prednet(args.initmodel, sequence_list, size, channels, args.gpu, args.output_dir,
-                    args.skip_save_frames, args.ext_t, args.ext, offset, args.verbose)
+                    args.skip_save_frames, args.ext_t, args.ext, offset, args.verbose, input_len)
     else:
         train_prednet(args.initmodel, sequence_list, args.gpu, size, channels,
-                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save, args.verbose)  
+                            offset, args.resume, args.bprop, args.output_dir, input_len, args.save, args.verbose)  
 
 
 if __name__ == "__main__":
@@ -342,11 +340,11 @@ if __name__ == "__main__":
     parser.add_argument('--save', default=10000, type=int,
                         help='Period of save model and state (frames)')
     parser.add_argument('--period', default=1000000, type=int,
-                        help='Period of training (frames)')
+                        help='maximum input length (legacy)')
     parser.add_argument('--test', dest='test', action='store_true')
     parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, help='predictions will be saved every x steps')
     parser.add_argument('--input_len', default=-1, type=int,
-                        help='how many frames to use if using images_path')
+                        help='maximum input length')
     parser.add_argument('--verbose', '-v', default=1, type=int,
                         help='Output progression logs (1) or not (0)')
 
