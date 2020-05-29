@@ -32,8 +32,6 @@ def mirror(input_image, output_dir, lossless, transform = TransformationType.Mir
 
 def mirror_multiple(input_path, output_dir, transform = TransformationType.Mirror, limit = -1):
     input_image_list = sorted(os.listdir(input_path))
-    print("input_image_list", input_image_list)
-    print(input_path)
     if limit==-1:
         limit = len(input_image_list)
 
