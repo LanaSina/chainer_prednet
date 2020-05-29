@@ -140,7 +140,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if reset_each:
             prednet.reset_state()
 
-        if i == 0  or (extension_start==0) or (i%extension_start>0)
+        if i == 0  or (extension_start==0) or (i%extension_start>0):
             continue
 
         if gpu >= 0: model.to_cpu()
