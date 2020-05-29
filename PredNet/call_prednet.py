@@ -306,8 +306,10 @@ def call_with_args(args):
         input_len = args.input_len
 
     if args.test == True:
-        test_prednet(args.initmodel, sequence_list, size, channels, args.gpu, args.output_dir,
-                    args.skip_save_frames, args.ext_t, args.ext, offset, args.verbose, input_len)
+        test_prednet(initmodel=args.initmodel, sequence_list=sequence_list, size=size,
+                     channels=channels, gpu=args.gpu, output_dir=args.output_dir,
+                     skip_save_frames=args.skip_save_frames, extension_start=args.ext_t,
+                     extension_duration=args.ext, offset=offset, verbose=args.verbose, input_len=input_len)
     else:
         train_prednet(args.initmodel, sequence_list, args.gpu, size, channels,
                             offset, args.resume, args.bprop, args.output_dir, input_len, args.save, args.verbose)  
@@ -339,7 +341,7 @@ if __name__ == "__main__":
                         help='Back propagation length (frames)')
     parser.add_argument('--save', default=10000, type=int,
                         help='Period of save model and state (frames)')
-    parser.add_argument('--period', default=1000000, type=int,
+    parser.add_argument('--period', type=int,
                         help='maximum input length (legacy)')
     parser.add_argument('--test', dest='test', action='store_true')
     parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, help='predictions will be saved every x steps')
