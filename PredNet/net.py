@@ -3,7 +3,7 @@ import chainer
 import chainer.functions as F
 import chainer.links as L
 from chainer import variable
-from tb_chainer import name_scope, within_name_scope
+# from tb_chainer import name_scope, within_name_scope
 
 class EltFilter(chainer.Link):
     def __init__(self, width, height, channels, batchSize = 1, wscale=1, bias=0, nobias=False,
@@ -26,7 +26,7 @@ class EltFilter(chainer.Link):
                 initial_bias = bias
             self.b.data[...] = initial_bias
 
-    @within_name_scope('EltFilter', retain_data=True)
+    #@within_name_scope('EltFilter', retain_data=True)
     def __call__(self, x):
         y = x * self.W
         if self.b is not None:
@@ -80,7 +80,7 @@ class ConvLSTM(chainer.Chain):
     def reset_state(self):
         self.c = self.h = None
 
-    @within_name_scope("ConvLSTM", retain_data=True)
+    #@within_name_scope("ConvLSTM", retain_data=True)
     def __call__(self, x):
         if self.h is None:
             with chainer.using_config('enable_backprop', False):
@@ -183,30 +183,30 @@ class PredNet(chainer.Chain):
         E = [None] * self.layers
         for nth in range(self.layers):
             if nth == 0:
-                with name_scope('E_Layer' + str(nth), [getattr(self, 'P' + str(nth))], True):
-                    E[nth] = F.concat((F.relu(x - getattr(self, 'P' + str(nth))),
+                # with name_scope('E_Layer' + str(nth), [getattr(self, 'P' + str(nth))], True):
+                E[nth] = F.concat((F.relu(x - getattr(self, 'P' + str(nth))),
                                         F.relu(getattr(self, 'P' + str(nth)) - x)))
             else:
-                with name_scope('E_Layer' + str(nth),
-                                [getattr(self, 'P' + str(nth))] + tol(getattr(self, 'ConvA' + str(nth))), True):
-                    A = F.max_pooling_2d(F.relu(getattr(self, 'ConvA' + str(nth))(E[nth - 1])), 2, stride = 2)
-                    E[nth] = F.concat((F.relu(A - getattr(self, 'P' + str(nth))),
+                #with name_scope('E_Layer' + str(nth),
+                #                [getattr(self, 'P' + str(nth))] + tol(getattr(self, 'ConvA' + str(nth))), True):
+                A = F.max_pooling_2d(F.relu(getattr(self, 'ConvA' + str(nth))(E[nth - 1])), 2, stride = 2)
+                E[nth] = F.concat((F.relu(A - getattr(self, 'P' + str(nth))),
                                         F.relu(getattr(self, 'P' + str(nth)) - A)))
 
         R = [None] * self.layers
         for nth in reversed(range(self.layers)):
-            with name_scope('R_Layer' + str(nth), getattr(self, 'ConvLSTM' + str(nth)).params(), True):
-                if nth == self.layers - 1:
-                    R[nth] = getattr(self, 'ConvLSTM' + str(nth))((E[nth],))
-                else:
-                    upR = F.unpooling_2d(R[nth + 1], 2, stride = 2, cover_all=False)
-                    R[nth] = getattr(self, 'ConvLSTM' + str(nth))((E[nth], upR))
+            #with name_scope('R_Layer' + str(nth), getattr(self, 'ConvLSTM' + str(nth)).params(), True):
+            if nth == self.layers - 1:
+                R[nth] = getattr(self, 'ConvLSTM' + str(nth))((E[nth],))
+            else:
+                upR = F.unpooling_2d(R[nth + 1], 2, stride = 2, cover_all=False)
+                R[nth] = getattr(self, 'ConvLSTM' + str(nth))((E[nth], upR))
 
-            with name_scope('P_Layer' + str(nth), getattr(self, 'ConvP' + str(nth)).params(), True):
-                if nth == 0:
-                    setattr(self, 'P' + str(nth), F.clipped_relu(getattr(self, 'ConvP' + str(nth))(R[nth]), 1.0))
-                else:
-                    setattr(self, 'P' + str(nth), F.relu(getattr(self, 'ConvP' + str(nth))(R[nth])))
+            #with name_scope('P_Layer' + str(nth), getattr(self, 'ConvP' + str(nth)).params(), True):
+            if nth == 0:
+                setattr(self, 'P' + str(nth), F.clipped_relu(getattr(self, 'ConvP' + str(nth))(R[nth]), 1.0))
+            else:
+                setattr(self, 'P' + str(nth), F.relu(getattr(self, 'ConvP' + str(nth))(R[nth])))
 
         return self.P0
 
