@@ -75,10 +75,6 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
             loss.unchain_backward()
             loss = 0
             optimizer.update()
-            # if gpu >= 0:model.to_cpu()
-            # write_image(x_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'x.png')
-            # write_image(model.y.data[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'y.png')
-            # write_image(y_batch[0].copy(), 'images/' + str(count) + '_' + str(seq) + '_' + str(i) + 'z.png')
             if gpu >= 0:model.to_gpu()
             print('loss:' + str(float(model.loss.data)))
             logf.write(str(i) + ', ' + str(float(model.loss.data)) + '\n')
@@ -95,23 +91,23 @@ def train_image_list(imagelist, model, optimizer, channels, size, gpu, period, s
 
 
 def train_image_folders(sequencelist, prednet, model, optimizer,
-                        channels, size, gpu, period, save, bprop):
+                        channels, size, gpu, period, save, bprop, input_len):
 
     step = 0
-    while step<period:
+    while step<input_len:
         for sequence in sequencelist:
             prednet.reset_state()
             imagelist = make_list(sequence)
             step = train_image_list(imagelist, model, optimizer, channels, size, gpu, 
                         period, save, bprop, step)
-            if (step>=period):
+            if (step>=input_len):
                 break
 
     save_model(step, model, optimizer)
 
 
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, skip_save_frames=0, 
-    extension_start=0, extension_duration=100, reset_each = False):
+    extension_start=0, extension_duration=100, reset_each = False, input_len = -1):
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -122,6 +118,9 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
 
     for i in range(0, len(imagelist)):
+        if i>input_len:
+            break;
+
         # print("frame ", imagelist[i])
         x_batch[0] = read_image(imagelist[i], size, offset)
         loss += model(chainer.Variable(xp.asarray(x_batch)),
@@ -141,7 +140,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if reset_each:
             prednet.reset_state()
 
-        if i == 0  or (extension_start==0) or (i%extension_start>0):
+        if i == 0  or (extension_start==0) or (i%extension_start>0)
             continue
 
         if gpu >= 0: model.to_cpu()
@@ -171,7 +170,8 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 
 # sequence_list = [path, path] of folders with text file listing images
 def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
-                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], reset_each = False):
+                skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0],
+                reset_each = False, input_len = -1):
 
     #Create Model
     prednet = net.PredNet(size[0], size[1], channels)
@@ -196,7 +196,7 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     for seq in sequence_list:
         image_list = make_list(seq)
         test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
-                        gpu, skip_save_frames, extension_start, extension_duration, reset_each)
+                        gpu, skip_save_frames, extension_start, extension_duration, reset_each, input_len)
 
 
 
@@ -235,12 +235,6 @@ def train_prednet(initmodel, sequencelist, gpu, size, channels, offset, resume,
     train_image_folders(sequencelist, prednet, model, optimizer, 
                         channels, size, gpu, period, save, bprop)   
 
-    # # For logging graph structure
-    # model(chainer.Variable(xp.asarray(x_batch)),
-    #       chainer.Variable(xp.asarray(y_batch)))
-    # writer.add_graph(model.y)
-    # writer.close()
-      
 def string_to_intarray(string_input):
     array = string_input.split(',')
     for i in range(len(array)):
@@ -266,8 +260,8 @@ if __name__ == "__main__":
                         help='Number of channels on each layers')
     parser.add_argument('--offset', '-off', default='0,0',
                         help='Center offset of clipping input image (pixels)')
-    # parser.add_argument('--input_len', '-l', default=50, type=int,
-    #                     help='Input frame length fo extended prediction on test (frames)')
+    parser.add_argument('--input_len', '-l', default=-1, type=int,
+                        help='maximum number of steps to run the algorithm.')
     parser.add_argument('--ext', '-e', default=0, type=int,
                         help='Extended prediction on test (frames)')
     parser.add_argument('--ext_t', default=20, type=int,
@@ -277,7 +271,7 @@ if __name__ == "__main__":
     parser.add_argument('--save', default=10000, type=int,
                         help='Period of save model and state (frames)')
     parser.add_argument('--period', default=1000000, type=int,
-                        help='Period of training (frames)')
+                        help='maximum number of steps to run the algorithm. (legacy)')
     parser.add_argument('--test', dest='test', action='store_true')
     parser.add_argument('--skip_save_frames', '-sikp', type=int, default=1, help='predictions will be saved every x steps')
 
@@ -304,11 +298,16 @@ if __name__ == "__main__":
     else:
         sequencelist = args.sequences
 
+    if args.input_len:
+        input_len = args.input_len
+    else :
+        input_len = args.period
+
     if args.test == True:
         test_prednet(args.initmodel, sequencelist, size, channels, args.gpu, args.output_dir,
-                    args.skip_save_frames, args.ext_t, args.ext, offset)
+                    args.skip_save_frames, args.ext_t, args.ext, offset, input_len)
     else:
         train_prednet(args.initmodel, sequencelist, args.gpu, size, channels,
-                            offset, args.resume, args.bprop, args.output_dir, args.period, args.save)  
+                            offset, args.resume, args.bprop, args.output_dir, input_len)  
 
 
