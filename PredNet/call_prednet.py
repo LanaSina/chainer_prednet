@@ -112,8 +112,8 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
     extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):
 
-    print("args: prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
-    print(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
+    print("args: imagelist, output_dir, channels, size, offset, gpu, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
+    print(imagelist, output_dir, channels, size, offset, gpu,  skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
 
 
 
@@ -318,7 +318,8 @@ def call_with_args(args):
 
     if args.test == True:
         test_prednet(args.initmodel, sequence_list, size, channels, args.gpu, args.output_dir,
-                    args.skip_save_frames, args.ext_t, args.ext, offset, args.verbose, input_len)
+                    args.skip_save_frames, args.ext_t, args.ext, offset, args.reset_each, args.verbose, input_len)
+
     else:
         train_prednet(args.initmodel, sequence_list, args.gpu, size, channels,
                             offset, args.resume, args.bprop, args.output_dir, input_len, args.save, args.verbose)  
@@ -344,7 +345,7 @@ if __name__ == "__main__":
                         help='Center offset of clipping input image (pixels)')
     parser.add_argument('--ext', '-e', default=0, type=int,
                         help='Extended prediction on test (frames)')
-    parser.add_argument('--ext_t', default=20, type=int,
+    parser.add_argument('--ext_t', default=0, type=int,
                         help='When to start extended prediction')
     parser.add_argument('--bprop', default=20, type=int,
                         help='Back propagation length (frames)')
@@ -360,6 +361,7 @@ if __name__ == "__main__":
                         help='Output progression logs (1) or not (0)')
 
     parser.set_defaults(test=False)
+    parser.set_defaults(reset_each=False)
     args = parser.parse_args()
 
     call_with_args(args)
