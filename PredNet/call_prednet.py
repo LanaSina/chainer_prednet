@@ -112,6 +112,12 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
     extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):
 
+    print("args: prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
+    print(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
+
+
+
+
     xp = cuda.cupy if gpu >= 0 else np
 
     prednet.reset_state()
@@ -159,6 +165,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         #print("step", step)
         if step == 0  or (extension_start==0) or (step%extension_start>0):
             if reset_at>0 and i%reset_at==0:
+                print("reset, i", i)
                 prednet.reset_state()
             continue
 
