@@ -112,11 +112,8 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
     extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):
 
-    print("args:  output_dir, channels, size, offset, gpu, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
-    print( output_dir, channels, size, offset, gpu,  skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
-
-
-
+    # print("args:  output_dir, channels, size, offset, gpu, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
+    # print( output_dir, channels, size, offset, gpu,  skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
 
     xp = cuda.cupy if gpu >= 0 else np
 
@@ -130,6 +127,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         reset_at = 1
 
     for i in range(0, len(imagelist)):
+
         if input_len>0 and i>input_len:
             break
 
@@ -161,12 +159,9 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 
         if gpu >= 0: model.to_gpu()
 
+
         step = step + 1
-        #print("step", step)
         if step == 0  or (extension_start==0) or (step%extension_start>0):
-            if reset_at>0 and i%reset_at==0:
-                print("reset, i", i)
-                prednet.reset_state()
             continue
 
         if gpu >= 0: model.to_cpu()
@@ -174,17 +169,8 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if gpu >= 0: model.to_gpu()
 
         for j in range(0,extension_duration):
-
             loss += model(chainer.Variable(xp.asarray(x_batch)),
                           chainer.Variable(xp.asarray(y_batch)))
-            # if j == extension_duration - 1:
-            #     g = c.build_computational_graph([model.y])
-            #     node_name = NodeName(g.nodes)
-            #     for n in g.nodes:
-            #         if isinstance(n, chainer.variable.VariableNode) and \
-            #           not isinstance(n._variable(), chainer.Parameter) and n.data is not None:
-            #             img = utils.make_grid(np.expand_dims(chainer.cuda.to_cpu(n.data[-1, ...]), 1))
-            #             writer.add_image(node_name.name(n), img, i)
             loss.unchain_backward()
             loss = 0
             if gpu >= 0:model.to_cpu()
@@ -196,6 +182,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
             write_image(model.y.data[0].copy(), new_filename)
             x_batch[0] = model.y.data[0].copy()
             if gpu >= 0:model.to_gpu()
+
         prednet.reset_state()
 
     return step
