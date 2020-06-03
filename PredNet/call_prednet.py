@@ -112,8 +112,8 @@ def train_image_sequences(sequence_list, prednet, model, optimizer,
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
     extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):
 
-    print("args: imagelist, output_dir, channels, size, offset, gpu, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
-    print(imagelist, output_dir, channels, size, offset, gpu,  skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
+    print("args:  output_dir, channels, size, offset, gpu, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
+    print( output_dir, channels, size, offset, gpu,  skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
 
 
 
