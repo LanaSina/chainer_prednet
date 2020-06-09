@@ -30,6 +30,10 @@ parser.add_argument('-f', '--flip', action='store_true',
                     
 args = parser.parse_args()
 
+if not os.path.exists(args.dir):
+    os.makedirs(args.dir)
+    print("Created", args.dir)
+
 vidcap = cv2.VideoCapture(args.input_video)
 success, image = vidcap.read()
 count = 0
