@@ -336,7 +336,7 @@ def get_image_from_cppn(genome, c_dim, w, h, config, s_val = 1):
     return image
 
 # population:  [id, net]
-def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
+def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3, channels  = [3,48,96,192]):
     print("fitnesses of ", len(population))
     output_dir = "temp" + str(id) + "/"
     repeat = 10
@@ -344,7 +344,6 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
     h = 120
     half_h = int(h/2)
     size = [w,h]
-    channels = [3,48,96,192]
     gpu = 0
 
     prediction_dir = output_dir + "/original/prediction/"
@@ -401,33 +400,6 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
             original_vectors[i] = [[0,0,-1000,0]]
         i = i + 1
 
-    # #mirror images
-    # mirror_multiple(output_dir + "images/", mirror_images_dir, TransformationType.MirrorAndFlip)
-    # #print("mirror images finished")
-    # temp_list = sorted(os.listdir(mirror_images_dir))
-    # temp_list = temp_list[0:len(images_list)]
-    # mirror_images_list = [mirror_images_dir + im for im in temp_list]
-    # repeated_mirror_list = [mirror_images_dir + im for im in temp_list for i in range(repeat) ]
-
-    # # predict
-    # test_prednet(initmodel = model_name, images_list = repeated_mirror_list, size=size, 
-    #             channels = channels, gpu = gpu, output_dir = mirror_dir + "prediction/", skip_save_frames=repeat,
-    #             reset_each = True
-    #             )
-    # # calculate flow
-    # i = 0
-    # mirrored_vectors = [None] * len(population)
-    # for input_image in mirror_images_list:
-    #     print(input_image)
-    #     prediction_image_path = mirror_dir + "prediction/" + str(i).zfill(10) + ".png"
-    #     print(prediction_image_path)
-    #     results = lucas_kanade(input_image, prediction_image_path, output_dir+"/mirrored/flow/", save=True)
-    #     if results["vectors"]:
-    #         mirrored_vectors[i] = np.asarray(results["vectors"])
-    #     else:
-    #         mirrored_vectors[i] = [[0,0,-1000,0]]
-    #     i = i + 1
-
     # calculate score
     #radius_limits = [20,50]
     scores = [None] * len(population)
@@ -482,14 +454,13 @@ def get_fitnesses_neat(population, model_name, config, id=0, c_dim=3):
         i = i+1
 
 
-def neat_illusion(output_dir, model_name, checkpoint = None):
+def neat_illusion(output_dir, model_name, checkpoint = None, channels = [3,48,96,192]):
     repeat = 6
     limit = 1
     w = 160
     h = 120
     half_h = int(h/2)
     size = [w,h]
-    channels = [3,48,96,192]
     gpu = 0
     c_dim = 3
 
@@ -503,7 +474,7 @@ def neat_illusion(output_dir, model_name, checkpoint = None):
                          "chainer_prednet/neat.cfg")
 
     def eval_genomes(genomes, config):
-        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim)
+        get_fitnesses_neat(genomes, model_name, config, c_dim=c_dim, channels=channels)
 
     checkpointer = neat.Checkpointer(100)
 
@@ -522,13 +493,6 @@ def neat_illusion(output_dir, model_name, checkpoint = None):
     # Run for up to x generations.
     winner = p.run(eval_genomes, 300)
 
-    # Display the winning genome.
-    # print('\nBest genome:\n{!s}'.format(winner))
-
-    # Show output of the most fit genome against training data.
-    # image = get_image_from_cppn(winner, c_dim, w, h, config)
-
-    # image.save("best_illusion.png")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='optical flow tests')
@@ -540,5 +504,8 @@ if __name__ == "__main__":
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    neat_illusion(output_dir, args.model, args.checkpoint)
+    if args.channels:
+        channels = args.channels
+
+    neat_illusion(output_dir, args.model, args.checkpoint, channels)
 

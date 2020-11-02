@@ -27,21 +27,34 @@ def make_list(images_dir, limit):
     return image_list
 
 def read_image(full_path, size, offset):
-    image = np.asarray(Image.open(full_path)).transpose(2, 0, 1)
-    # // is int division
-    top = offset[1] + (image.shape[1]  - size[1]) // 2
-    left = offset[0] + (image.shape[2]  - size[0]) // 2
-    bottom = size[1] + top
-    right = size[0] + left
-    image = image[:, top:bottom, left:right].astype(np.float32)
-    image /= 255
+    image = Image.open(full_path)
+
+    if(len(image.size)<3):
+        image_array = np.asarray(image)
+        image_array = np.reshape(image_array[:,:,0], (size[1],size[0],1))
+    else:
+        image_array = np.asarray(image)
+    
+    image_array_w = image_array.transpose(2, 0, 1)
+    # # // is int division
+    # top = offset[1] + (image.shape[1]  - size[1]) // 2
+    # left = offset[0] + (image.shape[2]  - size[0]) // 2
+    # bottom = size[1] + top
+    # right = size[0] + left
+    # image = image[:, top:bottom, left:right].astype(np.float32)
+    image = image_array_w/255
     return image
 
 def write_image(image, path):
     image *= 255
     image = image.transpose(1, 2, 0)
+    size = image.shape
     image = image.astype(np.uint8)
-    result = Image.fromarray(image)
+    if size[2]>1:
+        result = Image.fromarray(image)
+    else:
+        result = Image.fromarray(image[:,:,0], 'L')
+
     result.save(path)
 
 
