@@ -26,10 +26,10 @@ def make_list(images_dir, limit):
     image_list = [os.path.join(images_dir, im)  for im in temp_list]
     return image_list
 
-def read_image(full_path, size, offset):
+def read_image(full_path, size, offset, c = 3):
     image = Image.open(full_path)
 
-    if(len(image.size)<3):
+    if(c<3):
         image_array = np.asarray(image)
         image_array = np.reshape(image_array[:,:,0], (size[1],size[0],1))
     else:
@@ -65,7 +65,7 @@ def save_model(count, model, optimizer):
     serializers.save_npz('models/' + str(count) + '.state', optimizer)
   
 def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, input_len, save, 
-                     bprop, logf, step = 0, verbose = 1):
+                     bprop, logf, step = 0, verbose = 1, c = 3):
 
     if len(imagelist) == 0:
         print("Not found images.")
@@ -76,11 +76,11 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, i
     x_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
     y_batch = np.ndarray((batchSize, channels[0], size[1], size[0]), dtype=np.float32)
 
-    x_batch[0] = read_image(imagelist[0], size, offset)
+    x_batch[0] = read_image(imagelist[0], size, offset, c)
     loss = 0
     for i in range(1, len(imagelist)):
 
-        y_batch[0] = read_image(imagelist[i], size, offset);
+        y_batch[0] = read_image(imagelist[i], size, offset, c);
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
 
@@ -108,22 +108,23 @@ def train_image_list(imagelist, model, optimizer, channels, size, offset, gpu, i
     return step
 
 
+# c is color space (L or RGB)
 def train_image_sequences(sequence_list, prednet, model, optimizer,
-                        channels, size, gpu, input_len, save, bprop):
+                        channels, size, gpu, input_len, save, bprop, c = 3):
     step = 0
     logf = open('train_log.txt', 'w')
     while step<input_len:
         for image_list in sequence_list:
             prednet.reset_state()
             step = train_image_list(image_list, model, optimizer, channels, size, offset, gpu, 
-                        input_len, save, bprop, logf, step, verbose)
+                        input_len, save, bprop, logf, step, verbose, c)
 
     save_model(step, model, optimizer)
 
 
 # imagelist = [path, path, path]
 def test_image_list(prednet, imagelist, model, output_dir, channels, size, offset, gpu, logf, skip_save_frames=0, 
-    extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):
+    extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1, c = 3):
 
     # print("args:  output_dir, channels, size, offset, gpu, skip_save_frames=0, extension_start=0, extension_duration=100, reset_each = False, step = 0, verbose = 1, reset_at = -1, input_len=-1):")
     # print( output_dir, channels, size, offset, gpu,  skip_save_frames, extension_start, extension_duration, reset_each, step, verbose, reset_at, input_len)
@@ -144,9 +145,9 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
         if input_len>0 and i>input_len:
             break
 
-        x_batch[0] = read_image(imagelist[i], size, offset)
+        x_batch[0] = read_image(imagelist[i], size, offset, c)
         if(i<len(imagelist)-1):
-            y_batch[0] = read_image(imagelist[i+1], size, offset)
+            y_batch[0] = read_image(imagelist[i+1], size, offset, c)
 
         loss += model(chainer.Variable(xp.asarray(x_batch)),
                       chainer.Variable(xp.asarray(y_batch)))
@@ -204,7 +205,7 @@ def test_image_list(prednet, imagelist, model, output_dir, channels, size, offse
 # sequence_list = [[path,path,path], [path,path,path]] list of lists of images
 def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="result", 
                 skip_save_frames=0, extension_start=0, extension_duration=0, offset = [0,0], 
-                reset_each = False, verbose = 1, reset_at = -1, input_len=-1):
+                reset_each = False, verbose = 1, reset_at = -1, input_len=-1, c_dim = 3):
 
     #Create Model
     prednet = net.PredNet(size[0], size[1], channels)
@@ -233,11 +234,11 @@ def test_prednet(initmodel, sequence_list, size, channels, gpu, output_dir="resu
     for image_list in sequence_list:
         step = test_image_list(prednet, image_list, model, output_dir, channels, size, offset,
                                 gpu, logf, skip_save_frames, extension_start, extension_duration,
-                                reset_each, step, verbose, reset_at, input_len)
+                                reset_each, step, verbose, reset_at, input_len, c_dim)
         
 
 def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
-                bprop, output_dir="result", period=1000000, save=10000, verbose = 1):
+                bprop, output_dir="result", period=1000000, save=10000, verbose = 1, c = 3):
     if not os.path.exists('models'):
         os.makedirs('models')
     if not os.path.exists('images'):
@@ -269,7 +270,7 @@ def train_prednet(initmodel, sequence_list, gpu, size, channels, offset, resume,
         serializers.load_npz(resume, optimizer)
 
     train_image_sequences(sequence_list, prednet, model, optimizer, 
-                        channels, size, offset, gpu, period, save, bprop, verbose)   
+                        channels, size, offset, gpu, period, save, bprop, verbose, c)   
 
       
 def string_to_intarray(string_input):
