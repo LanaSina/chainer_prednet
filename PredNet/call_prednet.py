@@ -31,11 +31,14 @@ def read_image(full_path, size, offset, c = 3):
 
     if(c<3):
         image_array = np.asarray(image)
-        image_array = np.reshape(image_array[:,:,0], (size[1],size[0],1))
+        image_array_w = np.reshape(image_array, (1, size[1], size[0]))
+        # image_array_w = image_array.transpose(1, 0) 
+       # image_array_w = np.reshape(image_array, (1, size[1],size[0]))
     else:
         image_array = np.asarray(image)
-    
-    image_array_w = image_array.transpose(2, 0, 1)
+        image_array_w = image_array.transpose(2, 0, 1)
+
+    #print(image_array_w.shape)
     # # // is int division
     # top = offset[1] + (image.shape[1]  - size[1]) // 2
     # left = offset[0] + (image.shape[2]  - size[0]) // 2
