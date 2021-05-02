@@ -26,8 +26,6 @@ def filter(input_path):
         subtracted = np.zeros((size[1], size[0], 3))
 
 
-
-
     # if this pixel is an edge
     # let's just remove common colors and see what happens
     edge_contrast = 50
@@ -45,7 +43,7 @@ def filter(input_path):
             y1 = min(size[0], y + c_step + 1)
 
 
-            # consider brightest as white
+            # consider brightest everything as composite white
             brightest_pixel = [np.max(average_image[x0:x1, y0:y1, 0]), np.max(average_image[x0:x1, y0:y1, 1]), np.max(average_image[x0:x1, y0:y1, 2])]
             # find the common biggest difference between the 3 channels
             temp = np.min(brightest_pixel)
@@ -64,7 +62,7 @@ def filter(input_path):
                 new_pixel = pixel + adding
                 post_grain_image[x,y] = new_pixel
                 subtracted[x,y] = adding
-                #print(common_difference, pixel, new_pixel)
+            #print(pixel, new_pixel)
 
             if not edge:
                 for cx in range(x0,x1):
@@ -75,23 +73,35 @@ def filter(input_path):
                             # get the unfiltered color
                             new_pixel = pixel  + subtracted[cx,cy]
                             post_grain_image[x,y] = new_pixel
+                            #print(pixel, new_pixel)
+
+
+    contrasted_image = np.zeros((size[1], size[0], 3))
+    for x in range(size[1]):
+        for y in range(size[0]):
+            # cell neighborhood
+            x0 = max(0, x - c_step)
+            y0 = max(0, y - c_step)
+            x1 = min(size[1], x + c_step + 1) #subsetting leaves last number out
+            y1 = min(size[0], y + c_step + 1)
 
             # apply contrast
-            # uint to float
-            greyscale = 1.0*average_image[x0:x1, y0:y1, 0] + average_image[x0:x1, y0:y1, 1] + average_image[x0:x1, y0:y1, 2]
-            greyscale = greyscale/3
-            col_max = np.max(greyscale)
-            col_min = np.min(greyscale)
-            # center the color
+            # can use average_image because previous computation did not change the max
+            brightest_pixel = [np.max(post_grain_image[x0:x1, y0:y1, 0]), np.max(post_grain_image[x0:x1, y0:y1, 1]), np.max(post_grain_image[x0:x1, y0:y1, 2])]
+            col_max = np.max(brightest_pixel)
+            # not sure if should use this
+            col_min = np.min(post_grain_image[x0:x1, y0:y1]) #, np.min(post_grain_image[x0:x1, y0:y1, 1]), np.min(post_grain_image[x0:x1, y0:y1, 2])]
+            # offset the color
             if(col_min != col_max):
-                factor = 255/col_max
-                new_pixel = (average_image[x,y]-col_min)*factor
-                #print(col_min, col_max, factor, average_image[x,y], new_pixel)
-                post_grain_image[x,y] = color_clip(new_pixel.astype(int))
-                #print(new_pixel, post_grain_image[x,y])
+                factor = 255.0/(col_max-col_min)
+                new_pixel = (post_grain_image[x,y]-col_min)*factor
+                contrasted_image[x,y] = color_clip(new_pixel.astype(int))
+            else:
+                contrasted_image[x,y] = post_grain_image[x,y]
 
 
 
+    post_grain_image = contrasted_image
 
      # save
     out_path = "test.png"
