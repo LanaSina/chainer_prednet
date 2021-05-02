@@ -9,7 +9,7 @@ class Cell:
         self.input_pixel = input_pixel
         self.edge = False
         self.offset = np.zeros((3))
-        self.value = input_pixel
+        self.value = input_pixel.copy()
         self.changed = True
         # cell neighborhood
         self.brightest_neighbor = input_pixel.copy()
@@ -38,7 +38,9 @@ class Cell:
             if (abs(np.mean(self.input_pixel) - np.mean(n.input_pixel))) > edge_contrast:
                 self.edge = True
                 self.offset = (np.max(common_difference) - common_difference)
-                self.value = self.input_pixel + self.offset             
+                self.value = self.input_pixel + self.offset
+                if(self.value[2]<90):
+                    print(self.offset)            
 
     def update(self):
         # reset
@@ -51,9 +53,10 @@ class Cell:
                 mean_offset = mean_offset + n.offset
 
             mean_offset = mean_offset/len(self.neighborhood)
-            if (mean_offset-self.offset).any() != 0:
+            if abs(mean_offset-self.offset).any() > 0.9:
                 self.offset = mean_offset
-                self.value = self.input_pixel + self.offset
+                self.value = color_clip(self.input_pixel + self.offset)
+
                 updated = True
 
         return updated
@@ -115,22 +118,22 @@ def filter(input_path):
     to_save.save(out_path)
     display(to_save)
 
-    # updated = True
-    # while updated:
-    #     updated = False
-    #     # update automaton
-    #     for x in range(size[1]):
-    #         for y in range(size[0]):
-    #             cell = automaton[x][y]
+    updated = True
+    while updated:
+        updated = False
+        # update automaton
+        for x in range(size[1]):
+            for y in range(size[0]):
+                cell = automaton[x][y]
 
-    #             if cell.changed:
-    #                 cell.changed = cell.update()
-    #                 if cell.changed:
-    #                     updated = True
+                if cell.changed:
+                    cell.changed = cell.update()
+                    if cell.changed:
+                        updated = True
 
-    #     output_image = image_from_automaton(automaton)
-    #     to_show = Image.fromarray(output_image.astype(np.uint8))
-    #     display(to_show)
+        output_image = image_from_automaton(automaton)
+        to_show = Image.fromarray(output_image.astype(np.uint8))
+        display(to_show)
 
 
     contrasted_image = np.zeros((size[1], size[0], 3))
