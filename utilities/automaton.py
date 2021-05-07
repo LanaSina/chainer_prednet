@@ -120,7 +120,7 @@ def filter(input_path):
     dim = len(average_image.shape)
     size = (average_image.shape[1],average_image.shape[0])
 
-    step = 2
+    step = 1
     edge_contrast = 50
    
 
@@ -162,9 +162,9 @@ def filter(input_path):
     display(to_save)
 
     updated = True
-    frame_id = 0
-    video_length = 100
-    frames = np.zeros((video_length,size[1],size[0],3)).astype(np.uint8)
+    # frame_id = 0
+    # video_length = 100
+    # frames = np.zeros((video_length,size[1],size[0],3)).astype(np.uint8)
     while updated:
         updated = False
         # update automaton
@@ -181,49 +181,19 @@ def filter(input_path):
         to_show = Image.fromarray(output_image.astype(np.uint8))
         display(to_show)
 
-        if(frame_id<video_length):        
-            frames[frame_id] = output_image.astype(np.uint8)
-            frame_id = frame_id + 1
-            if(frame_id==video_length-1):
-                # out = cv2.VideoWriter('./output_video.avi', cv2.VideoWriter_fourcc(*'DIVX'), 60, size)
-                # for frame in frames:
-                #     out.write(frame)
-                # out.release()
+        # if(frame_id<video_length):        
+        #     frames[frame_id] = output_image.astype(np.uint8)
+        #     if(frame_id==video_length-1):
+        #         # out = cv2.VideoWriter('./output_video.avi', cv2.VideoWriter_fourcc(*'DIVX'), 60, size)
+        #         # for frame in frames:
+        #         #     out.write(frame)
+        #         # out.release()
 
-                imageio.mimwrite('output_filename.mp4', frames , fps = 30)
+        #         imageio.mimwrite('output_filename.mp4', frames , fps = 30)
+        #         print("video saved")
+        #         break
+        #     frame_id = frame_id + 1
 
-                print("video saved")
-
-    #     contrasted_image = np.zeros((size[1], size[0], 3))
-    #     for x in range(size[1]):
-    #         for y in range(size[0]):
-    #             # cell neighborhood
-    #             x0 = max(0, x - step)
-    #             y0 = max(0, y - step)
-    #             x1 = min(size[1], x + step + 1) #subsetting leaves last number out
-    #             y1 = min(size[0], y + step + 1)
-
-    #             # apply contrast
-    #             # can use average_image because previous computation did not change the max
-    #             brightest_pixel = [np.max(output_image[x0:x1, y0:y1, 0]), np.max(output_image[x0:x1, y0:y1, 1]), np.max(output_image[x0:x1, y0:y1, 2])]
-    #             col_max = np.max(brightest_pixel)
-    #             # not sure if should use this
-    #             col_min = np.min(output_image[x0:x1, y0:y1]) 
-
-    #             # offset the color
-    #             if(col_min != col_max):
-    #                 factor = 255.0/(col_max-col_min)
-    #                 new_pixel = (output_image[x,y]-col_min)*factor
-    #                 contrasted_image[x,y] = color_clip(new_pixel.astype(int))
-    #             else:
-    #                 contrasted_image[x,y] = output_image[x,y]
-        
-    #     av = Image.fromarray(contrasted_image.astype(np.uint8)) 
-    #     display(av)
-
-    # # save
-    # out_path = "filtered.png"
-    # av.save(out_path)
 
 def color_clip(pixel):
     pixel = [min(255, pixel[0]), min(255, pixel[1]), min(255, pixel[2])]
