@@ -45,7 +45,7 @@ class Cell:
                 self.edge = True
                 self.offset = (np.max(common_difference) - common_difference)
                 self.value = self.input_pixel + self.offset
-                self.contrast_values = self.find_contrast()
+                # self.contrast_values = self.find_contrast()
                 
 
     def find_contrast(self):
@@ -94,13 +94,10 @@ class Cell:
                 self.value = clipped_value
                 updated = True
 
-            if abs(mean_contrast-self.contrast_values).any() > 0.9:
-                self.contrast_values = mean_contrast
-                self.apply_contrast()
-                updated = True
-        #else:
-            # apply contrast?
-
+            # if abs(mean_contrast-self.contrast_values).any() > 0.9:
+            #     self.contrast_values = mean_contrast
+            #     self.apply_contrast()
+            #     updated = True
 
         return updated
 
